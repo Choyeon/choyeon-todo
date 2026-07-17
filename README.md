@@ -11,11 +11,12 @@
   <a href="#-下载安装">下载安装</a> ·
   <a href="#-在线体验">在线体验</a> ·
   <a href="#-界面预览">界面预览</a> ·
+  <a href="#-使用指南">使用指南</a> ·
   <a href="#-开发指南">开发指南</a>
 </p>
 
 [![Release](https://img.shields.io/github/v/release/Choyeon/choyeon-todo?style=flat-square&logo=github&label=Release)](https://github.com/Choyeon/choyeon-todo/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Web-0078D4?style=flat-square&logo=windows-terminal&logoColor=white)](#)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Web-0078D4?style=flat-square&logo=windows-terminal&logoColor=white)](#-下载安装)
 [![Web Demo](https://img.shields.io/badge/demo-online-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)](https://chuyuchoyeon.github.io/choyeon-todo/)
 [![License](https://img.shields.io/github/license/Choyeon/choyeon-todo?style=flat-square)](./LICENSE)
 
@@ -58,6 +59,7 @@
 - **流畅动画** — 计数动画、过渡效果、悬停反馈
 - **跨平台一致** — Windows / macOS / Web 统一体验
 - **多语言支持** — 简体中文 / English / 日本語
+- **PWA 离线支持** — Web 端可安装到桌面，离线可用
 
 ---
 
@@ -88,10 +90,43 @@ Web 版本可直接在浏览器中体验：
 | 平台 | 下载方式 |
 |------|----------|
 | **Windows** | [安装版 (Setup)](https://github.com/Choyeon/choyeon-todo/releases/latest) · [便携版 (Portable)](https://github.com/Choyeon/choyeon-todo/releases/latest) |
-| **macOS** | [macOS](https://github.com/Choyeon/choyeon-todo/releases/latest) |
+| **macOS** | [DMG / ZIP](https://github.com/Choyeon/choyeon-todo/releases/latest)（支持 Intel / Apple Silicon） |
 | **Linux** | [tar.gz](https://github.com/Choyeon/choyeon-todo/releases/latest) |
 
 所有版本均在 [Releases 页面](https://github.com/Choyeon/choyeon-todo/releases) 提供下载。
+
+### 安装说明
+
+**Windows**
+- 安装版：运行 Setup 程序，按照向导完成安装
+- 便携版：解压后直接运行 `Choyeon To Do.exe`
+
+**macOS**
+- 打开 DMG 文件，将应用拖入 Applications 文件夹
+- 首次打开如遇安全提示，请在「系统设置 → 隐私与安全性」中允许打开
+
+---
+
+## 📖 使用指南
+
+### 快速开始
+
+1. **添加任务** — 在顶部输入框中输入任务内容，按回车添加
+2. **智能识别** — 输入时自动识别日期、时间、优先级和分类
+   - 示例：`明天下午3点 开会 #工作 重要`
+3. **管理任务** — 点击复选框标记完成，点击任务内容编辑详情
+4. **切换视图** — 使用左侧边栏在不同视图间切换
+
+### 键盘快捷键
+
+| 快捷键 | 功能 |
+|--------|------|
+| `Ctrl/Cmd + N` | 新建任务 |
+| `Ctrl/Cmd + F` | 搜索任务 |
+| `Ctrl/Cmd + ,` | 打开设置 |
+| `Esc` | 关闭弹窗 / 取消编辑 |
+
+> 更多快捷键请在应用设置中查看。
 
 ---
 
@@ -147,9 +182,7 @@ npm run test:run
 npm run test:coverage
 ```
 
----
-
-## 🛠 技术栈
+### 技术栈
 
 | 层级 | 技术 |
 |------|------|

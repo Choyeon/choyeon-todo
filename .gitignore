@@ -45,3 +45,6 @@ build/*.p12
 *.sln
 *.sw?
 release-assets/
+
+# GitHub Pages 部署临时目录
+pages-deploy-temp/
