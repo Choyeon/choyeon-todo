@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, beforeEach, afterEach, test, expect } from 'vitest'
 import { useTaskStore } from '@/stores/taskStore'
+import { getTodayStr } from '@/utils/date'
 
 describe('TaskStore', () => {
   let store = null
@@ -32,7 +33,7 @@ describe('TaskStore', () => {
   describe('任务管理', () => {
     test('添加任务', () => {
       const initialCount = store.tasks.length
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayStr()
       store.addTask({
         title: '测试任务',
         category: 'work',
@@ -189,7 +190,7 @@ describe('TaskStore', () => {
     })
 
     test('获取今日任务数', () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayStr()
       const todayCount = store.getCount('today')
       const expected = store.tasks.filter(t => t.date === today && !t.completed).length
       expect(todayCount).toBe(expected)
@@ -203,7 +204,7 @@ describe('TaskStore', () => {
 
     test('获取已计划任务数', () => {
       const plannedCount = store.getCount('planned')
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayStr()
       const expected = store.tasks.filter(t => t.date >= today && !t.completed).length
       expect(plannedCount).toBe(expected)
     })
@@ -216,7 +217,7 @@ describe('TaskStore', () => {
 
     test('获取逾期任务数', () => {
       const overdueCount = store.getOverdueCount
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayStr()
       const expected = store.tasks.filter(t => t.date < today && !t.completed).length
       expect(overdueCount).toBe(expected)
     })
@@ -270,7 +271,7 @@ describe('TaskStore', () => {
     test('任务应该按逾期、重要性、日期排序', () => {
       store.resetAll()
       store.currentView = 'all'
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayStr()
       store.addTask({ title: '逾期任务', category: 'work', date: '2026-01-01' })
       store.addTask({ title: '重要任务', category: 'work', date: '2026-12-01', important: true })
       store.addTask({ title: '普通任务', category: 'work', date: '2026-12-01' })
