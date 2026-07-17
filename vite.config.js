@@ -4,7 +4,7 @@ import vue from '@vitejs/plugin-vue'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  base: './',
+  base: process.env.GITHUB_PAGES ? '/choyeon-todo/' : './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

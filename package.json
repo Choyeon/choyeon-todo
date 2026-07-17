@@ -18,7 +18,9 @@
     "electron:build:linux": "vite build && electron-builder --linux",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "build:pages": "cross-env GITHUB_PAGES=true vite build",
+    "deploy:pages": "cross-env GITHUB_PAGES=true vite build && gh-pages -d dist -b gh-pages"
   },
   "dependencies": {
     "@lucide/vue": "^1.23.0",
@@ -33,6 +35,7 @@
     "cross-env": "^7.0.3",
     "electron": "^43.0.0",
     "electron-builder": "^26.15.3",
+    "gh-pages": "^6.3.0",
     "jsdom": "^24.0.0",
     "sharp": "^0.35.3",
     "terser": "^5.49.0",

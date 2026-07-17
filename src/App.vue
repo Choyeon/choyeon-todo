@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container" :class="{ 'standalone': isStandaloneRoute }">
+  <div class="app-container" :class="{ 'standalone': isStandaloneRoute, 'web-mode': isWebMode }">
     <template v-if="!isStandaloneRoute">
-      <TitleBar />
+      <TitleBar v-if="!isWebMode" />
       <div class="main-body">
         <Sidebar v-if="!isMobile" />
         <main class="content-area">
@@ -164,6 +164,8 @@ const themeTransitionY = ref(0)
 const themeTransitionTarget = ref('dark')
 
 const isStandaloneRoute = computed(() => route.name === 'Debug' || route.name === 'PomodoroFullscreen' || route.name === 'PomodoroFab')
+
+const isWebMode = computed(() => !window.electronAPI)
 
 const showMobileCats = computed(() => route.name === 'Home')
 const showFab = computed(() => route.name === 'Home' || route.name === 'Calendar')
@@ -440,6 +442,10 @@ onUnmounted(() => {
 
 .app-container.standalone {
   flex-direction: column;
+}
+
+.app-container.web-mode .main-body {
+  padding-top: 0;
 }
 
 .main-body {
