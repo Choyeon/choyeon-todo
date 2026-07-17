@@ -4,240 +4,188 @@
 
 # Choyeon To Do
 
-**一款跨平台的任务管理应用**
+**A simple task manager that helps you plan your day**
 
 <p align="center">
-  <a href="#-功能亮点">功能亮点</a> ·
-  <a href="#-下载安装">下载安装</a> ·
-  <a href="#-在线体验">在线体验</a> ·
-  <a href="#-界面预览">界面预览</a> ·
-  <a href="#-使用指南">使用指南</a> ·
-  <a href="#-开发指南">开发指南</a>
+  <a href="#features">Features</a> ·
+  <a href="#download">Download</a> ·
+  <a href="#try-it-online">Try it online</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#getting-started">Getting started</a> ·
+  <a href="#development">Development</a>
 </p>
 
 [![Release](https://img.shields.io/github/v/release/Choyeon/choyeon-todo?style=flat-square&logo=github&label=Release)](https://github.com/Choyeon/choyeon-todo/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Web-0078D4?style=flat-square&logo=windows-terminal&logoColor=white)](#-下载安装)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Web-0078D4?style=flat-square&logo=windows-terminal&logoColor=white)](#download)
 [![Web Demo](https://img.shields.io/badge/demo-online-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)](https://chuyuchoyeon.github.io/choyeon-todo/)
 [![License](https://img.shields.io/github/license/Choyeon/choyeon-todo?style=flat-square)](./LICENSE)
+
+[中文](README.zh-CN.md) · [日本語](README.ja-JP.md)
 
 </div>
 
 ---
 
-## ✨ 功能亮点
+## Features
 
-### 🎯 智能任务管理
-- **自然语言输入** — 输入「明天下午3点 开会 重要」，自动识别日期、时间、优先级
-- **快速添加** — 一行输入，自动提取分类、标签、截止日期
-- **批量操作** — 全部完成、批量编辑、撤销删除
-- **优先级与分类** — 星标重要任务，自定义彩色分类和标签
-- **全局搜索** — 跨所有视图的即时搜索
-
-### 📅 日历与排程
-- **月视图** — 整月任务总览，日期点标记任务密度
-- **时间线视图** — 24 小时时间轴，精细排程当日任务
-- **拖拽调度** — 拖拽任务卡片修改时间
-- **智能视图** — 我的一天、明天、下周、已计划、重要、全部
-
-### 🍅 番茄钟
-- **三模式计时** — 专注 / 短休息 / 长休息，自动循环
-- **自定义时长** — 1~180 分钟自由设定
-- **任务绑定** — 将番茄钟绑定到具体任务
-- **全屏专注** — 沉浸式全屏专注模式（桌面端独有）
-- **番茄计数** — 可视化番茄完成进度
-
-### 📊 数据统计
-- **多维统计** — 完成率、连续天数、专注时长、番茄次数、逾期任务
-- **趋势可视化** — 创建 vs 完成折线图，7/14/30 天切换
-- **分类分布** — 环形饼图，待完成/已完成对比
-- **热力图** — 本周完成强度可视化
-- **柱状图** — 星期完成分布，发现高效日
-
-### 🎨 设计与体验
-- **毛玻璃质感** — 现代半透明 + 模糊效果
-- **亮色/暗色主题** — 跟随系统或手动切换
-- **流畅动画** — 计数动画、过渡效果、悬停反馈
-- **跨平台一致** — Windows / macOS / Web 统一体验
-- **多语言支持** — 简体中文 / English / 日本語
-- **PWA 离线支持** — Web 端可安装到桌面，离线可用
+- **Quick add** — Just type and press enter. Dates, times, and priorities are detected automatically as you type.
+- **Calendar view** — See your tasks on a month view or timeline. Drag tasks around to reschedule.
+- **Pomodoro timer** — Focus sessions with short and long breaks. Attach a timer to any task.
+- **Stats** — Track how many tasks you've finished, how long you've focused, and your streak.
+- **Light & dark themes** — Follows your system preference, or pick manually.
+- **Cross-platform** — Same experience on Windows, macOS, and web.
+- **Keyboard shortcuts** — Add, search, and navigate without touching the mouse.
+- **PWA support** — Install the web version to your desktop and use it offline.
+- **Available in** — 简体中文 · English · 日本語
 
 ---
 
-## 🖼 界面预览
+## Screenshots
 
-| 主界面 | 日历视图 |
+| Main view | Calendar |
 | :---: | :---: |
-| <img src="img/main.png" width="100%" alt="主界面" /> | <img src="img/🗓.png" width="100%" alt="日历视图" /> |
-| **数据统计** | **番茄钟** |
-| <img src="img/data.png" width="100%" alt="数据统计" /> | <img src="img/potato.png" width="100%" alt="番茄钟" /> |
+| <img src="img/main.png" width="100%" alt="Main view" /> | <img src="img/🗓.png" width="100%" alt="Calendar view" /> |
+| **Stats** | **Pomodoro** |
+| <img src="img/data.png" width="100%" alt="Stats" /> | <img src="img/potato.png" width="100%" alt="Pomodoro" /> |
 
 ---
 
-## 🚀 在线体验
+## Try it online
 
-Web 版本可直接在浏览器中体验：
+The web version is available here:
 
 **🌐 https://chuyuchoyeon.github.io/choyeon-todo/**
 
-> Web 版本不包含系统通知、托盘菜单和全局快捷键等 Electron 专属功能。
+> The web version doesn't include system notifications, tray menu, or global shortcuts.
 
 ---
 
-## 💾 下载安装
+## Download
 
-### 最新版本：v1.0.1
+### Latest release: v1.0.1
 
-| 平台 | 下载方式 |
-|------|----------|
-| **Windows** | [安装版 (Setup)](https://github.com/Choyeon/choyeon-todo/releases/latest) · [便携版 (Portable)](https://github.com/Choyeon/choyeon-todo/releases/latest) |
-| **macOS** | [DMG / ZIP](https://github.com/Choyeon/choyeon-todo/releases/latest)（支持 Intel / Apple Silicon） |
+| Platform | Download |
+|----------|----------|
+| **Windows** | [Setup](https://github.com/Choyeon/choyeon-todo/releases/latest) · [Portable](https://github.com/Choyeon/choyeon-todo/releases/latest) |
+| **macOS** | [DMG / ZIP](https://github.com/Choyeon/choyeon-todo/releases/latest) (Intel & Apple Silicon) |
 | **Linux** | [tar.gz](https://github.com/Choyeon/choyeon-todo/releases/latest) |
 
-所有版本均在 [Releases 页面](https://github.com/Choyeon/choyeon-todo/releases) 提供下载。
+All downloads are on the [Releases page](https://github.com/Choyeon/choyeon-todo/releases).
 
-### 安装说明
+### Install notes
 
 **Windows**
-- 安装版：运行 Setup 程序，按照向导完成安装
-- 便携版：解压后直接运行 `Choyeon To Do.exe`
+- Setup: run the installer and follow the steps
+- Portable: extract and run `Choyeon To Do.exe` directly
 
 **macOS**
-- 打开 DMG 文件，将应用拖入 Applications 文件夹
-- 首次打开如遇安全提示，请在「系统设置 → 隐私与安全性」中允许打开
+- Open the DMG and drag the app into Applications
+- If you see a security warning, go to System Settings → Privacy & Security and click "Open Anyway"
 
 ---
 
-## 📖 使用指南
+## Getting started
 
-### 快速开始
+1. **Add a task** — Type in the input box at the top and press Enter
+2. **Smart detection** — Dates, times, priorities, and categories are picked up automatically
+   - Example: `Meeting tomorrow 3pm #work important`
+3. **Manage tasks** — Click the checkbox to complete, click the text to edit details
+4. **Switch views** — Use the sidebar to navigate between different views
 
-1. **添加任务** — 在顶部输入框中输入任务内容，按回车添加
-2. **智能识别** — 输入时自动识别日期、时间、优先级和分类
-   - 示例：`明天下午3点 开会 #工作 重要`
-3. **管理任务** — 点击复选框标记完成，点击任务内容编辑详情
-4. **切换视图** — 使用左侧边栏在不同视图间切换
+### Keyboard shortcuts
 
-### 键盘快捷键
-
-| 快捷键 | 功能 |
-|--------|------|
-| `Ctrl/Cmd + N` | 新建任务 |
-| `Ctrl/Cmd + F` | 搜索任务 |
-| `Ctrl/Cmd + ,` | 打开设置 |
-| `Esc` | 关闭弹窗 / 取消编辑 |
-
-> 更多快捷键请在应用设置中查看。
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + N` | New task |
+| `Ctrl/Cmd + F` | Search tasks |
+| `Ctrl/Cmd + ,` | Open settings |
+| `Esc` | Close dialog / cancel editing |
 
 ---
 
-## 🔧 开发指南
+## Development
 
-### 环境要求
+### Requirements
 
 - Node.js >= 18
 - npm >= 9
 
-### 快速开始
+### Setup
 
 ```bash
-# 克隆仓库
+# Clone the repo
 git clone https://github.com/Choyeon/choyeon-todo.git
 cd choyeon-todo
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 开发模式 (Web)
+# Dev mode (web)
 npm run dev
 
-# 开发模式 (Electron 桌面端)
+# Dev mode (Electron)
 npm run electron:dev
 ```
 
-### 构建
+### Build
 
 ```bash
-# 构建 Web 版本
+# Build web version
 npm run build
 
-# 构建 Windows 版本（Windows 上运行）
+# Build Windows (run on Windows)
 npm run electron:build:win
 
-# 构建 macOS 版本（需在 macOS 上运行）
+# Build macOS (run on macOS)
 npm run electron:build:mac
 
-# 构建 Linux 版本
+# Build Linux
 npm run electron:build:linux
 ```
 
-构建产物位于 `app-build/` 目录。
+Build output goes to `app-build/`.
 
-### 测试
+### Testing
 
 ```bash
-# 运行单元测试
+# Run unit tests
 npm run test:run
 
-# 测试覆盖率
+# Coverage
 npm run test:coverage
 ```
 
-### 技术栈
+### Tech stack
 
-| 层级 | 技术 |
-|------|------|
-| 桌面框架 | Electron 43 |
-| 前端框架 | Vue 3.5 + Vite 8 |
-| 状态管理 | Pinia 3 |
-| 路由 | Vue Router 4 |
-| 测试 | Vitest 4 |
-| 打包 | electron-builder 26 |
-| 图标 | Lucide Icons |
-| PWA | vite-plugin-pwa |
-| 国际化 | vue-i18n |
+Vue 3 · Vite · Pinia · Vue Router · Electron · electron-builder · Vitest · Lucide Icons · vue-i18n · vite-plugin-pwa
 
 ---
 
-## 📝 更新日志
+## Changelog
 
 ### v1.0.1 — 2026-07-18
 
-**优化**
-- README 结构优化，侧重软件介绍，精简技术栈篇幅
-- 新增使用指南和安装说明
-- About 页面优化，优雅展示软件特色
-- GitHub Pages 部署流程优化
-
-**修复**
-- 修复 Windows 打包路径过长导致的权限错误
-- 统一已完成任务样式，保持三视图一致
+- README restructure, more focus on the app itself
+- About page copy updated
+- Fixed: Windows build path issue
+- Fixed: Completed task styling consistency across views
 
 ### v1.0.0 — 2026-07-18
 
-首次正式发布。
+Initial release.
 
-**核心功能**
-- 智能任务管理（自然语言解析）
-- 日历视图（月视图 + 时间线）
-- 番茄钟（三模式 + 全屏专注）
-- 数据统计（折线图、饼图、热力图、柱状图）
-- 系统通知与任务提醒
-- 亮色/暗色主题切换
-- PWA 离线支持
-- 多语言（简体中文 / English / 日本語）
-
-**安全**
-- IPC 发送方校验
-- stateSync 字段白名单
-- 颜色格式校验
-
-**修复**
-- 多处内存泄漏（IPC 监听器、AudioContext、定时器）
-- 删除线样式优化
-- 三视图布局统一
+Core features:
+- Smart task input with natural language parsing
+- Calendar (month view + timeline)
+- Pomodoro timer (3 modes + fullscreen focus)
+- Statistics (line chart, pie chart, heatmap, bar chart)
+- System notifications and reminders
+- Light / dark theme
+- PWA offline support
+- 3 languages: 简体中文 / English / 日本語
 
 ---
 
-## 📄 许可证
+## License
 
-[MIT License](./LICENSE) © Choyeon
+[MIT](./LICENSE) © Choyeon

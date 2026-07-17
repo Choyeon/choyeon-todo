@@ -335,18 +335,18 @@ export default {
   },
   about: {
     title: 'について',
-    tagline: '毎日を整理するモダンなクロスプラットフォームタスク管理アプリ',
-    smartTask: 'スマートタスク管理',
-    smartTaskDesc: '自然言語入力、時間と優先度を自動検出',
-    calendarView: 'カレンダービュー',
-    calendarViewDesc: '月ビューとタイムラインで予定を把握',
-    pomodoro: 'ポモドーロ集中',
-    pomodoroDesc: '没頭型集中モードで生産性向上',
-    analytics: 'データ分析',
-    analyticsDesc: '多次元可視化分析でリズムを発見',
+    tagline: 'シンプルで使いやすいタスク管理ツール',
+    smartTask: 'クイック追加',
+    smartTaskDesc: '入力時に日付、時間、優先度を自動検出',
+    calendarView: 'カレンダー',
+    calendarViewDesc: '月ビューとタイムラインで予定を確認',
+    pomodoro: 'ポモドーロ',
+    pomodoroDesc: '集中タイマーで作業を効率化',
+    analytics: '統計',
+    analyticsDesc: 'どれだけ達成できたか確認',
     madeWith: '心を込めて',
     author: 'Choyeon',
-    feedback: 'フィードバックと提案'
+    feedback: 'フィードバック'
   },
   debug: {
     title: 'デバッグツール',
