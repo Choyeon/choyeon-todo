@@ -26,7 +26,7 @@
       </div>
       <h2 class="about-app-name">Choyeon To Do</h2>
       <p class="about-tagline">{{ $t('about.tagline') }}</p>
-      <p class="about-version">{{ $t('settings.version') }} 1.0.0</p>
+      <p class="about-version">{{ $t('settings.version') }} 1.0.1</p>
     </div>
 
     <div class="about-highlights">
