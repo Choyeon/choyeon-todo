@@ -44,7 +44,7 @@ describe('TaskStore', () => {
         notes: '测试备注'
       })
       expect(store.tasks.length).toBe(initialCount + 1)
-      const newTask = store.tasks.find(t => t.title === '测试任务')
+      const newTask = store.tasks.find((t) => t.title === '测试任务')
       expect(newTask).toBeDefined()
       expect(newTask.title).toBe('测试任务')
       expect(newTask.category).toBe('work')
@@ -72,7 +72,7 @@ describe('TaskStore', () => {
         title: '更新后的标题',
         important: !task.important
       })
-      const updatedTask = store.tasks.find(t => t.id === task.id)
+      const updatedTask = store.tasks.find((t) => t.id === task.id)
       expect(updatedTask.title).toBe('更新后的标题')
       expect(updatedTask.important).toBe(!task.important)
       expect(updatedTask.date).toBe(task.date)
@@ -83,18 +83,18 @@ describe('TaskStore', () => {
       const initialCount = store.tasks.length
       store.deleteTask(task.id)
       expect(store.tasks.length).toBe(initialCount - 1)
-      expect(store.tasks.find(t => t.id === task.id)).toBeUndefined()
+      expect(store.tasks.find((t) => t.id === task.id)).toBeUndefined()
     })
 
     test('切换任务完成状态', () => {
-      const task = store.tasks.find(t => !t.completed)
+      const task = store.tasks.find((t) => !t.completed)
       expect(task.completed).toBe(false)
       store.toggleComplete(task.id)
-      const updated = store.tasks.find(t => t.id === task.id)
+      const updated = store.tasks.find((t) => t.id === task.id)
       expect(updated.completed).toBe(true)
       expect(updated.completedAt).toBeDefined()
       store.toggleComplete(task.id)
-      const reverted = store.tasks.find(t => t.id === task.id)
+      const reverted = store.tasks.find((t) => t.id === task.id)
       expect(reverted.completed).toBe(false)
     })
 
@@ -102,7 +102,7 @@ describe('TaskStore', () => {
       const task = store.tasks[0]
       const original = task.important
       store.toggleImportant(task.id)
-      const updated = store.tasks.find(t => t.id === task.id)
+      const updated = store.tasks.find((t) => t.id === task.id)
       expect(updated.important).toBe(!original)
     })
   })
@@ -130,7 +130,7 @@ describe('TaskStore', () => {
     })
 
     test('更新分类', () => {
-      const cat = store.categories.find(c => c.id !== 'other')
+      const cat = store.categories.find((c) => c.id !== 'other')
       const originalName = cat.name
       store.updateCategory(cat.id, {
         name: '更新后的分类',
@@ -153,9 +153,9 @@ describe('TaskStore', () => {
       })
       const initialTaskCount = store.tasks.length
       store.deleteCategory(cat.id, { moveTasks: true })
-      expect(store.categories.find(c => c.id === cat.id)).toBeUndefined()
+      expect(store.categories.find((c) => c.id === cat.id)).toBeUndefined()
       expect(store.tasks.length).toBe(initialTaskCount)
-      const movedTask = store.tasks.find(t => t.title === '测试任务')
+      const movedTask = store.tasks.find((t) => t.title === '测试任务')
       expect(movedTask.category).toBe('other')
     })
 
@@ -171,9 +171,9 @@ describe('TaskStore', () => {
       })
       const initialTaskCount = store.tasks.length
       store.deleteCategory(cat.id, { moveTasks: false })
-      expect(store.categories.find(c => c.id === cat.id)).toBeUndefined()
+      expect(store.categories.find((c) => c.id === cat.id)).toBeUndefined()
       expect(store.tasks.length).toBe(initialTaskCount - 1)
-      expect(store.tasks.find(t => t.title === '测试任务')).toBeUndefined()
+      expect(store.tasks.find((t) => t.title === '测试任务')).toBeUndefined()
     })
 
     test('不能删除默认的other分类', () => {
@@ -186,39 +186,39 @@ describe('TaskStore', () => {
   describe('任务统计', () => {
     test('获取任务总数', () => {
       const count = store.getCount('all')
-      expect(count).toBe(store.tasks.filter(t => !t.completed).length)
+      expect(count).toBe(store.tasks.filter((t) => !t.completed).length)
     })
 
     test('获取今日任务数', () => {
       const today = getTodayStr()
       const todayCount = store.getCount('today')
-      const expected = store.tasks.filter(t => t.date === today && !t.completed).length
+      const expected = store.tasks.filter((t) => t.date === today && !t.completed).length
       expect(todayCount).toBe(expected)
     })
 
     test('获取重要任务数', () => {
       const importantCount = store.getCount('important')
-      const expected = store.tasks.filter(t => t.important && !t.completed).length
+      const expected = store.tasks.filter((t) => t.important && !t.completed).length
       expect(importantCount).toBe(expected)
     })
 
     test('获取已计划任务数', () => {
       const plannedCount = store.getCount('planned')
       const today = getTodayStr()
-      const expected = store.tasks.filter(t => t.date >= today && !t.completed).length
+      const expected = store.tasks.filter((t) => t.date >= today && !t.completed).length
       expect(plannedCount).toBe(expected)
     })
 
     test('获取分类任务数', () => {
       const workCount = store.getCategoryCount('work')
-      const expected = store.tasks.filter(t => t.category === 'work').length
+      const expected = store.tasks.filter((t) => t.category === 'work').length
       expect(workCount).toBe(expected)
     })
 
     test('获取逾期任务数', () => {
       const overdueCount = store.getOverdueCount
       const today = getTodayStr()
-      const expected = store.tasks.filter(t => t.date < today && !t.completed).length
+      const expected = store.tasks.filter((t) => t.date < today && !t.completed).length
       expect(overdueCount).toBe(expected)
     })
   })
@@ -278,10 +278,10 @@ describe('TaskStore', () => {
       store.addTask({ title: '今天任务', category: 'work', date: today })
 
       const sorted = store.filteredTasks
-      expect(sorted.find(t => t.title === '逾期任务')).toBeDefined()
-      expect(sorted.find(t => t.title === '重要任务')).toBeDefined()
-      expect(sorted.find(t => t.title === '普通任务')).toBeDefined()
-      expect(sorted.find(t => t.title === '今天任务')).toBeDefined()
+      expect(sorted.find((t) => t.title === '逾期任务')).toBeDefined()
+      expect(sorted.find((t) => t.title === '重要任务')).toBeDefined()
+      expect(sorted.find((t) => t.title === '普通任务')).toBeDefined()
+      expect(sorted.find((t) => t.title === '今天任务')).toBeDefined()
     })
   })
 

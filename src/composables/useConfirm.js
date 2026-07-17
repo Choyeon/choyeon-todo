@@ -1,12 +1,13 @@
 import { ref } from 'vue'
+import { i18n } from '../i18n'
 
 // 全局确认弹窗状态管理
 // 替代原生 confirm()，避免在 Electron 中阻塞主进程
 const visible = ref(false)
 const title = ref('')
 const message = ref('')
-const confirmLabel = ref('确定')
-const cancelLabel = ref('取消')
+const confirmLabel = ref(i18n.global.t('common.confirm'))
+const cancelLabel = ref(i18n.global.t('common.cancel'))
 const danger = ref(false)
 let resolver = null
 
@@ -25,8 +26,8 @@ export const useConfirm = () => {
 
     title.value = options.title || ''
     message.value = options.message || ''
-    confirmLabel.value = options.confirmLabel || '确定'
-    cancelLabel.value = options.cancelLabel || '取消'
+    confirmLabel.value = options.confirmLabel || i18n.global.t('common.confirm')
+    cancelLabel.value = options.cancelLabel || i18n.global.t('common.cancel')
     danger.value = !!options.danger
     visible.value = true
 

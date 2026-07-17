@@ -7,10 +7,10 @@
         <Search class="search-icon" :size="16" />
         <input
           type="text"
-          placeholder="搜索任务..."
+          :placeholder="$t('nav.search')"
           :value="taskStore.searchQuery"
           @input="onSearchInput"
-          aria-label="搜索任务"
+          :aria-label="$t('nav.searchAria')"
         />
       </div>
     </div>
@@ -21,72 +21,84 @@
           class="nav-btn"
           :class="{ active: isActive('today') }"
           @click="navigateTo('today')"
-          :aria-label="isActive('today') ? '我的一天，当前选中' : '我的一天'"
+          :aria-label="isActive('today') ? `${$t('nav.myDay')}，${$t('common.currentlySelected')}` : $t('nav.myDay')"
         >
           <Sun :size="20" />
-          <span class="nav-label">我的一天</span>
-          <span class="nav-count" :key="'today-' + taskStore.getCount('today')">{{ taskStore.getCount('today') }}</span>
-          <span class="nav-tooltip">我的一天</span>
+          <span class="nav-label">{{ $t('nav.myDay') }}</span>
+          <span class="nav-count" :key="'today-' + taskStore.getCount('today')">{{
+            taskStore.getCount('today')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.myDay') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: isActive('tomorrow') }"
           @click="navigateTo('tomorrow')"
-          :aria-label="isActive('tomorrow') ? '明天，当前选中' : '明天'"
+          :aria-label="isActive('tomorrow') ? `${$t('nav.tomorrow')}，${$t('common.currentlySelected')}` : $t('nav.tomorrow')"
         >
           <Sunrise :size="20" />
-          <span class="nav-label">明天</span>
-          <span class="nav-count" :key="'tomorrow-' + taskStore.getCount('tomorrow')">{{ taskStore.getCount('tomorrow') }}</span>
-          <span class="nav-tooltip">明天</span>
+          <span class="nav-label">{{ $t('nav.tomorrow') }}</span>
+          <span class="nav-count" :key="'tomorrow-' + taskStore.getCount('tomorrow')">{{
+            taskStore.getCount('tomorrow')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.tomorrow') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: isActive('week') }"
           @click="navigateTo('week')"
-          :aria-label="isActive('week') ? '下周，当前选中' : '下周'"
+          :aria-label="isActive('week') ? `${$t('nav.nextWeek')}，${$t('common.currentlySelected')}` : $t('nav.nextWeek')"
         >
           <CalendarRange :size="20" />
-          <span class="nav-label">下周</span>
-          <span class="nav-count" :key="'week-' + taskStore.getCount('week')">{{ taskStore.getCount('week') }}</span>
-          <span class="nav-tooltip">下周</span>
+          <span class="nav-label">{{ $t('nav.nextWeek') }}</span>
+          <span class="nav-count" :key="'week-' + taskStore.getCount('week')">{{
+            taskStore.getCount('week')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.nextWeek') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: isActive('important') }"
           @click="navigateTo('important')"
-          :aria-label="isActive('important') ? '重要，当前选中' : '重要'"
+          :aria-label="isActive('important') ? `${$t('nav.important')}，${$t('common.currentlySelected')}` : $t('nav.important')"
         >
           <Star :size="20" />
-          <span class="nav-label">重要</span>
-          <span class="nav-count" :key="'important-' + taskStore.getCount('important')">{{ taskStore.getCount('important') }}</span>
-          <span class="nav-tooltip">重要</span>
+          <span class="nav-label">{{ $t('nav.important') }}</span>
+          <span class="nav-count" :key="'important-' + taskStore.getCount('important')">{{
+            taskStore.getCount('important')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.important') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: isActive('planned') }"
           @click="navigateTo('planned')"
-          :aria-label="isActive('planned') ? '已计划，当前选中' : '已计划'"
+          :aria-label="isActive('planned') ? `${$t('nav.planned')}，${$t('common.currentlySelected')}` : $t('nav.planned')"
         >
           <Calendar :size="20" />
-          <span class="nav-label">已计划</span>
-          <span class="nav-count" :key="'planned-' + taskStore.getCount('planned')">{{ taskStore.getCount('planned') }}</span>
-          <span class="nav-tooltip">已计划</span>
+          <span class="nav-label">{{ $t('nav.planned') }}</span>
+          <span class="nav-count" :key="'planned-' + taskStore.getCount('planned')">{{
+            taskStore.getCount('planned')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.planned') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: isActive('all') }"
           @click="navigateTo('all')"
-          :aria-label="isActive('all') ? '全部任务，当前选中' : '全部任务'"
+          :aria-label="isActive('all') ? `${$t('nav.allTasks')}，${$t('common.currentlySelected')}` : $t('nav.allTasks')"
         >
           <ListTodo :size="20" />
-          <span class="nav-label">全部任务</span>
-          <span class="nav-count" :key="'all-' + taskStore.getCount('all')">{{ taskStore.getCount('all') }}</span>
-          <span class="nav-tooltip">全部任务</span>
+          <span class="nav-label">{{ $t('nav.allTasks') }}</span>
+          <span class="nav-count" :key="'all-' + taskStore.getCount('all')">{{
+            taskStore.getCount('all')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.allTasks') }}</span>
         </button>
       </div>
 
@@ -95,52 +107,54 @@
           class="nav-btn"
           :class="{ active: $route.name === 'Completed' }"
           @click="$router.push('/completed')"
-          :aria-label="$route.name === 'Completed' ? '已完成，当前选中' : '已完成'"
+          :aria-label="$route.name === 'Completed' ? `${$t('nav.completed')}，${$t('common.currentlySelected')}` : $t('nav.completed')"
         >
           <CheckCircle :size="20" />
-          <span class="nav-label">已完成</span>
-          <span class="nav-count" :key="'completed-' + taskStore.getCount('completed')">{{ taskStore.getCount('completed') }}</span>
-          <span class="nav-tooltip">已完成</span>
+          <span class="nav-label">{{ $t('nav.completed') }}</span>
+          <span class="nav-count" :key="'completed-' + taskStore.getCount('completed')">{{
+            taskStore.getCount('completed')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.completed') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: $route.name === 'Calendar' }"
           @click="$router.push('/calendar')"
-          :aria-label="$route.name === 'Calendar' ? '日历，当前选中' : '日历'"
+          :aria-label="$route.name === 'Calendar' ? `${$t('nav.calendar')}，${$t('common.currentlySelected')}` : $t('nav.calendar')"
         >
           <CalendarDays :size="20" />
-          <span class="nav-label">日历</span>
-          <span class="nav-tooltip">日历</span>
+          <span class="nav-label">{{ $t('nav.calendar') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.calendar') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: $route.name === 'Stats' }"
           @click="$router.push('/stats')"
-          :aria-label="$route.name === 'Stats' ? '统计，当前选中' : '统计'"
+          :aria-label="$route.name === 'Stats' ? `${$t('nav.stats')}，${$t('common.currentlySelected')}` : $t('nav.stats')"
         >
           <BarChart3 :size="20" />
-          <span class="nav-label">统计</span>
-          <span class="nav-tooltip">统计</span>
+          <span class="nav-label">{{ $t('nav.stats') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.stats') }}</span>
         </button>
 
         <button
           class="nav-btn"
           :class="{ active: $route.name === 'Pomodoro' }"
           @click="$router.push('/pomodoro')"
-          :aria-label="$route.name === 'Pomodoro' ? '番茄钟，当前选中' : '番茄钟'"
+          :aria-label="$route.name === 'Pomodoro' ? `${$t('nav.pomodoro')}，${$t('common.currentlySelected')}` : $t('nav.pomodoro')"
         >
           <Timer :size="20" />
-          <span class="nav-label">番茄钟</span>
-          <span class="nav-tooltip">番茄钟</span>
+          <span class="nav-label">{{ $t('nav.pomodoro') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.pomodoro') }}</span>
         </button>
       </div>
 
       <div class="nav-divider"></div>
 
       <div class="nav-section">
-        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">分类</span>
+        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">{{ $t('nav.categories') }}</span>
         <button
           v-for="cat in taskStore.categories"
           :key="cat.id"
@@ -148,12 +162,16 @@
           :class="{ active: isCategoryActive(cat.id) }"
           @click="navigateToCategory(cat.id)"
           @contextmenu.prevent="onCategoryContextMenu($event, cat)"
-          :aria-label="isCategoryActive(cat.id) ? `${cat.name}，当前选中` : cat.name"
+          :aria-label="isCategoryActive(cat.id) ? `${cat.name}，${$t('common.currentlySelected')}` : cat.name"
         >
           <component :is="getIcon(cat.icon)" :size="20" />
           <span class="cat-dot" :style="{ background: cat.color }"></span>
           <span class="nav-label">{{ cat.name }}</span>
-          <span class="nav-count" :key="'cat-' + cat.id + '-' + taskStore.getCategoryCount(cat.id)">{{ taskStore.getCategoryCount(cat.id) }}</span>
+          <span
+            class="nav-count"
+            :key="'cat-' + cat.id + '-' + taskStore.getCategoryCount(cat.id)"
+            >{{ taskStore.getCategoryCount(cat.id) }}</span
+          >
           <span class="nav-tooltip">{{ cat.name }}</span>
         </button>
       </div>
@@ -161,7 +179,7 @@
       <div class="nav-divider" v-show="taskStore.tags.length > 0"></div>
 
       <div class="nav-section" v-show="taskStore.tags.length > 0">
-        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">标签</span>
+        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">{{ $t('nav.tags') }}</span>
         <button
           v-for="tag in taskStore.tags"
           :key="tag.id"
@@ -169,12 +187,14 @@
           :class="{ active: isTagActive(tag.id) }"
           @click="navigateToTag(tag.id)"
           @contextmenu.prevent="onTagContextMenu($event, tag)"
-          :aria-label="isTagActive(tag.id) ? `${tag.name}，当前选中` : tag.name"
+          :aria-label="isTagActive(tag.id) ? `${tag.name}，${$t('common.currentlySelected')}` : tag.name"
         >
           <Tag :size="20" />
           <span class="tag-dot" :style="{ background: tag.color }"></span>
           <span class="nav-label">{{ tag.name }}</span>
-          <span class="nav-count" :key="'tag-' + tag.id + '-' + taskStore.getTagCount(tag.id)">{{ taskStore.getTagCount(tag.id) }}</span>
+          <span class="nav-count" :key="'tag-' + tag.id + '-' + taskStore.getTagCount(tag.id)">{{
+            taskStore.getTagCount(tag.id)
+          }}</span>
           <span class="nav-tooltip">{{ tag.name }}</span>
         </button>
       </div>
@@ -185,21 +205,23 @@
         class="nav-btn"
         :class="{ active: $route.name === 'Settings' || $route.name === 'Theme' }"
         @click="$router.push('/settings')"
-        aria-label="设置"
+        :aria-label="$t('nav.settings')"
       >
         <Settings :size="20" />
-        <span class="nav-label">设置</span>
-        <span class="nav-tooltip">设置</span>
+        <span class="nav-label">{{ $t('nav.settings') }}</span>
+        <span class="nav-tooltip">{{ $t('nav.settings') }}</span>
       </button>
       <button
         class="nav-btn collapse-toggle-btn"
         @click="settingsStore.toggleSidebar()"
-        :aria-label="settingsStore.sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'"
+        :aria-label="settingsStore.sidebarCollapsed ? $t('sidebar.expandSidebar') : $t('sidebar.collapseSidebar')"
       >
         <ChevronLeft v-if="!settingsStore.sidebarCollapsed" :size="20" />
         <ChevronRight v-else :size="20" />
-        <span class="nav-label">{{ settingsStore.sidebarCollapsed ? '展开' : '折叠' }}</span>
-        <span class="nav-tooltip">{{ settingsStore.sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏' }}</span>
+        <span class="nav-label">{{ settingsStore.sidebarCollapsed ? $t('sidebar.expand') : $t('sidebar.collapse') }}</span>
+        <span class="nav-tooltip">{{
+          settingsStore.sidebarCollapsed ? $t('sidebar.expandSidebar') : $t('sidebar.collapseSidebar')
+        }}</span>
       </button>
     </div>
 
@@ -218,7 +240,7 @@
               @click="handleContextEdit"
             >
               <Pencil :size="14" />
-              <span>编辑分类</span>
+              <span>{{ $t('categories.editCategory') }}</span>
             </button>
             <button
               v-if="contextMenu.category && contextMenu.category.id !== 'other'"
@@ -226,30 +248,21 @@
               @click="handleContextDelete"
             >
               <Trash2 :size="14" />
-              <span>删除分类</span>
+              <span>{{ $t('categories.deleteCategory') }}</span>
             </button>
-            <button
-              class="context-menu-item"
-              @click="handleContextAdd"
-            >
+            <button class="context-menu-item" @click="handleContextAdd">
               <Plus :size="14" />
-              <span>添加新分类</span>
+              <span>{{ $t('categories.addNew') }}</span>
             </button>
           </template>
           <template v-else-if="contextMenu.type === 'tag'">
-            <button
-              class="context-menu-item"
-              @click="handleTagEdit"
-            >
+            <button class="context-menu-item" @click="handleTagEdit">
               <Pencil :size="14" />
-              <span>编辑标签</span>
+              <span>{{ $t('tags.editTag') }}</span>
             </button>
-            <button
-              class="context-menu-item danger"
-              @click="handleTagDelete"
-            >
+            <button class="context-menu-item danger" @click="handleTagDelete">
               <Trash2 :size="14" />
-              <span>删除标签</span>
+              <span>{{ $t('tags.deleteTag') }}</span>
             </button>
           </template>
         </div>
@@ -261,18 +274,42 @@
 <script setup>
 import { reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useConfirm } from '../composables/useConfirm'
 import {
-  Sun, Star, Calendar, ListTodo, CheckCircle, CalendarDays, BarChart3, Timer,
-  Settings, Search, Briefcase, User, BookOpen, ShoppingCart,
-  Heart, MoreHorizontal, Folder, Pencil, Trash2, Plus,
-  ChevronLeft, ChevronRight, Tag, Sunrise, CalendarRange
+  Sun,
+  Star,
+  Calendar,
+  ListTodo,
+  CheckCircle,
+  CalendarDays,
+  BarChart3,
+  Timer,
+  Settings,
+  Search,
+  Briefcase,
+  User,
+  BookOpen,
+  ShoppingCart,
+  Heart,
+  MoreHorizontal,
+  Folder,
+  Pencil,
+  Trash2,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Tag,
+  Sunrise,
+  CalendarRange,
+  AlertTriangle
 } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
 const { confirm: confirmDialog } = useConfirm()
@@ -287,13 +324,13 @@ const contextMenu = reactive({
 })
 
 const iconMap = {
-  'briefcase': Briefcase,
-  'user': User,
+  briefcase: Briefcase,
+  user: User,
   'book-open': BookOpen,
   'shopping-cart': ShoppingCart,
-  'heart': Heart,
+  heart: Heart,
   'more-horizontal': MoreHorizontal,
-  'folder': Folder
+  folder: Folder
 }
 
 const getIcon = (iconName) => {
@@ -365,44 +402,51 @@ const handleContextEdit = () => {
   const cat = contextMenu.category
   closeContextMenu()
   router.push('/settings')
-  pendingTimers.push(setTimeout(() => {
-    window.dispatchEvent(new CustomEvent('edit-category', { detail: cat }))
-  }, 100))
+  pendingTimers.push(
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('edit-category', { detail: cat }))
+    }, 100)
+  )
 }
 
 const handleContextDelete = () => {
   const cat = contextMenu.category
   closeContextMenu()
   router.push('/settings')
-  pendingTimers.push(setTimeout(() => {
-    window.dispatchEvent(new CustomEvent('delete-category', { detail: cat }))
-  }, 100))
+  pendingTimers.push(
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('delete-category', { detail: cat }))
+    }, 100)
+  )
 }
 
 const handleContextAdd = () => {
   closeContextMenu()
   router.push('/settings')
-  pendingTimers.push(setTimeout(() => {
-    window.dispatchEvent(new CustomEvent('add-category'))
-  }, 100))
+  pendingTimers.push(
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('add-category'))
+    }, 100)
+  )
 }
 
 const handleTagEdit = () => {
   const tag = contextMenu.tag
   closeContextMenu()
   router.push('/settings')
-  pendingTimers.push(setTimeout(() => {
-    window.dispatchEvent(new CustomEvent('edit-tag', { detail: tag }))
-  }, 100))
+  pendingTimers.push(
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('edit-tag', { detail: tag }))
+    }, 100)
+  )
 }
 
 const handleTagDelete = async () => {
   const tag = contextMenu.tag
   closeContextMenu()
-  // 安全最佳实践：使用自定义模态框替代原生 confirm()，避免在 Electron 中阻塞主进程
   const confirmed = await confirmDialog({
-    message: `确定要删除标签"${tag.name}"吗？`,
-    confirmLabel: '删除',
+    message: t('tags.deleteConfirm', { name: tag.name }),
+    confirmLabel: t('common.delete'),
     danger: true
   })
   if (confirmed) {
@@ -515,7 +559,9 @@ onUnmounted(() => {
   color: var(--color-text-secondary);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--transition-micro), color var(--transition-micro);
+  transition:
+    background var(--transition-micro),
+    color var(--transition-micro);
   flex-shrink: 0;
 }
 
@@ -829,7 +875,9 @@ onUnmounted(() => {
   pointer-events: none;
   opacity: 0;
   z-index: var(--z-tooltip);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.06);
   border: none;
   transition: opacity var(--transition-smooth);
 }
@@ -875,7 +923,9 @@ onUnmounted(() => {
   background: var(--color-surface-elevated);
   border: none;
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.08);
   padding: 6px;
   min-width: 160px;
   transform-origin: top left;

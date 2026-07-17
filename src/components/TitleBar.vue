@@ -1,84 +1,165 @@
 <template>
-  <div 
-    class="title-bar"
-    :class="[`title-bar-${currentPlatform}`]"
-    @dblclick="handleToggleMaximize"
-  >
+  <div class="title-bar" :class="[`title-bar-${currentPlatform}`]" @dblclick="handleToggleMaximize">
     <div class="title-bar-left">
       <div v-if="currentPlatform === 'darwin'" class="mac-controls">
-        <button class="mac-btn mac-btn-close" @click="handleClose" title="关闭" aria-label="关闭">
+        <button class="mac-btn mac-btn-close" @click="handleClose" :title="t('titlebar.close')" :aria-label="t('titlebar.close')">
           <span class="mac-btn-inner"></span>
         </button>
-        <button class="mac-btn mac-btn-min" @click="handleMinimize" title="最小化" aria-label="最小化">
+        <button
+          class="mac-btn mac-btn-min"
+          @click="handleMinimize"
+          :title="t('titlebar.minimize')"
+          :aria-label="t('titlebar.minimize')"
+        >
           <span class="mac-btn-inner"></span>
         </button>
-        <button class="mac-btn mac-btn-max" @click="handleToggleMaximize" :title="isMaximized ? '还原' : '最大化'" :aria-label="isMaximized ? '还原' : '最大化'">
+        <button
+          class="mac-btn mac-btn-max"
+          @click="handleToggleMaximize"
+          :title="isMaximized ? t('titlebar.restore') : t('titlebar.maximize')"
+          :aria-label="isMaximized ? t('titlebar.restore') : t('titlebar.maximize')"
+        >
           <span class="mac-btn-inner"></span>
         </button>
       </div>
-      
+
       <div v-if="currentPlatform === 'linux'" class="linux-controls-left">
-        <button class="linux-btn linux-btn-menu" @click="handleMenu" title="菜单" aria-label="菜单">
+        <button class="linux-btn linux-btn-menu" @click="handleMenu" :title="t('titlebar.menu')" :aria-label="t('titlebar.menu')">
           <svg width="16" height="14" viewBox="0 0 16 14" fill="none">
-            <path d="M2 3H14M2 7H14M2 11H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path
+              d="M2 3H14M2 7H14M2 11H14"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
-      
+
       <div class="title-bar-drag">
         <div class="title-bar-brand">
           <div class="brand-icon">
             <svg width="16" height="16" viewBox="0 0 512 512">
-              <rect width="512" height="512" rx="112" fill="#4C8BF5"/>
-              <text x="256" y="320" font-family="'Segoe UI',Arial,sans-serif" font-size="200" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="-4">ToDo</text>
+              <rect width="512" height="512" rx="112" fill="#4C8BF5" />
+              <text
+                x="256"
+                y="320"
+                font-family="'Segoe UI',Arial,sans-serif"
+                font-size="200"
+                font-weight="700"
+                fill="#ffffff"
+                text-anchor="middle"
+                letter-spacing="-4"
+              >
+                ToDo
+              </text>
             </svg>
           </div>
           <span class="title-bar-text">Choyeon To Do</span>
         </div>
       </div>
     </div>
-    
+
     <div class="title-bar-right">
       <div v-if="currentPlatform === 'win32'" class="win-controls">
-        <button class="win-btn win-btn-min" @click="handleMinimize" title="最小化" aria-label="最小化">
+        <button
+          class="win-btn win-btn-min"
+          @click="handleMinimize"
+          :title="t('titlebar.minimize')"
+          :aria-label="t('titlebar.minimize')"
+        >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <rect x="1" y="4.5" width="8" height="1" fill="currentColor"/>
+            <rect x="1" y="4.5" width="8" height="1" fill="currentColor" />
           </svg>
         </button>
-        <button class="win-btn win-btn-max" @click="handleToggleMaximize" :title="isMaximized ? '还原' : '最大化'" :aria-label="isMaximized ? '还原' : '最大化'">
+        <button
+          class="win-btn win-btn-max"
+          @click="handleToggleMaximize"
+          :title="isMaximized ? t('titlebar.restore') : t('titlebar.maximize')"
+          :aria-label="isMaximized ? t('titlebar.restore') : t('titlebar.maximize')"
+        >
           <svg v-if="!isMaximized" width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <rect x="1.5" y="1.5" width="7" height="7" stroke="currentColor" stroke-width="1"/>
+            <rect x="1.5" y="1.5" width="7" height="7" stroke="currentColor" stroke-width="1" />
           </svg>
           <svg v-else width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M2.5 6.5V2.5H6.5M3.5 7.5H7.5V3.5" stroke="currentColor" stroke-width="1"/>
-            <rect x="3" y="3" width="5.5" height="5.5" stroke="currentColor" stroke-width="1" fill="none"/>
+            <path d="M2.5 6.5V2.5H6.5M3.5 7.5H7.5V3.5" stroke="currentColor" stroke-width="1" />
+            <rect
+              x="3"
+              y="3"
+              width="5.5"
+              height="5.5"
+              stroke="currentColor"
+              stroke-width="1"
+              fill="none"
+            />
           </svg>
         </button>
-        <button class="win-btn win-btn-close" @click="handleClose" title="关闭" aria-label="关闭">
+        <button class="win-btn win-btn-close" @click="handleClose" :title="t('titlebar.close')" :aria-label="t('titlebar.close')">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            <path
+              d="M1 1L9 9M9 1L1 9"
+              stroke="currentColor"
+              stroke-width="1"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
-      
+
       <div v-if="currentPlatform === 'linux'" class="linux-controls-right">
-        <button class="linux-btn linux-btn-min" @click="handleMinimize" title="最小化" aria-label="最小化">
+        <button
+          class="linux-btn linux-btn-min"
+          @click="handleMinimize"
+          :title="t('titlebar.minimize')"
+          :aria-label="t('titlebar.minimize')"
+        >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="2" y="5" width="8" height="2" rx="1" fill="currentColor"/>
+            <rect x="2" y="5" width="8" height="2" rx="1" fill="currentColor" />
           </svg>
         </button>
-        <button class="linux-btn linux-btn-max" @click="handleToggleMaximize" :title="isMaximized ? '还原' : '最大化'" :aria-label="isMaximized ? '还原' : '最大化'">
+        <button
+          class="linux-btn linux-btn-max"
+          @click="handleToggleMaximize"
+          :title="isMaximized ? t('titlebar.restore') : t('titlebar.maximize')"
+          :aria-label="isMaximized ? t('titlebar.restore') : t('titlebar.maximize')"
+        >
           <svg v-if="!isMaximized" width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="2" y="2" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1"/>
+            <rect x="2" y="2" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1" />
           </svg>
           <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="1" y="1" width="5" height="5" rx="0.5" stroke="currentColor" stroke-width="1"/>
-            <rect x="6" y="6" width="5" height="5" rx="0.5" stroke="currentColor" stroke-width="1"/>
+            <rect
+              x="1"
+              y="1"
+              width="5"
+              height="5"
+              rx="0.5"
+              stroke="currentColor"
+              stroke-width="1"
+            />
+            <rect
+              x="6"
+              y="6"
+              width="5"
+              height="5"
+              rx="0.5"
+              stroke="currentColor"
+              stroke-width="1"
+            />
           </svg>
         </button>
-        <button class="linux-btn linux-btn-close" @click="handleClose" title="关闭" aria-label="关闭">
+        <button
+          class="linux-btn linux-btn-close"
+          @click="handleClose"
+          :title="t('titlebar.close')"
+          :aria-label="t('titlebar.close')"
+        >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path
+              d="M3 3L9 9M9 3L3 9"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
@@ -88,6 +169,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const isMaximized = ref(false)
 const debugPlatform = ref(null)
@@ -130,13 +214,13 @@ const handleMenu = () => {
 
 const onStyleChange = (e) => {
   const style = e.detail
-  debugPlatform.value = (style && style !== 'auto') ? style : null
+  debugPlatform.value = style && style !== 'auto' ? style : null
 }
 
 const onStorageChange = (e) => {
   if (e.key === 'choyeon_debug_titlebar') {
     const style = e.newValue
-    debugPlatform.value = (style && style !== 'auto') ? style : null
+    debugPlatform.value = style && style !== 'auto' ? style : null
   }
 }
 
@@ -146,17 +230,20 @@ onMounted(() => {
   if (savedStyle && savedStyle !== 'auto') {
     debugPlatform.value = savedStyle
   }
-  
+
   // 监听同页面自定义事件（浏览器直接访问debug路由时）
   window.addEventListener('titlebar-style-change', onStyleChange)
   // 监听跨窗口storage事件（Electron debug窗口切换时）
   window.addEventListener('storage', onStorageChange)
-  
+
   let cancelled = false
   if (window.electronAPI?.isMaximized) {
-    window.electronAPI.isMaximized().then((val) => {
-      if (!cancelled) isMaximized.value = val
-    }).catch(() => {})
+    window.electronAPI
+      .isMaximized()
+      .then((val) => {
+        if (!cancelled) isMaximized.value = val
+      })
+      .catch(() => {})
   }
   if (window.electronAPI?.onMaximizeChange) {
     const cleanup = window.electronAPI.onMaximizeChange((maximized) => {
@@ -398,26 +485,27 @@ onUnmounted(() => {
 }
 
 .mac-btn-close {
-  background: #FF5F57;
+  background: #ff5f57;
 }
 
 .mac-btn-close:hover {
-  background: #FF3B30;
+  background: #ff3b30;
 }
 
 .mac-btn-close:hover .mac-btn-inner {
   opacity: 1;
   width: 6px;
   height: 6px;
-  background: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' fill='none'%3E%3Cpath d='M1 1L5 5M5 1L1 5' stroke='white' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") center/cover no-repeat;
+  background: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' fill='none'%3E%3Cpath d='M1 1L5 5M5 1L1 5' stroke='white' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E")
+    center/cover no-repeat;
 }
 
 .mac-btn-min {
-  background: #FEBC2E;
+  background: #febc2e;
 }
 
 .mac-btn-min:hover {
-  background: #FFC107;
+  background: #ffc107;
 }
 
 .mac-btn-min:hover .mac-btn-inner {
@@ -429,11 +517,11 @@ onUnmounted(() => {
 }
 
 .mac-btn-max {
-  background: #28C840;
+  background: #28c840;
 }
 
 .mac-btn-max:hover {
-  background: #34A853;
+  background: #34a853;
 }
 
 .mac-btn-max:hover .mac-btn-inner {

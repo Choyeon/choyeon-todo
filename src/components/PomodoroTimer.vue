@@ -1,5 +1,11 @@
 <template>
-  <div class="pomodoro-timer" :class="[`mode-${pomodoroStore.currentMode}`, { 'is-running': pomodoroStore.isRunning, 'is-paused': !pomodoroStore.isRunning }]">
+  <div
+    class="pomodoro-timer"
+    :class="[
+      `mode-${pomodoroStore.currentMode}`,
+      { 'is-running': pomodoroStore.isRunning, 'is-paused': !pomodoroStore.isRunning }
+    ]"
+  >
     <div class="mode-tabs">
       <button
         v-for="mode in pomodoroStore.modes"
@@ -9,22 +15,21 @@
         @click="pomodoroStore.switchMode(mode.value)"
       >
         <component :is="modeIcons[mode.value]" :size="14" />
-        <span>{{ mode.label }}</span>
+        <span>{{ $t('pomodoro.' + mode.value) }}</span>
       </button>
     </div>
 
     <div class="timer-container">
       <div class="progress-ring-wrapper">
         <svg class="progress-ring" viewBox="0 0 200 200">
-          <circle
-            class="progress-ring-bg"
-            cx="100" cy="100" r="88"
-            fill="none" stroke-width="8"
-          />
+          <circle class="progress-ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="8" />
           <circle
             class="progress-ring-fill"
-            cx="100" cy="100" r="88"
-            fill="none" stroke-width="8"
+            cx="100"
+            cy="100"
+            r="88"
+            fill="none"
+            stroke-width="8"
             stroke-linecap="round"
             :stroke-dasharray="circumference"
             :stroke-dashoffset="progressOffset"
@@ -35,35 +40,48 @@
       </div>
       <div class="timer-display">
         <Transition name="time-fade" mode="out-in">
-          <span :key="pomodoroStore.currentMode" class="time-text">{{ pomodoroStore.formattedTime }}</span>
+          <span :key="pomodoroStore.currentMode" class="time-text">{{
+            pomodoroStore.formattedTime
+          }}</span>
         </Transition>
         <Transition name="mode-fade" mode="out-in">
-          <span :key="pomodoroStore.currentMode" class="mode-label">{{ pomodoroStore.currentModeLabel }}</span>
+          <span :key="pomodoroStore.currentMode" class="mode-label">{{
+            $t('pomodoro.' + pomodoroStore.currentMode)
+          }}</span>
         </Transition>
       </div>
     </div>
 
     <div v-if="pomodoroStore.isCustomEditing" class="custom-duration">
       <div class="custom-row">
-        <label>时长(分钟)</label>
+        <label>{{ $t('pomodoro.durationMinutes') }}</label>
         <input
           type="number"
           class="custom-input"
           :value="pomodoroStore.customMinutes"
           min="1"
           max="180"
-          @input="pomodoroStore.customMinutes = Math.max(1, Math.min(180, parseInt($event.target.value) || 1))"
+          @input="
+            pomodoroStore.customMinutes = Math.max(
+              1,
+              Math.min(180, parseInt($event.target.value) || 1)
+            )
+          "
           @keyup.enter="pomodoroStore.applyCustomDuration()"
         />
       </div>
       <div class="custom-actions">
-        <button class="custom-btn cancel" @click="pomodoroStore.isCustomEditing = false">取消</button>
-        <button class="custom-btn confirm" @click="pomodoroStore.applyCustomDuration()">确定</button>
+        <button class="custom-btn cancel" @click="pomodoroStore.isCustomEditing = false">
+          {{ $t('common.cancel') }}
+        </button>
+        <button class="custom-btn confirm" @click="pomodoroStore.applyCustomDuration()">
+          {{ $t('common.confirm') }}
+        </button>
       </div>
     </div>
     <button v-else class="custom-duration-toggle" @click="pomodoroStore.isCustomEditing = true">
       <Edit3 :size="12" />
-      <span>自定义时长</span>
+      <span>{{ $t('pomodoro.customDuration') }}</span>
     </button>
 
     <div v-if="taskStore.focusedTask" class="current-task">
@@ -71,7 +89,7 @@
       <span class="task-title">{{ taskStore.focusedTask.title }}</span>
     </div>
     <div v-else class="current-task no-task">
-      <span>选择一个任务开始专注</span>
+      <span>{{ $t('pomodoro.selectTask') }}</span>
     </div>
 
     <div class="pomodoro-count">
@@ -81,24 +99,31 @@
           :key="'dot-' + i"
           class="count-dot"
           :class="{ filled: isDotFilled(i) }"
-          :style="i <= pomodoroStore.completedPomodoros ? { backgroundColor: pomodoroStore.currentColor, boxShadow: `0 0 6px ${pomodoroStore.currentColor}80` } : {}"
+          :style="
+            i <= pomodoroStore.completedPomodoros
+              ? {
+                  backgroundColor: pomodoroStore.currentColor,
+                  boxShadow: `0 0 6px ${pomodoroStore.currentColor}80`
+                }
+              : {}
+          "
         ></span>
       </div>
       <span class="count-text">
         <span class="count-number">{{ pomodoroStore.completedPomodoros }}</span>
-        <span class="count-label">个番茄</span>
+        <span class="count-label">{{ $t('pomodoro.tomatoUnit') }}</span>
       </span>
     </div>
 
     <div class="controls">
-      <button class="control-btn reset-btn" @click="pomodoroStore.resetTimer" title="重置">
+      <button class="control-btn reset-btn" @click="pomodoroStore.resetTimer" :title="$t('pomodoro.reset')">
         <RotateCcw :size="18" />
       </button>
       <button
         class="control-btn primary-btn"
         :class="{ running: pomodoroStore.isRunning }"
         @click="pomodoroStore.toggleTimer()"
-        :title="pomodoroStore.isRunning ? '暂停' : '开始'"
+        :title="pomodoroStore.isRunning ? $t('pomodoro.pause') : $t('pomodoro.start')"
       >
         <Play v-if="!pomodoroStore.isRunning" :size="26" />
         <Pause v-else :size="26" />
@@ -108,20 +133,20 @@
         :class="{ disabled: !pomodoroStore.canSkip }"
         @click="handleSkip"
         :disabled="!pomodoroStore.canSkip"
-        title="重置当前计时"
+        :title="$t('pomodoro.resetCurrent')"
       >
         <RotateCcw :size="18" />
       </button>
     </div>
 
-    <button v-if="isElectron" class="fullscreen-btn" @click="openFullscreen" title="全屏专注">
+    <button v-if="isElectron" class="fullscreen-btn" @click="openFullscreen" :title="$t('pomodoro.fullscreen')">
       <Maximize2 :size="16" />
-      <span>全屏专注</span>
+      <span>{{ $t('pomodoro.fullscreen') }}</span>
     </button>
 
-    <button v-if="isElectron" class="fab-btn" @click="pomodoroStore.toggleFab" title="桌面悬浮球">
+    <button v-if="isElectron" class="fab-btn" @click="pomodoroStore.toggleFab" :title="$t('pomodoro.desktopFab')">
       <Monitor :size="16" />
-      <span>桌面悬浮球</span>
+      <span>{{ $t('pomodoro.desktopFab') }}</span>
     </button>
   </div>
 </template>
@@ -131,7 +156,18 @@ import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
-import { Timer, Play, Pause, RotateCcw, Edit3, Maximize2, Monitor, Target, Coffee, Moon } from '@lucide/vue'
+import {
+  Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  Edit3,
+  Maximize2,
+  Monitor,
+  Target,
+  Coffee,
+  Moon
+} from '@lucide/vue'
 
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
@@ -189,7 +225,9 @@ onMounted(() => {
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition: background var(--transition-fluid), border-color var(--transition-smooth);
+  transition:
+    background var(--transition-fluid),
+    border-color var(--transition-smooth);
   min-width: 0;
   width: 100%;
   max-width: 400px;
@@ -221,7 +259,11 @@ onMounted(() => {
   font-weight: 500;
   border-radius: var(--radius-full);
   cursor: pointer;
-  transition: color var(--transition-smooth), background var(--transition-smooth), transform var(--transition-spring-soft), box-shadow var(--transition-smooth);
+  transition:
+    color var(--transition-smooth),
+    background var(--transition-smooth),
+    transform var(--transition-spring-soft),
+    box-shadow var(--transition-smooth);
   font-family: var(--font-body);
   display: flex;
   align-items: center;
@@ -242,20 +284,22 @@ onMounted(() => {
 .mode-tab.active {
   color: var(--color-text-primary);
   background: var(--color-surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
   transform: scale(1.03);
 }
 
 .pomodoro-timer.mode-work .mode-tab.active {
-  color: #EF4444;
+  color: #ef4444;
 }
 
 .pomodoro-timer.mode-shortBreak .mode-tab.active {
-  color: #22C55E;
+  color: #22c55e;
 }
 
 .pomodoro-timer.mode-longBreak .mode-tab.active {
-  color: #06B6D4;
+  color: #06b6d4;
 }
 
 .timer-container {
@@ -286,7 +330,9 @@ onMounted(() => {
 }
 
 .progress-ring-fill {
-  transition: stroke-dashoffset 0.6s var(--ease-out-expo), stroke 0.4s var(--ease-out-quart);
+  transition:
+    stroke-dashoffset 0.6s var(--ease-out-expo),
+    stroke 0.4s var(--ease-out-quart);
   stroke-width: 4;
   stroke-linecap: round;
 }
@@ -300,7 +346,9 @@ onMounted(() => {
   height: 83.33%;
   border-radius: 50%;
   opacity: 0.1;
-  transition: opacity var(--duration-slow) var(--ease-out-quart), filter var(--transition-smooth);
+  transition:
+    opacity var(--duration-slow) var(--ease-out-quart),
+    filter var(--transition-smooth);
   filter: blur(24px);
   pointer-events: none;
 }
@@ -323,13 +371,23 @@ onMounted(() => {
 }
 
 @keyframes glowBreathingWork {
-  0%, 100% { opacity: 0.22; }
-  50% { opacity: 0.34; }
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.34;
+  }
 }
 
 @keyframes glowBreathingBreak {
-  0%, 100% { opacity: 0.18; }
-  50% { opacity: 0.28; }
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+  50% {
+    opacity: 0.28;
+  }
 }
 
 .timer-display {
@@ -351,7 +409,9 @@ onMounted(() => {
   line-height: 1.1;
   margin-bottom: 8px;
   font-variant-numeric: tabular-nums;
-  transition: color var(--transition-fluid), opacity var(--transition-smooth);
+  transition:
+    color var(--transition-fluid),
+    opacity var(--transition-smooth);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -362,8 +422,13 @@ onMounted(() => {
 }
 
 @keyframes pausedPulse {
-  0%, 100% { opacity: 0.78; }
-  50% { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 0.78;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .mode-label {
@@ -378,10 +443,14 @@ onMounted(() => {
 
 /* 时间数字模式切换淡入淡出 */
 .time-fade-enter-active {
-  transition: opacity var(--duration-normal) var(--ease-out-expo), transform var(--duration-normal) var(--ease-out-expo);
+  transition:
+    opacity var(--duration-normal) var(--ease-out-expo),
+    transform var(--duration-normal) var(--ease-out-expo);
 }
 .time-fade-leave-active {
-  transition: opacity var(--duration-fast) var(--ease-out-quart), transform var(--duration-fast) var(--ease-out-quart);
+  transition:
+    opacity var(--duration-fast) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-out-quart);
 }
 .time-fade-enter-from {
   opacity: 0;
@@ -416,7 +485,9 @@ onMounted(() => {
   font-family: var(--font-body);
   cursor: pointer;
   border-radius: var(--radius-full);
-  transition: background var(--transition-smooth), color var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth);
   margin-bottom: 16px;
 }
 
@@ -477,7 +548,11 @@ onMounted(() => {
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-smooth), color var(--transition-smooth), opacity var(--transition-smooth), transform var(--transition-micro);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth),
+    opacity var(--transition-smooth),
+    transform var(--transition-micro);
 }
 
 .custom-btn.cancel {
@@ -507,7 +582,9 @@ onMounted(() => {
   background: var(--color-bg-secondary);
   border-radius: var(--radius-lg);
   max-width: 100%;
-  transition: background var(--transition-smooth), transform var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    transform var(--transition-smooth);
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
@@ -525,7 +602,7 @@ onMounted(() => {
 }
 
 .pomodoro-timer.mode-work .task-icon {
-  color: #EF4444;
+  color: #ef4444;
   opacity: 1;
 }
 
@@ -563,7 +640,10 @@ onMounted(() => {
   height: 7px;
   border-radius: 50%;
   background: var(--color-border-light);
-  transition: transform var(--transition-spring-soft), background-color var(--transition-smooth), box-shadow var(--transition-smooth);
+  transition:
+    transform var(--transition-spring-soft),
+    background-color var(--transition-smooth),
+    box-shadow var(--transition-smooth);
 }
 
 .count-dot.filled {
@@ -609,7 +689,12 @@ onMounted(() => {
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: background var(--transition-smooth), color var(--transition-smooth), transform var(--transition-spring-soft), box-shadow var(--transition-smooth), opacity var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth),
+    transform var(--transition-spring-soft),
+    box-shadow var(--transition-smooth),
+    opacity var(--transition-smooth);
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
 }
@@ -650,19 +735,22 @@ onMounted(() => {
 .control-btn.primary-btn {
   width: 76px;
   height: 76px;
-  background: #EF4444;
+  background: #ef4444;
   color: white;
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
-  transition: background var(--transition-fluid), transform var(--transition-spring-soft), box-shadow var(--transition-fluid);
+  transition:
+    background var(--transition-fluid),
+    transform var(--transition-spring-soft),
+    box-shadow var(--transition-fluid);
 }
 
 .pomodoro-timer.mode-shortBreak .control-btn.primary-btn {
-  background: #22C55E;
+  background: #22c55e;
   box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
 }
 
 .pomodoro-timer.mode-longBreak .control-btn.primary-btn {
-  background: #06B6D4;
+  background: #06b6d4;
   box-shadow: 0 6px 20px rgba(6, 182, 212, 0.3);
 }
 
@@ -688,7 +776,8 @@ onMounted(() => {
 }
 
 @keyframes btnPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
   }
   50% {
@@ -709,7 +798,9 @@ onMounted(() => {
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-smooth), color var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth);
   margin-top: 4px;
 }
 
@@ -731,7 +822,9 @@ onMounted(() => {
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition-smooth), color var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth);
   margin-top: 4px;
 }
 

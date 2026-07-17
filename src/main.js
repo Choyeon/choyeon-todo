@@ -7,6 +7,9 @@ import { useTaskStore } from './stores/taskStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { usePomodoroStore } from './stores/pomodoroStore'
 import { useReminderScheduler } from './composables/useReminderScheduler'
+import { registerSW } from 'virtual:pwa-register'
+import { i18n } from './i18n'
+import { setupErrorMonitoring, captureError } from './utils/errorMonitor'
 
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI
 
@@ -30,6 +33,9 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(i18n)
+
+setupErrorMonitoring(app)
 
 // 全局错误处理
 // 安全最佳实践：统一捕获错误并记录上下文，避免静默失败
@@ -120,6 +126,25 @@ if (isElectron) {
 settingsStore.setupSystemThemeListener()
 
 app.mount('#app')
+
+if (!isElectron) {
+  registerSW({
+    immediate: true,
+    onOfflineReady() {
+      console.log('[PWA] App ready for offline use')
+    },
+    onNeedRefresh() {
+      console.log('[PWA] New content available, refreshing...')
+      window.location.reload()
+    },
+    onRegisteredSW(swUrl) {
+      console.log('[PWA] Service Worker registered:', swUrl)
+    },
+    onRegisterError(error) {
+      console.warn('[PWA] Service Worker registration failed:', error)
+    }
+  })
+}
 
 if (isElectron && window.electronAPI?.sendNotification) {
   try {

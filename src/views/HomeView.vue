@@ -13,37 +13,45 @@
               :class="{ disabled: allCompleted }"
             >
               <Check :size="14" />
-              <span>全部完成</span>
+              <span>{{ $t('task.markAllCompleted') }}</span>
             </button>
           </div>
         </div>
         <p class="header-subtitle">{{ headerSubtitle }}</p>
       </div>
 
-      <div class="add-task-row" :class="{ 'focused': inputFocused }">
+      <div class="add-task-row" :class="{ focused: inputFocused }">
         <div class="add-input-row">
           <PlusCircle class="add-icon" :size="20" />
           <input
             type="text"
-            placeholder="添加任务，试试「明天下午3点 开会 重要」"
+            :placeholder="$t('task.addTaskPlaceholder')"
             v-model="quickAddTitle"
             @keyup.enter="quickAdd"
             @focus="inputFocused = true"
             @blur="inputFocused = false"
           />
-          <button class="add-task-btn" @click="quickAdd" :class="{ visible: inputFocused || quickAddTitle }">
+          <button
+            class="add-task-btn"
+            @click="quickAdd"
+            :class="{ visible: inputFocused || quickAddTitle }"
+          >
             <Plus :size="18" />
           </button>
         </div>
         <div class="smart-hints" v-if="smartHints.length > 0 && inputFocused">
           <Sparkles :size="14" class="hint-icon" />
-          <span class="hint-text">识别到：</span>
+          <span class="hint-text">{{ $t('task.smartDetected') }}</span>
           <span v-for="hint in smartHints" :key="hint" class="hint-tag">{{ hint }}</span>
         </div>
       </div>
 
       <div class="task-list-container">
-        <TaskList :tasks="taskStore.filteredTasks" :empty-type="emptyType" @add-task="openAddTask && openAddTask()" />
+        <TaskList
+          :tasks="taskStore.filteredTasks"
+          :empty-type="emptyType"
+          @add-task="openAddTask && openAddTask()"
+        />
       </div>
     </div>
   </div>
@@ -51,10 +59,13 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import TaskList from '../components/TaskList.vue'
 import { PlusCircle, Plus, Check, Sparkles } from '@lucide/vue'
 import { smartParseTask, getSmartHint } from '../utils/smartParse'
+
+const { t } = useI18n()
 
 const taskStore = useTaskStore()
 const quickAddTitle = ref('')
@@ -68,47 +79,47 @@ const smartHints = computed(() => {
 
 const headerTitle = computed(() => {
   if (taskStore.searchQuery) {
-    return '搜索结果'
+    return t('nav.searchResults')
   }
   switch (taskStore.currentView) {
     case 'today':
-      return '我的一天'
+      return t('nav.myDay')
     case 'tomorrow':
-      return '明天'
+      return t('nav.tomorrow')
     case 'week':
-      return '下周'
+      return t('nav.nextWeek')
     case 'important':
-      return '重要'
+      return t('nav.important')
     case 'planned':
-      return '已计划'
+      return t('nav.planned')
     case 'all':
-      return '全部任务'
+      return t('nav.allTasks')
     case 'category':
       const cat = taskStore.getCategoryById(taskStore.currentCategory)
-      return cat ? cat.name : '分类任务'
+      return cat ? cat.name : t('nav.categoryTasks')
     default:
-      return '任务'
+      return t('nav.tasks')
   }
 })
 
 const headerSubtitle = computed(() => {
   if (taskStore.searchQuery) {
-    return `找到 ${taskStore.filteredTasks.length} 个匹配任务`
+    return t('task.searchResultCount', { count: taskStore.filteredTasks.length })
   }
   const now = new Date()
-  const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
-  
+  const weekdays = t('date.weekdays')
+
   if (taskStore.currentView === 'today') {
-    return `${now.getMonth() + 1}月${now.getDate()}日 ${days[now.getDay()]}`
+    return `${now.getMonth() + 1}月${now.getDate()}日 ${weekdays[now.getDay()]}`
   }
-  
+
   if (taskStore.currentView === 'category') {
     const count = taskStore.getCategoryCount(taskStore.currentCategory)
-    return `${count} 个任务`
+    return t('task.taskCount', { count })
   }
-  
+
   const count = taskStore.getCount(taskStore.currentView)
-  return `${count} 个任务`
+  return t('task.taskCount', { count })
 })
 
 const emptyType = computed(() => {
@@ -132,7 +143,7 @@ const emptyType = computed(() => {
 })
 
 const allCompleted = computed(() => {
-  return taskStore.filteredTasks.length > 0 && taskStore.filteredTasks.every(t => t.completed)
+  return taskStore.filteredTasks.length > 0 && taskStore.filteredTasks.every((t) => t.completed)
 })
 
 const markAllCompleted = () => {
@@ -264,12 +275,16 @@ const quickAdd = () => {
 
 .add-task-row:hover {
   border-color: var(--color-border);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .add-task-row:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-ring), 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 0 0 3px var(--color-primary-ring),
+    0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .add-input-row {
@@ -314,8 +329,14 @@ const quickAdd = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hint-icon {

@@ -7,7 +7,14 @@
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <circle cx="100" cy="55" r="28" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
+        <circle
+          cx="100"
+          cy="55"
+          r="28"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
         <g :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="100" y1="12" x2="100" y2="22" />
           <line x1="100" y1="88" x2="100" y2="98" />
@@ -18,10 +25,46 @@
           <line x1="70" y1="85" x2="77" y2="78" />
           <line x1="123" y1="32" x2="130" y2="25" />
         </g>
-        <rect x="55" y="100" width="90" height="50" rx="6" :stroke="secondaryColor" stroke-width="2" fill="none" />
-        <line x1="70" y1="115" x2="130" y2="115" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="70" y1="128" x2="115" y2="128" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="70" y1="141" x2="100" y2="141" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+        <rect
+          x="55"
+          y="100"
+          width="90"
+          height="50"
+          rx="6"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          fill="none"
+        />
+        <line
+          x1="70"
+          y1="115"
+          x2="130"
+          y2="115"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="70"
+          y1="128"
+          x2="115"
+          y2="128"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="70"
+          y1="141"
+          x2="100"
+          y2="141"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.3"
+        />
       </svg>
 
       <svg
@@ -31,7 +74,14 @@
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <linearGradient id="starGrad" x1="100" y1="20" x2="100" y2="140" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="starGrad"
+            x1="100"
+            y1="20"
+            x2="100"
+            y2="140"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop stop-color="var(--state-warning)" stop-opacity="0.15" />
             <stop offset="1" stop-color="var(--state-warning)" stop-opacity="0.02" />
           </linearGradient>
@@ -53,10 +103,35 @@
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <rect x="40" y="25" width="120" height="110" rx="8" :stroke="primaryColor" stroke-width="2.5" fill="none" />
+        <rect
+          x="40"
+          y="25"
+          width="120"
+          height="110"
+          rx="8"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          fill="none"
+        />
         <line x1="40" y1="55" x2="160" y2="55" :stroke="primaryColor" stroke-width="2.5" />
-        <line x1="70" y1="25" x2="70" y2="40" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
-        <line x1="130" y1="25" x2="130" y2="40" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
+        <line
+          x1="70"
+          y1="25"
+          x2="70"
+          y2="40"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
+        <line
+          x1="130"
+          y1="25"
+          x2="130"
+          y2="40"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
         <g :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4">
           <line x1="60" y1="75" x2="75" y2="75" />
           <line x1="85" y1="75" x2="100" y2="75" />
@@ -71,7 +146,15 @@
           <line x1="110" y1="115" x2="125" y2="115" />
           <line x1="135" y1="115" x2="140" y2="115" />
         </g>
-        <circle cx="100" cy="105" r="18" :stroke="primaryColor" stroke-width="2" fill="none" stroke-dasharray="4 3" />
+        <circle
+          cx="100"
+          cy="105"
+          r="18"
+          :stroke="primaryColor"
+          stroke-width="2"
+          fill="none"
+          stroke-dasharray="4 3"
+        />
       </svg>
 
       <svg
@@ -81,10 +164,45 @@
         xmlns="http://www.w3.org/2000/svg"
       >
         <circle cx="85" cy="70" r="40" :stroke="primaryColor" stroke-width="2.5" fill="none" />
-        <line x1="115" y1="100" x2="150" y2="135" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
-        <line x1="65" y1="55" x2="105" y2="55" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
-        <line x1="65" y1="70" x2="95" y2="70" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
-        <line x1="65" y1="85" x2="100" y2="85" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
+        <line
+          x1="115"
+          y1="100"
+          x2="150"
+          y2="135"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
+        <line
+          x1="65"
+          y1="55"
+          x2="105"
+          y2="55"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.4"
+        />
+        <line
+          x1="65"
+          y1="70"
+          x2="95"
+          y2="70"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.4"
+        />
+        <line
+          x1="65"
+          y1="85"
+          x2="100"
+          y2="85"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.4"
+        />
         <circle cx="100" cy="130" r="3" :fill="secondaryColor" opacity="0.3" />
         <circle cx="120" cy="125" r="2" :fill="secondaryColor" opacity="0.2" />
         <circle cx="80" cy="135" r="2" :fill="secondaryColor" opacity="0.2" />
@@ -113,9 +231,36 @@
           opacity="0.3"
           transform="translate(0 8)"
         />
-        <rect x="50" y="115" width="100" height="35" rx="6" :stroke="secondaryColor" stroke-width="2" fill="none" />
-        <line x1="65" y1="128" x2="135" y2="128" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="65" y1="142" x2="110" y2="142" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+        <rect
+          x="50"
+          y="115"
+          width="100"
+          height="35"
+          rx="6"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          fill="none"
+        />
+        <line
+          x1="65"
+          y1="128"
+          x2="135"
+          y2="128"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="65"
+          y1="142"
+          x2="110"
+          y2="142"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.3"
+        />
       </svg>
 
       <svg
@@ -139,18 +284,41 @@
           stroke-linejoin="round"
           opacity="0.5"
         />
-        <line x1="55" y1="85" x2="90" y2="85" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="55" y1="102" x2="120" y2="102" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
-        <line x1="55" y1="119" x2="100" y2="119" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+        <line
+          x1="55"
+          y1="85"
+          x2="90"
+          y2="85"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="55"
+          y1="102"
+          x2="120"
+          y2="102"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.4"
+        />
+        <line
+          x1="55"
+          y1="119"
+          x2="100"
+          y2="119"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.3"
+        />
       </svg>
     </div>
     <h3 class="empty-title">{{ title }}</h3>
     <p class="empty-desc">{{ description }}</p>
-    <button
-      v-if="actionLabel"
-      class="empty-action-btn"
-      @click="$emit('action')"
-    >
+    <button v-if="actionLabel" class="empty-action-btn" @click="$emit('action')">
       <Plus v-if="actionIcon === 'plus'" :size="18" />
       {{ actionLabel }}
     </button>
@@ -165,7 +333,8 @@ const props = defineProps({
   type: {
     type: String,
     default: 'default',
-    validator: (val) => ['today', 'important', 'planned', 'search', 'completed', 'category', 'default'].includes(val)
+    validator: (val) =>
+      ['today', 'important', 'planned', 'search', 'completed', 'category', 'default'].includes(val)
   },
   title: {
     type: String,
@@ -226,7 +395,8 @@ const successColor = 'var(--state-success)'
 }
 
 @keyframes emptyFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -283,7 +453,10 @@ const successColor = 'var(--state-success)'
   font-family: var(--font-body);
   cursor: pointer;
   border: none;
-  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   animation: emptySlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
 }
 

@@ -26,7 +26,7 @@ describe('SettingsStore', () => {
 
     test('应该有主题颜色选项', () => {
       expect(store.themeColors.length).toBeGreaterThan(0)
-      expect(store.themeColors.some(c => c.value === '#4A90D9')).toBe(true)
+      expect(store.themeColors.some((c) => c.value === '#4A90D9')).toBe(true)
     })
   })
 
@@ -45,6 +45,8 @@ describe('SettingsStore', () => {
       expect(store.themeMode).toBe('light')
       store.toggleTheme()
       expect(store.themeMode).toBe('dark')
+      store.toggleTheme()
+      expect(store.themeMode).toBe('system')
       store.toggleTheme()
       expect(store.themeMode).toBe('light')
     })
@@ -110,9 +112,9 @@ describe('SettingsStore', () => {
       store.setPrimaryColor('#FF0000')
       store.language = 'en-US'
       store.notificationsEnabled = false
-      
+
       store.resetSettings()
-      
+
       expect(store.themeMode).toBe('light')
       expect(store.primaryColor).toBe('#4A90D9')
       expect(store.language).toBe('zh-CN')

@@ -2,26 +2,26 @@
   <div class="task-list-wrapper">
     <div class="task-list-container">
       <TransitionGroup name="task-list" tag="div" class="task-list" v-if="tasks.length > 0">
-          <div
-            v-for="task in tasks"
-            :key="task.id"
-            :data-task-id="task.id"
-            class="task-row"
-            :class="[
-              {
-                completed: task.completed,
-                overdue: isOverdue(task),
-                highlighted: isHighlighted(task.id),
-                dragging: draggedTaskId === task.id,
-                'drag-over': dragOverTaskId === task.id && draggedTaskId !== task.id,
-                focused: taskStore.focusedTaskId === task.id
-              }
-            ]"
-            draggable="false"
-            @dragover.prevent="onDragOver($event, task.id)"
-            @dragleave="onDragLeave"
-            @drop="onDrop($event, task.id)"
-          >
+        <div
+          v-for="task in tasks"
+          :key="task.id"
+          :data-task-id="task.id"
+          class="task-row"
+          :class="[
+            {
+              completed: task.completed,
+              overdue: isOverdue(task),
+              highlighted: isHighlighted(task.id),
+              dragging: draggedTaskId === task.id,
+              'drag-over': dragOverTaskId === task.id && draggedTaskId !== task.id,
+              focused: taskStore.focusedTaskId === task.id
+            }
+          ]"
+          draggable="false"
+          @dragover.prevent="onDragOver($event, task.id)"
+          @dragleave="onDragLeave"
+          @drop="onDrop($event, task.id)"
+        >
           <div
             class="drag-handle"
             draggable="true"
@@ -37,7 +37,7 @@
             :class="{ checked: task.completed, overdue: isOverdue(task) && !task.completed }"
             role="checkbox"
             :aria-checked="task.completed"
-            :aria-label="task.completed ? '标记为未完成' : '标记为已完成'"
+            :aria-label="task.completed ? $t('task.markIncomplete') : $t('task.markComplete')"
             tabindex="0"
             @click="toggleComplete(task.id)"
             @keydown.enter="toggleComplete(task.id)"
@@ -50,7 +50,7 @@
             class="task-body"
             role="button"
             tabindex="0"
-            :aria-label="`编辑任务: ${task.title}`"
+            :aria-label="$t('task.editTaskAria', { title: task.title })"
             @click="onEditTask(task)"
             @keydown.enter="onEditTask(task)"
           >
@@ -62,37 +62,21 @@
               >
                 P{{ task.priority }}
               </span>
-              <p class="task-title" :class="{ 'completing': completingTaskId === task.id }">{{ task.title }}</p>
+              <p class="task-title" :class="{ completing: completingTaskId === task.id }">
+                {{ task.title }}
+              </p>
               <div class="title-icons">
-                <RotateCw
-                  v-if="task.repeat"
-                  class="meta-icon repeat-icon"
-                  :size="14"
-                />
+                <RotateCw v-if="task.repeat" class="meta-icon repeat-icon" :size="14" />
               </div>
             </div>
 
             <div class="task-meta">
-              <Star
-                v-if="task.important"
-                class="meta-icon important"
-                :size="14"
-              />
-              <Bell
-                v-if="task.reminder"
-                class="meta-icon"
-                :size="14"
-              />
-              <span
-                class="cat-pill"
-                :style="getCategoryStyle(task.category)"
-              >
+              <Star v-if="task.important" class="meta-icon important" :size="14" />
+              <Bell v-if="task.reminder" class="meta-icon" :size="14" />
+              <span class="cat-pill" :style="getCategoryStyle(task.category)">
                 {{ getCategoryName(task.category) }}
               </span>
-              <span
-                class="task-date"
-                :class="{ overdue: isOverdue(task) && !task.completed }"
-              >
+              <span class="task-date" :class="{ overdue: isOverdue(task) && !task.completed }">
                 {{ formatDate(task) }}
               </span>
               <button
@@ -114,10 +98,7 @@
               >
                 {{ getTagName(tagId) }}
               </span>
-              <span
-                v-if="task.tags.length > 3"
-                class="tag-pill tag-more"
-              >
+              <span v-if="task.tags.length > 3" class="tag-pill tag-more">
                 +{{ task.tags.length - 3 }}
               </span>
             </div>
@@ -154,8 +135,8 @@
             v-if="!task.completed"
             class="task-focus"
             :class="{ active: taskStore.focusedTaskId === task.id }"
-            aria-label="开始专注"
-            title="开始专注"
+            :aria-label="$t('task.startFocus')"
+            :title="$t('task.startFocus')"
             @click.stop="onFocusTask(task.id)"
           >
             <Timer :size="16" />
@@ -163,8 +144,8 @@
 
           <button
             class="task-delete"
-            aria-label="删除任务"
-            title="删除任务"
+            :aria-label="$t('task.deleteTask')"
+            :title="$t('task.deleteTask')"
             @click.stop="deleteTask(task.id, task.title)"
           >
             <Trash2 :size="16" />
@@ -193,6 +174,7 @@
 
 <script setup>
 import { inject, computed, ref, TransitionGroup, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useSnackbar } from '../composables/useSnackbar'
@@ -226,6 +208,7 @@ defineEmits(['add-task'])
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
 const { show: showSnackbar } = useSnackbar()
+const { t } = useI18n()
 const openEditTask = inject('openEditTask')
 
 let audioContext = null
@@ -247,36 +230,43 @@ const playCompletionSound = () => {
     oscillator.start(audioContext.currentTime)
     oscillator.stop(audioContext.currentTime + 0.15)
 
-    pendingTimers.push(setTimeout(() => {
-      const osc2 = audioContext.createOscillator()
-      const gain2 = audioContext.createGain()
-      osc2.connect(gain2)
-      gain2.connect(audioContext.destination)
-      osc2.frequency.value = 659
-      osc2.type = 'sine'
-      gain2.gain.setValueAtTime(0.25, audioContext.currentTime)
-      gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
-      osc2.start(audioContext.currentTime)
-      osc2.stop(audioContext.currentTime + 0.2)
+    pendingTimers.push(
+      setTimeout(() => {
+        const osc2 = audioContext.createOscillator()
+        const gain2 = audioContext.createGain()
+        osc2.connect(gain2)
+        gain2.connect(audioContext.destination)
+        osc2.frequency.value = 659
+        osc2.type = 'sine'
+        gain2.gain.setValueAtTime(0.25, audioContext.currentTime)
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2)
+        osc2.start(audioContext.currentTime)
+        osc2.stop(audioContext.currentTime + 0.2)
 
-      pendingTimers.push(setTimeout(() => {
-        const osc3 = audioContext.createOscillator()
-        const gain3 = audioContext.createGain()
-        osc3.connect(gain3)
-        gain3.connect(audioContext.destination)
-        osc3.frequency.value = 784
-        osc3.type = 'sine'
-        gain3.gain.setValueAtTime(0.3, audioContext.currentTime)
-        gain3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3)
-        osc3.start(audioContext.currentTime)
-        osc3.stop(audioContext.currentTime + 0.3)
-      }, 150))
-    }, 150))
+        pendingTimers.push(
+          setTimeout(() => {
+            const osc3 = audioContext.createOscillator()
+            const gain3 = audioContext.createGain()
+            osc3.connect(gain3)
+            gain3.connect(audioContext.destination)
+            osc3.frequency.value = 784
+            osc3.type = 'sine'
+            gain3.gain.setValueAtTime(0.3, audioContext.currentTime)
+            gain3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3)
+            osc3.start(audioContext.currentTime)
+            osc3.stop(audioContext.currentTime + 0.3)
+          }, 150)
+        )
+      }, 150)
+    )
   } catch (e) {
     console.warn('[TaskList] Audio not available:', e)
   }
 }
-const highlightedTaskId = inject('highlightedTaskId', computed(() => null))
+const highlightedTaskId = inject(
+  'highlightedTaskId',
+  computed(() => null)
+)
 
 const expandedTaskIds = ref(new Set())
 const draggedTaskId = ref(null)
@@ -294,62 +284,78 @@ const emptyTypeComputed = computed(() => {
 })
 
 const emptyTitle = computed(() => {
-  if (taskStore.searchQuery) return '未找到匹配的任务'
+  if (taskStore.searchQuery) return t('empty.search')
   switch (props.emptyType) {
-    case 'today': return '今天没有任务'
-    case 'important': return '没有重要任务'
-    case 'planned': return '没有已计划的任务'
-    case 'completed': return '暂无已完成任务'
-    case 'category': return '此分类暂无任务'
-    default: return '暂无任务'
+    case 'today':
+      return t('empty.todayTitle')
+    case 'important':
+      return t('empty.importantTitle')
+    case 'planned':
+      return t('empty.plannedTitle')
+    case 'completed':
+      return t('empty.completed')
+    case 'category':
+      return t('empty.categoryTitle')
+    default:
+      return t('empty.defaultTitle')
   }
 })
 
 const emptyDesc = computed(() => {
-  if (taskStore.searchQuery) return '尝试使用不同的关键词'
+  if (taskStore.searchQuery) return t('empty.searchSubtitle')
   switch (props.emptyType) {
-    case 'today': return '享受轻松的一天，或添加新任务'
-    case 'important': return '点击星标可以将任务标记为重要'
-    case 'planned': return '为未来的日子规划你的任务'
-    case 'completed': return '完成任务后会显示在这里'
-    case 'category': return '在此分类下添加你的第一个任务'
-    default: return '点击下方按钮添加新任务'
+    case 'today':
+      return t('empty.todaySubtitle')
+    case 'important':
+      return t('empty.importantSubtitle')
+    case 'planned':
+      return t('empty.plannedSubtitle')
+    case 'completed':
+      return t('empty.completedSubtitle')
+    case 'category':
+      return t('empty.categorySubtitle')
+    default:
+      return t('empty.defaultSubtitle')
   }
 })
 
 const emptyActionLabel = computed(() => {
   if (taskStore.searchQuery) return ''
-  return '添加任务'
+  return t('empty.action')
 })
 
 const toggleComplete = (id) => {
-  const task = taskStore.tasks.find(t => t.id === id)
+  const task = taskStore.tasks.find((t) => t.id === id)
   if (!task) return
 
   if (!task.completed) {
     completingTaskId.value = id
     confettiTaskId.value = id
     playCompletionSound()
-    pendingTimers.push(setTimeout(() => {
-      taskStore.toggleComplete(id)
-      completingTaskId.value = null
-    }, 300))
-    pendingTimers.push(setTimeout(() => {
-      confettiTaskId.value = null
-    }, 1000))
+    pendingTimers.push(
+      setTimeout(() => {
+        taskStore.toggleComplete(id)
+        completingTaskId.value = null
+      }, 300)
+    )
+    pendingTimers.push(
+      setTimeout(() => {
+        confettiTaskId.value = null
+      }, 1000)
+    )
   } else {
     taskStore.toggleComplete(id)
   }
 }
 
 const deleteTask = (id, title) => {
-  const taskIndex = taskStore.tasks.findIndex(t => t.id === id)
+  const taskIndex = taskStore.tasks.findIndex((t) => t.id === id)
   if (taskIndex === -1) return
   const taskSnapshot = structuredClone(taskStore.tasks[taskIndex])
   expandedTaskIds.value.delete(id)
   taskStore.deleteTask(id)
-  showSnackbar(`已删除 "${title}"`, {
-    actionLabel: '撤销',
+  showSnackbar(t('task.deletedMessage', { title }), {
+    actionLabel: t('task.undo'),
     duration: 5000,
     onAction: () => {
       const insertIndex = Math.min(taskIndex, taskStore.tasks.length)
@@ -366,7 +372,7 @@ const onEditTask = (task) => {
 
 const getCategoryName = (catId) => {
   const cat = taskStore.getCategoryById(catId)
-  return cat ? cat.name : '其他'
+  return cat ? cat.name : t('categories.other')
 }
 
 const getCategoryStyle = (catId) => {
@@ -392,19 +398,20 @@ const formatDate = (task) => {
   const tomorrow = getTomorrowStr()
 
   if (task.date === today) {
-    return task.time || '今天'
+    return task.time || t('task.today')
   }
   if (task.date === tomorrow) {
-    return '明天'
+    return t('task.tomorrowLabel')
   }
   if (task.date < today) {
     const date = parseDateStr(task.date)
-    return `已逾期 · ${date.getMonth() + 1}月${date.getDate()}日`
+    const monthDay = t('date.monthDayFormat', { month: date.getMonth() + 1, day: date.getDate() })
+    return t('date.overdueFormat', { date: monthDay })
   }
 
   const date = parseDateStr(task.date)
-  const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-  const dayName = days[date.getDay()]
+  const weekdays = t('date.weekdays')
+  const dayName = weekdays[date.getDay()]
 
   const todayDate = parseDateStr(today)
   const diffDays = Math.round((date - todayDate) / (1000 * 60 * 60 * 24))
@@ -413,7 +420,10 @@ const formatDate = (task) => {
     return task.time ? `${dayName} ${task.time}` : dayName
   }
 
-  return task.time ? `${date.getMonth() + 1}月${date.getDate()}日 ${task.time}` : `${date.getMonth() + 1}月${date.getDate()}日`
+  const monthDay = t('date.monthDayFormat', { month: date.getMonth() + 1, day: date.getDate() })
+  return task.time
+    ? `${monthDay} ${task.time}`
+    : monthDay
 }
 
 const toggleSubTasks = (taskId) => {
@@ -426,7 +436,7 @@ const toggleSubTasks = (taskId) => {
 
 const getCompletedSubTasks = (task) => {
   if (!task.subTasks || task.subTasks.length === 0) return 0
-  return task.subTasks.filter(st => st.completed).length
+  return task.subTasks.filter((st) => st.completed).length
 }
 
 const sortSubTasks = (subTasks) => {
@@ -549,6 +559,12 @@ const getConfettiStyle = (n) => {
   }
 }
 
+.task-list {
+  display: flex;
+  flex-direction: column;
+  contain: layout paint;
+}
+
 .task-row {
   display: flex;
   align-items: flex-start;
@@ -559,6 +575,7 @@ const getConfettiStyle = (n) => {
   position: relative;
   min-height: 56px;
   box-sizing: border-box;
+  contain: layout paint style;
 }
 
 .task-row:last-child {
@@ -578,7 +595,8 @@ const getConfettiStyle = (n) => {
 }
 
 @keyframes task-highlight {
-  0%, 50% {
+  0%,
+  50% {
     background: var(--color-primary-lightest);
     box-shadow: inset 0 0 0 2px var(--color-primary);
   }
@@ -593,7 +611,11 @@ const getConfettiStyle = (n) => {
   transform: scale(0.98) rotate(-1.2deg);
   background: var(--color-bg-secondary);
   box-shadow: var(--shadow-md);
-  transition: opacity var(--transition-micro), transform var(--transition-smooth), box-shadow var(--transition-smooth), background var(--transition-smooth);
+  transition:
+    opacity var(--transition-micro),
+    transform var(--transition-smooth),
+    box-shadow var(--transition-smooth),
+    background var(--transition-smooth);
 }
 
 .task-row.drag-over::before {
@@ -614,9 +636,11 @@ const getConfettiStyle = (n) => {
 }
 
 .task-row.completed {
-  background: var(--color-bg-tertiary);
-  transition: background var(--transition-fluid) var(--ease-out-expo),
-              transform var(--transition-smooth);
+  background: transparent;
+  transition:
+    background var(--transition-fluid) var(--ease-out-expo),
+    transform var(--transition-smooth);
+  opacity: 0.92;
 }
 
 .task-row.completed:hover {
@@ -650,9 +674,18 @@ const getConfettiStyle = (n) => {
 }
 
 @keyframes complete-scale {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .drag-handle {
@@ -666,7 +699,10 @@ const getConfettiStyle = (n) => {
   color: var(--color-text-tertiary);
   cursor: grab;
   opacity: 0;
-  transition: opacity var(--transition-micro), color var(--transition-micro), background var(--transition-micro);
+  transition:
+    opacity var(--transition-micro),
+    color var(--transition-micro),
+    background var(--transition-micro);
   flex-shrink: 0;
   border-radius: var(--radius-full);
   -webkit-user-select: none;
@@ -698,7 +734,9 @@ const getConfettiStyle = (n) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition-smooth), transform var(--transition-micro);
+  transition:
+    background var(--transition-smooth),
+    transform var(--transition-micro);
   flex-shrink: 0;
   color: var(--color-text-on-primary);
   position: relative;
@@ -712,7 +750,10 @@ const getConfettiStyle = (n) => {
   border-radius: 50%;
   border: 1.5px solid #dadce0;
   background: transparent;
-  transition: border-color var(--transition-smooth), background var(--transition-smooth), transform var(--transition-spring-soft);
+  transition:
+    border-color var(--transition-smooth),
+    background var(--transition-smooth),
+    transform var(--transition-spring-soft);
 }
 
 .task-checkbox:active::before {
@@ -724,9 +765,15 @@ const getConfettiStyle = (n) => {
 }
 
 @keyframes check-pop {
-  0% { transform: scale(0.6); }
-  50% { transform: scale(1.18); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.6);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .task-checkbox.checked svg {
@@ -734,9 +781,15 @@ const getConfettiStyle = (n) => {
 }
 
 @keyframes check-mark-pop {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .task-checkbox:hover::before {
@@ -805,22 +858,22 @@ const getConfettiStyle = (n) => {
 
 .priority-0 {
   background: rgba(239, 68, 68, 0.12);
-  color: #DC2626;
+  color: #dc2626;
 }
 
 .priority-1 {
   background: rgba(249, 115, 22, 0.12);
-  color: #EA580C;
+  color: #ea580c;
 }
 
 .priority-2 {
   background: rgba(234, 179, 8, 0.12);
-  color: #CA8A04;
+  color: #ca8a04;
 }
 
 .priority-3 {
   background: rgba(34, 197, 94, 0.12);
-  color: #16A34A;
+  color: #16a34a;
 }
 
 .task-title {
@@ -874,9 +927,15 @@ const getConfettiStyle = (n) => {
 }
 
 @keyframes star-pop {
-  0% { transform: scale(0) rotate(-45deg); }
-  60% { transform: scale(1.25) rotate(8deg); }
-  100% { transform: scale(1) rotate(0deg); }
+  0% {
+    transform: scale(0) rotate(-45deg);
+  }
+  60% {
+    transform: scale(1.25) rotate(8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 .cat-pill {
@@ -887,7 +946,9 @@ const getConfettiStyle = (n) => {
   white-space: nowrap;
   letter-spacing: 0.2px;
   flex-shrink: 0;
-  transition: transform var(--transition-micro), filter var(--transition-micro);
+  transition:
+    transform var(--transition-micro),
+    filter var(--transition-micro);
   cursor: default;
 }
 
@@ -924,7 +985,10 @@ const getConfettiStyle = (n) => {
   border-radius: var(--radius-full);
   padding: 2px 8px;
   cursor: pointer;
-  transition: background var(--transition-micro), color var(--transition-micro), transform var(--transition-micro);
+  transition:
+    background var(--transition-micro),
+    color var(--transition-micro),
+    transform var(--transition-micro);
   flex-shrink: 0;
   white-space: nowrap;
   min-height: 24px;
@@ -966,7 +1030,9 @@ const getConfettiStyle = (n) => {
   white-space: nowrap;
   letter-spacing: 0.2px;
   flex-shrink: 0;
-  transition: transform var(--transition-micro), filter var(--transition-micro);
+  transition:
+    transform var(--transition-micro),
+    filter var(--transition-micro);
   cursor: default;
 }
 
@@ -1009,11 +1075,21 @@ const getConfettiStyle = (n) => {
   animation: subtask-item-in var(--transition-smooth) var(--ease-out-quart) backwards;
 }
 
-.subtask-row:nth-child(1) { animation-delay: 0.04s; }
-.subtask-row:nth-child(2) { animation-delay: 0.08s; }
-.subtask-row:nth-child(3) { animation-delay: 0.12s; }
-.subtask-row:nth-child(4) { animation-delay: 0.16s; }
-.subtask-row:nth-child(5) { animation-delay: 0.20s; }
+.subtask-row:nth-child(1) {
+  animation-delay: 0.04s;
+}
+.subtask-row:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.subtask-row:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.subtask-row:nth-child(4) {
+  animation-delay: 0.16s;
+}
+.subtask-row:nth-child(5) {
+  animation-delay: 0.2s;
+}
 
 @keyframes subtask-item-in {
   from {
@@ -1059,7 +1135,9 @@ const getConfettiStyle = (n) => {
   border-radius: 50%;
   border: 1.5px solid #dadce0;
   background: transparent;
-  transition: border-color var(--transition-smooth), background var(--transition-smooth);
+  transition:
+    border-color var(--transition-smooth),
+    background var(--transition-smooth);
 }
 
 .subtask-checkbox.checked::before {
@@ -1115,7 +1193,11 @@ const getConfettiStyle = (n) => {
   opacity: 0;
   background: transparent;
   border: none;
-  transition: color var(--transition-micro), background var(--transition-micro), opacity var(--transition-micro), transform var(--transition-micro);
+  transition:
+    color var(--transition-micro),
+    background var(--transition-micro),
+    opacity var(--transition-micro),
+    transform var(--transition-micro);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1133,17 +1215,17 @@ const getConfettiStyle = (n) => {
 }
 
 .task-focus:hover {
-  color: #EF4444;
+  color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
 }
 
 .task-focus.active {
-  color: #EF4444;
+  color: #ef4444;
   opacity: 1;
 }
 
 .task-focus:focus-visible {
-  outline: 2px solid #EF4444;
+  outline: 2px solid #ef4444;
   outline-offset: 2px;
   opacity: 1;
 }
@@ -1274,8 +1356,9 @@ const getConfettiStyle = (n) => {
 
 .list-fade-enter-active,
 .list-fade-leave-active {
-  transition: opacity var(--duration-normal) var(--ease-out-quart),
-              transform var(--duration-normal) var(--ease-out-expo);
+  transition:
+    opacity var(--duration-normal) var(--ease-out-quart),
+    transform var(--duration-normal) var(--ease-out-expo);
   will-change: opacity, transform;
 }
 
@@ -1290,14 +1373,16 @@ const getConfettiStyle = (n) => {
 }
 
 .task-list-enter-active {
-  transition: opacity var(--duration-slow) var(--ease-out-expo),
-              transform var(--duration-slow) var(--ease-out-expo);
+  transition:
+    opacity var(--duration-slow) var(--ease-out-expo),
+    transform var(--duration-slow) var(--ease-out-expo);
   will-change: opacity, transform;
 }
 
 .task-list-leave-active {
-  transition: opacity var(--duration-fast) var(--ease-out-quart),
-              transform var(--duration-fast) var(--ease-out-quart);
+  transition:
+    opacity var(--duration-fast) var(--ease-out-quart),
+    transform var(--duration-fast) var(--ease-out-quart);
   will-change: opacity, transform;
   position: absolute;
   width: 100%;
@@ -1321,8 +1406,9 @@ const getConfettiStyle = (n) => {
 @media (max-width: 768px) {
   .task-list-enter-active,
   .task-list-leave-active {
-    transition: opacity var(--duration-fast) var(--ease-out-quart),
-                transform var(--duration-fast) var(--ease-out-expo);
+    transition:
+      opacity var(--duration-fast) var(--ease-out-quart),
+      transform var(--duration-fast) var(--ease-out-expo);
   }
 
   .task-list-enter-from {

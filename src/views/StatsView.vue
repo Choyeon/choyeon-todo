@@ -2,16 +2,16 @@
   <div class="stats-view">
     <div class="content-inner">
       <div class="content-header">
-        <h1>数据统计</h1>
-        <p class="header-subtitle">查看你的任务完成情况</p>
+        <h1>{{ $t('stats.dataTitle') }}</h1>
+        <p class="header-subtitle">{{ $t('stats.subtitle') }}</p>
       </div>
 
       <div class="overview-cards">
         <div class="stat-card primary-card">
           <div class="stat-info">
-            <span class="stat-label">完成任务</span>
+            <span class="stat-label">{{ $t('stats.completedTasks') }}</span>
             <span class="stat-value"><AnimatedNumber :value="stats.completedInRange" /></span>
-            <span class="stat-sub">近 {{ rangeDays }} 天</span>
+            <span class="stat-sub">{{ $t('stats.lastNDays', { days: rangeDays }) }}</span>
           </div>
           <div class="ring-chart">
             <svg viewBox="0 0 80 80" class="ring-svg">
@@ -33,9 +33,9 @@
             <PlusCircle :size="24" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">创建任务</span>
+            <span class="stat-label">{{ $t('stats.createdTasks') }}</span>
             <span class="stat-value"><AnimatedNumber :value="stats.totalCreatedInRange" /></span>
-            <span class="stat-sub">日均 {{ stats.avgDailyCreated }}</span>
+            <span class="stat-sub">{{ $t('stats.dailyAverageCreated', { count: stats.avgDailyCreated }) }}</span>
           </div>
         </div>
 
@@ -44,14 +44,16 @@
             <Clock :size="24" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">专注时长</span>
+            <span class="stat-label">{{ $t('stats.focusDuration') }}</span>
             <div class="focus-time-display">
               <span class="focus-value"><AnimatedNumber :value="focusHours" /></span>
               <span class="focus-unit">h</span>
-              <span class="focus-value" v-if="focusMinutes > 0"><AnimatedNumber :value="focusMinutes" /></span>
+              <span class="focus-value" v-if="focusMinutes > 0"
+                ><AnimatedNumber :value="focusMinutes"
+              /></span>
               <span class="focus-unit" v-if="focusMinutes > 0">m</span>
             </div>
-            <span class="stat-sub">累计专注</span>
+            <span class="stat-sub">{{ $t('stats.totalFocus') }}</span>
           </div>
         </div>
 
@@ -60,9 +62,13 @@
             <Timer :size="24" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">番茄钟</span>
-            <span class="stat-value"><AnimatedNumber :value="stats.totalPomodoro" /><span class="stat-value-unit">次</span></span>
-            <span class="stat-sub">完成次数</span>
+            <span class="stat-label">{{ $t('stats.pomodoro') }}</span>
+            <span class="stat-value"
+              ><AnimatedNumber :value="stats.totalPomodoro" /><span class="stat-value-unit"
+                >{{ $t('stats.timesUnit') }}</span
+              ></span
+            >
+            <span class="stat-sub">{{ $t('stats.completedSessions') }}</span>
           </div>
         </div>
       </div>
@@ -73,9 +79,13 @@
             <Flame :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">连续完成</span>
-            <span class="stat-value mini"><AnimatedNumber :value="stats.streakDays" /><span class="stat-value-unit">天</span></span>
-            <span class="stat-sub">最长 {{ stats.maxStreak }} 天</span>
+            <span class="stat-label">{{ $t('stats.streakDays') }}</span>
+            <span class="stat-value mini"
+              ><AnimatedNumber :value="stats.streakDays" /><span class="stat-value-unit"
+                >{{ $t('stats.dayUnit') }}</span
+              ></span
+            >
+            <span class="stat-sub">{{ $t('stats.longestStreak', { days: stats.maxStreak }) }}</span>
           </div>
         </div>
 
@@ -84,9 +94,12 @@
             <CalendarCheck :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">按时完成率</span>
+            <span class="stat-label">{{ $t('stats.onTimeRate') }}</span>
             <span class="stat-value mini"><AnimatedNumber :value="stats.onTimeRate" />%</span>
-            <span class="stat-sub">{{ stats.onTimeCompleted }} / {{ stats.onTimeCompleted + stats.overdueCompleted }}</span>
+            <span class="stat-sub"
+              >{{ stats.onTimeCompleted }} /
+              {{ stats.onTimeCompleted + stats.overdueCompleted }}</span
+            >
           </div>
         </div>
 
@@ -95,9 +108,13 @@
             <TrendingUp :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">日均完成</span>
-            <span class="stat-value mini"><AnimatedNumber :value="stats.avgDailyCompleted" /><span class="stat-value-unit">个</span></span>
-            <span class="stat-sub">近 {{ rangeDays }} 天</span>
+            <span class="stat-label">{{ $t('stats.dailyCompleted') }}</span>
+            <span class="stat-value mini"
+              ><AnimatedNumber :value="stats.avgDailyCompleted" /><span class="stat-value-unit"
+                >{{ $t('stats.countUnit') }}</span
+              ></span
+            >
+            <span class="stat-sub">{{ $t('stats.lastNDays', { days: rangeDays }) }}</span>
           </div>
         </div>
 
@@ -106,9 +123,14 @@
             <Hourglass :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">平均完成时间</span>
-            <span class="stat-value mini"><AnimatedNumber :value="stats.avgCompletionTimeHours" :decimals="1" /><span class="stat-value-unit">h</span></span>
-            <span class="stat-sub">从创建到完成</span>
+            <span class="stat-label">{{ $t('stats.avgCompletionTime') }}</span>
+            <span class="stat-value mini"
+              ><AnimatedNumber :value="stats.avgCompletionTimeHours" :decimals="1" /><span
+                class="stat-value-unit"
+                >h</span
+              ></span
+            >
+            <span class="stat-sub">{{ $t('stats.fromCreationToCompletion') }}</span>
           </div>
         </div>
 
@@ -117,9 +139,13 @@
             <AlertTriangle :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">逾期任务</span>
-            <span class="stat-value mini"><AnimatedNumber :value="stats.overdueActive" /><span class="stat-value-unit">个</span></span>
-            <span class="stat-sub">待处理</span>
+            <span class="stat-label">{{ $t('stats.overdueTasks') }}</span>
+            <span class="stat-value mini"
+              ><AnimatedNumber :value="stats.overdueActive" /><span class="stat-value-unit"
+                >{{ $t('stats.countUnit') }}</span
+              ></span
+            >
+            <span class="stat-sub">{{ $t('stats.pending') }}</span>
           </div>
         </div>
 
@@ -128,9 +154,15 @@
             <Target :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">总完成率</span>
-            <span class="stat-value mini"><AnimatedNumber :value="totalCompletionRate" /><span class="stat-value-unit">%</span></span>
-            <span class="stat-sub">{{ stats.completedTasksEver }} / {{ stats.totalTasksEver }}</span>
+            <span class="stat-label">{{ $t('stats.totalCompletionRate') }}</span>
+            <span class="stat-value mini"
+              ><AnimatedNumber :value="totalCompletionRate" /><span class="stat-value-unit"
+                >%</span
+              ></span
+            >
+            <span class="stat-sub"
+              >{{ stats.completedTasksEver }} / {{ stats.totalTasksEver }}</span
+            >
           </div>
         </div>
 
@@ -139,9 +171,9 @@
             <Award :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">最高效日</span>
+            <span class="stat-label">{{ $t('stats.mostProductiveDay') }}</span>
             <span class="stat-value mini">{{ bestDayLabel }}</span>
-            <span class="stat-sub">{{ stats.bestDay.count }} 个任务</span>
+            <span class="stat-sub">{{ $t('stats.taskCount', { count: stats.bestDay.count }) }}</span>
           </div>
         </div>
 
@@ -150,16 +182,21 @@
             <ListTodo :size="20" />
           </div>
           <div class="stat-info">
-            <span class="stat-label">待完成</span>
-            <span class="stat-value mini"><AnimatedNumber :value="stats.totalTasksEver - stats.completedTasksEver" /><span class="stat-value-unit">个</span></span>
-            <span class="stat-sub">进行中</span>
+            <span class="stat-label">{{ $t('stats.pendingTasks') }}</span>
+            <span class="stat-value mini"
+              ><AnimatedNumber :value="stats.totalTasksEver - stats.completedTasksEver" /><span
+                class="stat-value-unit"
+                >{{ $t('stats.countUnit') }}</span
+              ></span
+            >
+            <span class="stat-sub">{{ $t('stats.inProgress') }}</span>
           </div>
         </div>
       </div>
 
       <div class="chart-card">
         <div class="chart-header">
-          <h3 class="chart-title">完成趋势</h3>
+          <h3 class="chart-title">{{ $t('stats.completionTrend') }}</h3>
           <div class="range-tabs">
             <button
               v-for="day in [7, 14, 30]"
@@ -168,7 +205,7 @@
               :class="{ active: rangeDays === day }"
               @click="rangeDays = day"
             >
-              {{ day }}天
+              {{ $t('stats.daysFormat', { days: day }) }}
             </button>
           </div>
         </div>
@@ -176,8 +213,14 @@
           <svg :viewBox="`0 0 ${chartWidth} ${chartHeight}`" class="trend-chart">
             <defs>
               <linearGradient id="createdGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" :style="{ stopColor: 'var(--color-primary)', stopOpacity: 0.3 }" />
-                <stop offset="100%" :style="{ stopColor: 'var(--color-primary)', stopOpacity: 0 }" />
+                <stop
+                  offset="0%"
+                  :style="{ stopColor: 'var(--color-primary)', stopOpacity: 0.3 }"
+                />
+                <stop
+                  offset="100%"
+                  :style="{ stopColor: 'var(--color-primary)', stopOpacity: 0 }"
+                />
               </linearGradient>
               <linearGradient id="completedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" :style="{ stopColor: '#22c55e', stopOpacity: 0.3 }" />
@@ -191,8 +234,8 @@
                 :key="'grid-' + i"
                 :x1="padding.left"
                 :x2="chartWidth - padding.right"
-                :y1="padding.top + (chartHeight - padding.top - padding.bottom) * (i - 1) / 4"
-                :y2="padding.top + (chartHeight - padding.top - padding.bottom) * (i - 1) / 4"
+                :y1="padding.top + ((chartHeight - padding.top - padding.bottom) * (i - 1)) / 4"
+                :y2="padding.top + ((chartHeight - padding.top - padding.bottom) * (i - 1)) / 4"
                 class="grid-line"
               />
             </g>
@@ -202,23 +245,15 @@
                 v-for="i in 5"
                 :key="'y-label-' + i"
                 :x="padding.left - 8"
-                :y="padding.top + (chartHeight - padding.top - padding.bottom) * (i - 1) / 4 + 4"
+                :y="padding.top + ((chartHeight - padding.top - padding.bottom) * (i - 1)) / 4 + 4"
                 class="y-label"
               >
-                {{ Math.round(maxYValue - (maxYValue * (i - 1) / 4)) }}
+                {{ Math.round(maxYValue - (maxYValue * (i - 1)) / 4) }}
               </text>
             </g>
 
-            <path
-              v-if="createdAreaPath"
-              :d="createdAreaPath"
-              class="area created-area"
-            />
-            <path
-              v-if="completedAreaPath"
-              :d="completedAreaPath"
-              class="area completed-area"
-            />
+            <path v-if="createdAreaPath" :d="createdAreaPath" class="area created-area" />
+            <path v-if="completedAreaPath" :d="completedAreaPath" class="area completed-area" />
 
             <polyline
               v-if="createdLinePath"
@@ -268,11 +303,11 @@
           <div class="chart-legend">
             <div class="legend-item">
               <span class="legend-dot created-dot"></span>
-              <span class="legend-text">创建数</span>
+              <span class="legend-text">{{ $t('stats.createdCount') }}</span>
             </div>
             <div class="legend-item">
               <span class="legend-dot completed-dot"></span>
-              <span class="legend-text">完成数</span>
+              <span class="legend-text">{{ $t('stats.completedCount') }}</span>
             </div>
           </div>
         </div>
@@ -281,21 +316,21 @@
       <div class="charts-row">
         <div class="chart-card half-card">
           <div class="chart-header">
-            <h3 class="chart-title">分类分布</h3>
+            <h3 class="chart-title">{{ $t('stats.categoryDistribution') }}</h3>
             <div class="chart-tabs">
               <button
                 class="chart-tab"
                 :class="{ active: categoryStatType === 'active' }"
                 @click="categoryStatType = 'active'"
               >
-                待完成
+                {{ $t('stats.pendingTasks') }}
               </button>
               <button
                 class="chart-tab"
                 :class="{ active: categoryStatType === 'completed' }"
                 @click="categoryStatType = 'completed'"
               >
-                已完成
+                {{ $t('stats.completedTasks') }}
               </button>
             </div>
           </div>
@@ -313,11 +348,7 @@
               </g>
             </svg>
             <div class="pie-legend">
-              <div
-                v-for="item in categoryList"
-                :key="item.id"
-                class="pie-legend-item"
-              >
+              <div v-for="item in categoryList" :key="item.id" class="pie-legend-item">
                 <span class="legend-dot" :style="{ background: item.color }"></span>
                 <span class="legend-name">{{ item.name }}</span>
                 <span class="legend-count">{{ item.count }}</span>
@@ -329,7 +360,7 @@
 
         <div class="chart-card half-card">
           <div class="chart-header">
-            <h3 class="chart-title">本周完成热力图</h3>
+            <h3 class="chart-title">{{ $t('stats.weeklyHeatmap') }}</h3>
           </div>
           <div class="chart-body heatmap-body">
             <div class="heatmap-grid">
@@ -338,14 +369,14 @@
                 :key="'heatmap-' + i"
                 class="heatmap-cell"
                 :class="'level-' + day.level"
-                :title="`${day.date}: ${day.count} 个完成任务`"
+                :title="$t('stats.completedTasksOnDate', { date: day.date, count: day.count })"
               >
                 <span class="heatmap-count">{{ day.count }}</span>
                 <span class="heatmap-day">{{ day.dayLabel }}</span>
               </div>
             </div>
             <div class="heatmap-legend">
-              <span class="heatmap-legend-label">少</span>
+              <span class="heatmap-legend-label">{{ $t('stats.less') }}</span>
               <div class="heatmap-legend-cells">
                 <span class="heatmap-legend-cell level-0"></span>
                 <span class="heatmap-legend-cell level-1"></span>
@@ -353,7 +384,7 @@
                 <span class="heatmap-legend-cell level-3"></span>
                 <span class="heatmap-legend-cell level-4"></span>
               </div>
-              <span class="heatmap-legend-label">多</span>
+              <span class="heatmap-legend-label">{{ $t('stats.more') }}</span>
             </div>
           </div>
         </div>
@@ -361,20 +392,13 @@
 
       <div class="chart-card">
         <div class="chart-header">
-          <h3 class="chart-title">星期完成分布</h3>
+          <h3 class="chart-title">{{ $t('stats.weekdayDistribution') }}</h3>
         </div>
         <div class="chart-body">
           <div class="weekday-chart">
-            <div
-              v-for="(day, i) in weekdayStats"
-              :key="'weekday-' + i"
-              class="weekday-bar-wrapper"
-            >
+            <div v-for="(day, i) in weekdayStats" :key="'weekday-' + i" class="weekday-bar-wrapper">
               <div class="weekday-bar-container">
-                <div
-                  class="weekday-bar"
-                  :style="{ height: day.heightPercent + '%' }"
-                ></div>
+                <div class="weekday-bar" :style="{ height: day.heightPercent + '%' }"></div>
               </div>
               <span class="weekday-label">{{ day.label }}</span>
               <span class="weekday-count">{{ day.count }}</span>
@@ -388,10 +412,24 @@
 
 <script setup>
 import { ref, computed, h, watchEffect, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
-import { PlusCircle, Clock, Timer, Flame, CalendarCheck, TrendingUp, Hourglass, AlertTriangle, Target, Award, ListTodo } from '@lucide/vue'
+import {
+  PlusCircle,
+  Clock,
+  Timer,
+  Flame,
+  CalendarCheck,
+  TrendingUp,
+  Hourglass,
+  AlertTriangle,
+  Target,
+  Award,
+  ListTodo
+} from '@lucide/vue'
 import { formatDateStr } from '../utils/date'
 
+const { t } = useI18n()
 const taskStore = useTaskStore()
 const rangeDays = ref(30)
 const categoryStatType = ref('active')
@@ -452,9 +490,9 @@ const totalCompletionRate = computed(() => {
   return Math.round((stats.value.completedTasksEver / stats.value.totalTasksEver) * 100)
 })
 
-const weekDayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 const bestDayLabel = computed(() => {
-  return weekDayNames[stats.value.bestDay.day] || '周一'
+  const weekdays = t('date.weekdays')
+  return weekdays[stats.value.bestDay.day] || weekdays[1]
 })
 
 const ringDasharray = 2 * Math.PI * 32
@@ -501,11 +539,11 @@ const completedPoints = computed(() => {
 })
 
 const createdLinePath = computed(() => {
-  return createdPoints.value.map(p => `${p.x},${p.y}`).join(' ')
+  return createdPoints.value.map((p) => `${p.x},${p.y}`).join(' ')
 })
 
 const completedLinePath = computed(() => {
-  return completedPoints.value.map(p => `${p.x},${p.y}`).join(' ')
+  return completedPoints.value.map((p) => `${p.x},${p.y}`).join(' ')
 })
 
 const createdAreaPath = computed(() => {
@@ -552,13 +590,14 @@ const xLabels = computed(() => {
 })
 
 const categoryList = computed(() => {
-  const catStats = categoryStatType.value === 'completed' 
-    ? stats.value.completedCategoryStats 
-    : stats.value.categoryStats
+  const catStats =
+    categoryStatType.value === 'completed'
+      ? stats.value.completedCategoryStats
+      : stats.value.categoryStats
   const total = Object.values(catStats).reduce((sum, c) => sum + c, 0) || 1
   return taskStore.categories
-    .filter(cat => catStats[cat.id] > 0)
-    .map(cat => ({
+    .filter((cat) => catStats[cat.id] > 0)
+    .map((cat) => ({
       id: cat.id,
       name: cat.name,
       color: cat.color,
@@ -610,7 +649,15 @@ const weekHeatmap = computed(() => {
   monday.setDate(today.getDate() - diff)
 
   const days = []
-  const dayLabels = ['一', '二', '三', '四', '五', '六', '日']
+  const dayLabels = [
+    t('task.monday'),
+    t('task.tuesday'),
+    t('task.wednesday'),
+    t('task.thursday'),
+    t('task.friday'),
+    t('task.saturday'),
+    t('task.sunday')
+  ]
   const dailyStats = stats.value.dailyStats
 
   let maxCount = 0
@@ -618,7 +665,7 @@ const weekHeatmap = computed(() => {
     const date = new Date(monday)
     date.setDate(monday.getDate() + i)
     const dateStr = formatDateStr(date)
-    const stat = dailyStats.find(d => d.date === dateStr)
+    const stat = dailyStats.find((d) => d.date === dateStr)
     const count = stat ? stat.completed : 0
     if (count > maxCount) maxCount = count
     days.push({
@@ -650,11 +697,11 @@ const weekHeatmap = computed(() => {
 
 const weekdayStats = computed(() => {
   const weekDayStats = stats.value.weekDayStats || {}
-  const labels = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  const labels = t('date.weekdays')
   const order = [1, 2, 3, 4, 5, 6, 0]
-  
+
   let maxCount = 0
-  const days = order.map(dayIdx => {
+  const days = order.map((dayIdx) => {
     const data = weekDayStats[dayIdx] || { completed: 0, created: 0 }
     maxCount = Math.max(maxCount, data.completed)
     return {
@@ -663,9 +710,9 @@ const weekdayStats = computed(() => {
       count: data.completed
     }
   })
-  
+
   const maxHeight = maxCount > 0 ? maxCount : 1
-  return days.map(d => ({
+  return days.map((d) => ({
     ...d,
     heightPercent: Math.round((d.count / maxHeight) * 100)
   }))
@@ -821,42 +868,42 @@ const weekdayStats = computed(() => {
 
 .icon-purple {
   background: rgba(168, 85, 247, 0.12);
-  color: #A855F7;
+  color: #a855f7;
 }
 
 .icon-teal {
   background: rgba(6, 182, 212, 0.12);
-  color: #06B6D4;
+  color: #06b6d4;
 }
 
 .icon-pink {
   background: rgba(236, 72, 153, 0.12);
-  color: #EC4899;
+  color: #ec4899;
 }
 
 .icon-yellow {
   background: rgba(245, 158, 11, 0.12);
-  color: #F59E0B;
+  color: #f59e0b;
 }
 
 .icon-red {
   background: rgba(239, 68, 68, 0.12);
-  color: #EF4444;
+  color: #ef4444;
 }
 
 .icon-indigo {
   background: rgba(99, 102, 241, 0.12);
-  color: #6366F1;
+  color: #6366f1;
 }
 
 .icon-cyan {
   background: rgba(6, 182, 212, 0.12);
-  color: #06B6D4;
+  color: #06b6d4;
 }
 
 .icon-lime {
   background: rgba(132, 204, 22, 0.12);
-  color: #84CC16;
+  color: #84cc16;
 }
 
 .stat-info {
@@ -1413,11 +1460,21 @@ const weekdayStats = computed(() => {
   flex-shrink: 0;
 }
 
-.heatmap-legend-cell.level-0 { background: var(--color-bg-secondary); }
-.heatmap-legend-cell.level-1 { background: rgba(34, 197, 94, 0.15); }
-.heatmap-legend-cell.level-2 { background: rgba(34, 197, 94, 0.3); }
-.heatmap-legend-cell.level-3 { background: rgba(34, 197, 94, 0.5); }
-.heatmap-legend-cell.level-4 { background: #22c55e; }
+.heatmap-legend-cell.level-0 {
+  background: var(--color-bg-secondary);
+}
+.heatmap-legend-cell.level-1 {
+  background: rgba(34, 197, 94, 0.15);
+}
+.heatmap-legend-cell.level-2 {
+  background: rgba(34, 197, 94, 0.3);
+}
+.heatmap-legend-cell.level-3 {
+  background: rgba(34, 197, 94, 0.5);
+}
+.heatmap-legend-cell.level-4 {
+  background: #22c55e;
+}
 
 .weekday-chart {
   display: flex;

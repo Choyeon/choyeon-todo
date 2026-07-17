@@ -37,7 +37,8 @@ export const useReminderScheduler = () => {
 
     // 非 Electron 环境尝试浏览器通知回退
     const hasElectronNotify = !!window.electronAPI?.sendNotification
-    const hasBrowserNotify = typeof Notification !== 'undefined' && Notification.permission === 'granted'
+    const hasBrowserNotify =
+      typeof Notification !== 'undefined' && Notification.permission === 'granted'
     if (!hasElectronNotify && !hasBrowserNotify) return
 
     const sendNotification = (title, body, taskId) => {
@@ -71,11 +72,7 @@ export const useReminderScheduler = () => {
         if (!triggeredReminders.has(triggerKey)) {
           triggeredReminders.add(triggerKey)
           triggeredReminders.add(task.id)
-          sendNotification(
-            '任务已逾期',
-            `"${task.title}" 已逾期，请尽快处理`,
-            task.id
-          )
+          sendNotification('任务已逾期', `"${task.title}" 已逾期，请尽快处理`, task.id)
         }
         continue
       }
@@ -106,9 +103,8 @@ export const useReminderScheduler = () => {
         triggeredReminders.add(task.id)
         const isDue = task.date === today && nowMinutes >= taskMinutes
         const title = isDue ? '任务到期提醒' : '任务即将到期'
-        const minutesLeft = task.date === today
-          ? taskMinutes - nowMinutes
-          : 1440 - nowMinutes + taskMinutes
+        const minutesLeft =
+          task.date === today ? taskMinutes - nowMinutes : 1440 - nowMinutes + taskMinutes
         const body = isDue
           ? `"${task.title}" 已到期`
           : `"${task.title}" 将在 ${minutesLeft} 分钟后到期`

@@ -3,61 +3,59 @@
     <div class="content-inner">
       <div class="content-header">
         <div class="header-row">
-          <h1>日历视图</h1>
+          <h1>{{ $t('calendar.viewTitle') }}</h1>
           <div class="view-toggle">
             <button
               class="toggle-btn"
               :class="{ active: viewMode === 'month' }"
               @click="viewMode = 'month'"
-              aria-label="月视图"
+              :aria-label="$t('calendar.monthView')"
             >
               <Calendar :size="18" />
-              <span>月视图</span>
+              <span>{{ $t('calendar.monthView') }}</span>
             </button>
             <button
               class="toggle-btn"
               :class="{ active: viewMode === 'timeline' }"
               @click="viewMode = 'timeline'"
-              aria-label="时间线视图"
+              :aria-label="$t('calendar.timelineView')"
             >
               <Clock :size="18" />
-              <span>时间线</span>
+              <span>{{ $t('calendar.timelineView') }}</span>
             </button>
           </div>
         </div>
-        <p class="header-subtitle">{{ viewMode === 'month' ? `${currentYear}年${currentMonth + 1}月` : selectedDateFormatted }}</p>
+        <p class="header-subtitle">
+          {{
+            viewMode === 'month' ? currentYearMonthFormatted : selectedDateFormatted
+          }}
+        </p>
       </div>
 
       <template v-if="viewMode === 'month'">
         <div class="calendar-card">
           <div class="cal-nav">
-            <button class="cal-nav-btn" @click="prevMonth" aria-label="上个月">
+            <button class="cal-nav-btn" @click="prevMonth" :aria-label="$t('calendar.prevMonth')">
               <ChevronLeft :size="20" />
             </button>
-            <span class="cal-nav-title">{{ currentYear }}年{{ currentMonth + 1 }}月</span>
+            <span class="cal-nav-title">{{ currentYearMonthFormatted }}</span>
             <div class="cal-nav-right">
               <button
                 v-if="!isCurrentMonth"
                 class="today-btn"
                 @click="goToToday"
-                aria-label="回到今天"
+                :aria-label="$t('calendar.backToToday')"
               >
-                今天
+                {{ $t('calendar.today') }}
               </button>
-              <button class="cal-nav-btn" @click="nextMonth" aria-label="下个月">
+              <button class="cal-nav-btn" @click="nextMonth" :aria-label="$t('calendar.nextMonth')">
                 <ChevronRight :size="20" />
               </button>
             </div>
           </div>
 
           <div class="cal-weekdays">
-            <div class="cal-weekday">周一</div>
-            <div class="cal-weekday">周二</div>
-            <div class="cal-weekday">周三</div>
-            <div class="cal-weekday">周四</div>
-            <div class="cal-weekday">周五</div>
-            <div class="cal-weekday">周六</div>
-            <div class="cal-weekday">周日</div>
+            <div v-for="(weekday, index) in weekdayLabels" :key="index" class="cal-weekday">{{ weekday }}</div>
           </div>
 
           <div class="cal-grid" :key="`${currentYear}-${currentMonth}`">
@@ -67,12 +65,12 @@
               class="cal-day"
               :class="{
                 'other-month': !day.isCurrentMonth,
-                'today': day.isToday,
-                'selected': day.dateStr === selectedDate
+                today: day.isToday,
+                selected: day.dateStr === selectedDate
               }"
               role="button"
               tabindex="0"
-              :aria-label="`${day.isToday ? '今天，' : ''}${day.dateStr}${hasTasks(day.dateStr) ? '，有任务' : ''}`"
+              :aria-label="getDayAriaLabel(day)"
               :aria-current="day.isToday ? 'date' : undefined"
               :style="{ animationDelay: `${index * 8}ms` }"
               @click="selectDate(day)"
@@ -85,14 +83,14 @@
           </div>
         </div>
 
-        <h2 class="section-title">{{ selectedDateFormatted }}的任务</h2>
+        <h2 class="section-title">{{ $t('calendar.tasksForDate', { date: selectedDateFormatted }) }}</h2>
         <TaskList :tasks="selectedTasks" empty-type="planned" />
       </template>
 
       <template v-else>
         <div class="timeline-container">
           <div class="timeline-header">
-            <button class="timeline-nav-btn" @click="prevDay" aria-label="前一天">
+            <button class="timeline-nav-btn" @click="prevDay" :aria-label="$t('calendar.prevDay')">
               <ChevronLeft :size="20" />
             </button>
             <div class="timeline-date-info">
@@ -100,15 +98,10 @@
               <span class="timeline-weekday">{{ selectedWeekday }}</span>
             </div>
             <div class="timeline-nav-right">
-              <button
-                v-if="!isToday"
-                class="today-btn"
-                @click="goToToday"
-                aria-label="回到今天"
-              >
-                今天
+              <button v-if="!isToday" class="today-btn" @click="goToToday" :aria-label="$t('calendar.backToToday')">
+                {{ $t('calendar.today') }}
               </button>
-              <button class="timeline-nav-btn" @click="nextDay" aria-label="后一天">
+              <button class="timeline-nav-btn" @click="nextDay" :aria-label="$t('calendar.nextDay')">
                 <ChevronRight :size="20" />
               </button>
             </div>
@@ -116,7 +109,7 @@
 
           <div class="timeline-content">
             <div v-if="allDayTasks.length > 0" class="all-day-section">
-              <div class="all-day-label">全天</div>
+              <div class="all-day-label">{{ $t('calendar.allDay') }}</div>
               <div class="all-day-tasks">
                 <div
                   v-for="task in allDayTasks"
@@ -143,25 +136,13 @@
             <div class="timeline-scroll">
               <div class="timeline-grid">
                 <div class="timeline-hours">
-                  <div
-                    v-for="hour in 24"
-                    :key="hour - 1"
-                    class="hour-marker"
-                  >
+                  <div v-for="hour in 24" :key="hour - 1" class="hour-marker">
                     {{ formatHour(hour - 1) }}
                   </div>
                 </div>
 
-                <div
-                  class="timeline-tasks"
-                  @dragover.prevent="onDragOver"
-                  @drop="onDrop"
-                >
-                  <div
-                    v-for="hour in 24"
-                    :key="`line-${hour - 1}`"
-                    class="hour-line"
-                  ></div>
+                <div class="timeline-tasks" @dragover.prevent="onDragOver" @drop="onDrop">
+                  <div v-for="hour in 24" :key="`line-${hour - 1}`" class="hour-line"></div>
 
                   <div
                     v-for="task in timedTasks"
@@ -196,9 +177,9 @@
             <EmptyState
               v-if="selectedTasks.length === 0"
               type="planned"
-              title="今天没有任务"
-              description="享受轻松的一天，或添加新任务"
-              action-label="添加任务"
+              :title="$t('empty.todayTitle')"
+              :description="$t('empty.todaySubtitle')"
+              :action-label="$t('calendar.addTask')"
               @action="openAddTask && openAddTask()"
             />
           </div>
@@ -210,11 +191,14 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { getTodayStr, formatDateStr, parseDateStr } from '../utils/date'
 import TaskList from '../components/TaskList.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { ChevronLeft, ChevronRight, Calendar, Clock, Star, Bell } from '@lucide/vue'
+
+const { t } = useI18n()
 
 const taskStore = useTaskStore()
 const openEditTask = inject('openEditTask')
@@ -231,8 +215,10 @@ const currentMonth = ref(initDate.getMonth())
 const selectedDate = ref(formatDateStr(initDate))
 
 const isCurrentMonth = computed(() => {
-  return currentYear.value === todayDate.value.getFullYear() &&
+  return (
+    currentYear.value === todayDate.value.getFullYear() &&
     currentMonth.value === todayDate.value.getMonth()
+  )
 })
 
 const isToday = computed(() => {
@@ -241,13 +227,22 @@ const isToday = computed(() => {
 
 const selectedDateFormatted = computed(() => {
   const date = parseDateStr(selectedDate.value)
-  return `${date.getMonth() + 1}月${date.getDate()}日`
+  return t('date.monthDayFormat', { month: date.getMonth() + 1, day: date.getDate() })
 })
 
 const selectedWeekday = computed(() => {
   const date = parseDateStr(selectedDate.value)
-  const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-  return days[date.getDay()]
+  const weekdays = t('date.weekdays')
+  return weekdays[date.getDay()]
+})
+
+const currentYearMonthFormatted = computed(() => {
+  return t('date.yearMonthFormat', { year: currentYear.value, month: currentMonth.value + 1 })
+})
+
+const weekdayLabels = computed(() => {
+  const weekdays = t('date.weekdays')
+  return [weekdays[1], weekdays[2], weekdays[3], weekdays[4], weekdays[5], weekdays[6], weekdays[0]]
 })
 
 const calendarDays = computed(() => {
@@ -310,17 +305,27 @@ const selectedTasks = computed(() => {
 })
 
 const allDayTasks = computed(() => {
-  return selectedTasks.value.filter(t => !t.time)
+  return selectedTasks.value.filter((t) => !t.time)
 })
 
 const timedTasks = computed(() => {
-  return selectedTasks.value
-    .filter(t => t.time)
-    .sort((a, b) => a.time.localeCompare(b.time))
+  return selectedTasks.value.filter((t) => t.time).sort((a, b) => a.time.localeCompare(b.time))
 })
 
 const hasTasks = (dateStr) => {
   return (taskDateMap.value.get(dateStr) || 0) > 0
+}
+
+const getDayAriaLabel = (day) => {
+  let label = ''
+  if (day.isToday) {
+    label += t('calendar.todayAriaLabel') + '，'
+  }
+  label += day.dateStr
+  if (hasTasks(day.dateStr)) {
+    label += '，' + t('calendar.hasTasks')
+  }
+  return label
 }
 
 const prevMonth = () => {
@@ -393,7 +398,7 @@ const getTaskPosition = (task) => {
 
 const getCategoryName = (catId) => {
   const cat = taskStore.getCategoryById(catId)
-  return cat ? cat.name : '其他'
+  return cat ? cat.name : t('categories.other')
 }
 
 const getCategoryStyle = (catId) => {
@@ -910,30 +915,78 @@ const onDrop = (e) => {
   border-bottom: 1px solid var(--color-border-light);
 }
 
-.hour-line:nth-child(1) { top: 0; }
-.hour-line:nth-child(2) { top: 50px; }
-.hour-line:nth-child(3) { top: 100px; }
-.hour-line:nth-child(4) { top: 150px; }
-.hour-line:nth-child(5) { top: 200px; }
-.hour-line:nth-child(6) { top: 250px; }
-.hour-line:nth-child(7) { top: 300px; }
-.hour-line:nth-child(8) { top: 350px; }
-.hour-line:nth-child(9) { top: 400px; }
-.hour-line:nth-child(10) { top: 450px; }
-.hour-line:nth-child(11) { top: 500px; }
-.hour-line:nth-child(12) { top: 550px; }
-.hour-line:nth-child(13) { top: 600px; }
-.hour-line:nth-child(14) { top: 650px; }
-.hour-line:nth-child(15) { top: 700px; }
-.hour-line:nth-child(16) { top: 750px; }
-.hour-line:nth-child(17) { top: 800px; }
-.hour-line:nth-child(18) { top: 850px; }
-.hour-line:nth-child(19) { top: 900px; }
-.hour-line:nth-child(20) { top: 950px; }
-.hour-line:nth-child(21) { top: 1000px; }
-.hour-line:nth-child(22) { top: 1050px; }
-.hour-line:nth-child(23) { top: 1100px; }
-.hour-line:nth-child(24) { top: 1150px; }
+.hour-line:nth-child(1) {
+  top: 0;
+}
+.hour-line:nth-child(2) {
+  top: 50px;
+}
+.hour-line:nth-child(3) {
+  top: 100px;
+}
+.hour-line:nth-child(4) {
+  top: 150px;
+}
+.hour-line:nth-child(5) {
+  top: 200px;
+}
+.hour-line:nth-child(6) {
+  top: 250px;
+}
+.hour-line:nth-child(7) {
+  top: 300px;
+}
+.hour-line:nth-child(8) {
+  top: 350px;
+}
+.hour-line:nth-child(9) {
+  top: 400px;
+}
+.hour-line:nth-child(10) {
+  top: 450px;
+}
+.hour-line:nth-child(11) {
+  top: 500px;
+}
+.hour-line:nth-child(12) {
+  top: 550px;
+}
+.hour-line:nth-child(13) {
+  top: 600px;
+}
+.hour-line:nth-child(14) {
+  top: 650px;
+}
+.hour-line:nth-child(15) {
+  top: 700px;
+}
+.hour-line:nth-child(16) {
+  top: 750px;
+}
+.hour-line:nth-child(17) {
+  top: 800px;
+}
+.hour-line:nth-child(18) {
+  top: 850px;
+}
+.hour-line:nth-child(19) {
+  top: 900px;
+}
+.hour-line:nth-child(20) {
+  top: 950px;
+}
+.hour-line:nth-child(21) {
+  top: 1000px;
+}
+.hour-line:nth-child(22) {
+  top: 1050px;
+}
+.hour-line:nth-child(23) {
+  top: 1100px;
+}
+.hour-line:nth-child(24) {
+  top: 1150px;
+}
 
 .timeline-task-card {
   position: absolute;
@@ -948,7 +1001,9 @@ const onDrop = (e) => {
   transition:
     transform var(--duration-moderate) var(--ease-spring-soft),
     box-shadow var(--duration-moderate) var(--ease-out-expo);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
   z-index: 1;
 }
 

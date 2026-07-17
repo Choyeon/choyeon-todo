@@ -2,14 +2,14 @@
   <div class="completed-view">
     <div class="content-inner">
       <div class="content-header">
-        <h1>已完成</h1>
-        <p class="header-subtitle">{{ taskStore.getCount('completed') }} 个已完成任务</p>
+        <h1>{{ $t('nav.completed') }}</h1>
+        <p class="header-subtitle">{{ $t('task.completedCount', { count: taskStore.getCount('completed') }) }}</p>
       </div>
 
       <div v-if="completedTasks.length > 0" class="action-bar">
         <button class="clear-btn" @click="showClearModal = true">
           <Trash2 :size="16" />
-          清除已完成任务
+          {{ $t('task.clearCompleted') }}
         </button>
       </div>
 
@@ -24,16 +24,14 @@
               <div class="confirm-icon">
                 <AlertTriangle :size="32" />
               </div>
-              <h3 class="confirm-title">确认清除</h3>
-              <p class="confirm-desc">
-                确定要清除所有已完成的任务吗？此操作不可撤销。
-              </p>
+              <h3 class="confirm-title">{{ $t('task.clearCompletedConfirm') }}</h3>
+              <p class="confirm-desc">{{ $t('task.clearCompletedDesc') }}</p>
               <div class="confirm-actions">
                 <button class="confirm-btn danger" @click="confirmClear">
                   <Trash2 :size="16" />
-                  确认清除
+                  {{ $t('task.clearCompletedConfirm') }}
                 </button>
-                <button class="confirm-btn cancel" @click="showClearModal = false">取消</button>
+                <button class="confirm-btn cancel" @click="showClearModal = false">{{ $t('common.cancel') }}</button>
               </div>
             </div>
           </Transition>
@@ -45,18 +43,20 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSnackbar } from '../composables/useSnackbar'
 import TaskList from '../components/TaskList.vue'
 import { Trash2, AlertTriangle } from '@lucide/vue'
 
+const { t } = useI18n()
 const taskStore = useTaskStore()
 const { show: showSnackbar } = useSnackbar()
 const showClearModal = ref(false)
 
 const completedTasks = computed(() => {
   return [...taskStore.tasks]
-    .filter(t => t.completed)
+    .filter((t) => t.completed)
     .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0))
 })
 
@@ -64,14 +64,14 @@ const confirmClear = () => {
   const count = taskStore.getCount('completed')
   showClearModal.value = false
   taskStore.clearCompleted()
-  showSnackbar(`已清除 ${count} 个已完成任务`)
+  showSnackbar(t('task.clearedMessage', { count }))
 }
 </script>
 
 <style scoped>
 .completed-view {
   min-height: 100%;
-  background: var(--color-bg);
+  background: transparent;
 }
 
 .content-inner {
@@ -149,8 +149,12 @@ const confirmClear = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .confirm-modal {
@@ -282,7 +286,9 @@ const confirmClear = () => {
 
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide-up-enter-from,

@@ -1,4 +1,16 @@
-const { app, BrowserWindow, ipcMain, Menu, Notification, session, shell, nativeTheme, Tray, screen, globalShortcut } = require('electron')
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  Notification,
+  session,
+  shell,
+  nativeTheme,
+  Tray,
+  screen,
+  globalShortcut
+} = require('electron')
 const path = require('path')
 const fs = require('fs')
 
@@ -43,7 +55,7 @@ const getPomodoroModes = () => [
 ]
 
 const getPomodoroModeInfo = (mode) => {
-  return getPomodoroModes().find(m => m.value === mode) || getPomodoroModes()[0]
+  return getPomodoroModes().find((m) => m.value === mode) || getPomodoroModes()[0]
 }
 
 const formatTime = (seconds) => {
@@ -64,7 +76,7 @@ const calculateTimeLeft = () => {
 const updatePomodoroState = () => {
   const timeLeft = calculateTimeLeft()
   const modeInfo = getPomodoroModeInfo(pomodoroState.currentMode)
-  
+
   pomodoroState.timeLeft = timeLeft
   pomodoroState.totalTime = getPomodoroTotalTime(pomodoroState.currentMode)
   pomodoroState.currentModeLabel = modeInfo.label
@@ -76,18 +88,22 @@ const updatePomodoroState = () => {
 const getPomodoroTotalTime = (mode) => {
   // 使用默认值，实际值由渲染进程设置同步
   switch (mode) {
-    case 'work': return 25 * 60
-    case 'shortBreak': return 5 * 60
-    case 'longBreak': return 15 * 60
-    default: return 25 * 60
+    case 'work':
+      return 25 * 60
+    case 'shortBreak':
+      return 5 * 60
+    case 'longBreak':
+      return 15 * 60
+    default:
+      return 25 * 60
   }
 }
 
 const broadcastPomodoroState = (senderWebContents = null) => {
   updatePomodoroState()
-  
+
   const targets = [mainWindow, pomodoroWindow, pomodoroFabWindow]
-  targets.forEach(win => {
+  targets.forEach((win) => {
     if (!win || win.isDestroyed()) return
     if (senderWebContents && win.webContents.id === senderWebContents.id) return
     win.webContents.send('pomodoro:stateUpdated', pomodoroState)
@@ -96,14 +112,14 @@ const broadcastPomodoroState = (senderWebContents = null) => {
 
 const pomodoroTick = () => {
   if (!pomodoroState.isRunning) return
-  
+
   const timeLeft = calculateTimeLeft()
-  
+
   if (timeLeft <= 0) {
     completePomodoroSession()
     return
   }
-  
+
   // 每秒广播一次状态
   broadcastPomodoroState()
 }
@@ -113,15 +129,15 @@ const startPomodoroTimer = () => {
     clearInterval(pomodoroTimer)
     pomodoroTimer = null
   }
-  
+
   if (pomodoroPauseTimeLeft <= 0) return
-  
+
   pomodoroState.isRunning = true
   pomodoroState.hasStarted = true
   pomodoroEndTime = Date.now() + pomodoroPauseTimeLeft * 1000
-  
+
   pomodoroTimer = setInterval(pomodoroTick, 1000)
-  
+
   broadcastPomodoroState()
   refreshTrayMenu()
 }
@@ -131,11 +147,11 @@ const pausePomodoroTimer = () => {
     clearInterval(pomodoroTimer)
     pomodoroTimer = null
   }
-  
+
   pomodoroPauseTimeLeft = calculateTimeLeft()
   pomodoroState.isRunning = false
   pomodoroEndTime = null
-  
+
   broadcastPomodoroState()
   refreshTrayMenu()
 }
@@ -145,30 +161,30 @@ const resetPomodoroTimer = () => {
     clearInterval(pomodoroTimer)
     pomodoroTimer = null
   }
-  
+
   pomodoroPauseTimeLeft = getPomodoroTotalTime(pomodoroState.currentMode)
   pomodoroState.isRunning = false
   pomodoroState.hasStarted = false
   pomodoroEndTime = null
-  
+
   broadcastPomodoroState()
   refreshTrayMenu()
 }
 
 const switchPomodoroMode = (mode) => {
   if (pomodoroState.currentMode === mode) return
-  
+
   if (pomodoroTimer) {
     clearInterval(pomodoroTimer)
     pomodoroTimer = null
   }
-  
+
   pomodoroState.currentMode = mode
   pomodoroPauseTimeLeft = getPomodoroTotalTime(mode)
   pomodoroState.isRunning = false
   pomodoroState.hasStarted = false
   pomodoroEndTime = null
-  
+
   broadcastPomodoroState()
   refreshTrayMenu()
 }
@@ -178,36 +194,36 @@ const completePomodoroSession = () => {
     clearInterval(pomodoroTimer)
     pomodoroTimer = null
   }
-  
+
   pomodoroState.isRunning = false
   pomodoroState.hasStarted = false
   pomodoroEndTime = null
   pomodoroState.timeLeft = 0
-  
+
   // 通知所有窗口计时结束，由渲染进程处理后续逻辑
   const targets = [mainWindow, pomodoroWindow, pomodoroFabWindow]
-  targets.forEach(win => {
+  targets.forEach((win) => {
     if (!win || win.isDestroyed()) return
     win.webContents.send('pomodoro:timerEnded', { currentMode: pomodoroState.currentMode })
   })
-  
+
   broadcastPomodoroState()
   refreshTrayMenu()
 }
 
 const skipPomodoroSession = () => {
   if (!pomodoroState.hasStarted) return
-  
+
   if (pomodoroTimer) {
     clearInterval(pomodoroTimer)
     pomodoroTimer = null
   }
-  
+
   pomodoroPauseTimeLeft = getPomodoroTotalTime(pomodoroState.currentMode)
   pomodoroState.isRunning = false
   pomodoroState.hasStarted = false
   pomodoroEndTime = null
-  
+
   broadcastPomodoroState()
   refreshTrayMenu()
 }
@@ -227,7 +243,8 @@ const loadAppSettings = () => {
       if (typeof data.closeToQuit === 'boolean') appSettings.closeToQuit = data.closeToQuit
       if (typeof data.autoStart === 'boolean') appSettings.autoStart = data.autoStart
       if (typeof data.doNotDisturb === 'boolean') appSettings.doNotDisturb = data.doNotDisturb
-      if (typeof data.globalShortcutEnabled === 'boolean') appSettings.globalShortcutEnabled = data.globalShortcutEnabled
+      if (typeof data.globalShortcutEnabled === 'boolean')
+        appSettings.globalShortcutEnabled = data.globalShortcutEnabled
     }
   } catch (e) {
     console.error('[Main] Failed to load app settings:', e)
@@ -260,11 +277,13 @@ const loadWindowState = () => {
     // Validate window position is within visible screen bounds
     if (x !== undefined && y !== undefined) {
       const displays = screen.getAllDisplays()
-      const isVisible = displays.some(display => {
-        return x >= display.bounds.x - 100 &&
-               y >= display.bounds.y - 100 &&
-               x + width <= display.bounds.x + display.bounds.width + 100 &&
-               y + height <= display.bounds.y + display.bounds.height + 100
+      const isVisible = displays.some((display) => {
+        return (
+          x >= display.bounds.x - 100 &&
+          y >= display.bounds.y - 100 &&
+          x + width <= display.bounds.x + display.bounds.width + 100 &&
+          y + height <= display.bounds.y + display.bounds.height + 100
+        )
       })
       if (!isVisible) {
         x = undefined
@@ -545,7 +564,10 @@ function createPomodoroWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     pomodoroWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fullscreen?slave=1')
   } else {
-    pomodoroWindow.loadFile(path.join(__dirname, '../dist/index.html'), { hash: 'pomodoro-fullscreen', query: { slave: '1' } })
+    pomodoroWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+      hash: 'pomodoro-fullscreen',
+      query: { slave: '1' }
+    })
   }
 
   pomodoroWindow.once('ready-to-show', () => {
@@ -611,7 +633,10 @@ function createPomodoroFabWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     pomodoroFabWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fab?slave=1')
   } else {
-    pomodoroFabWindow.loadFile(path.join(__dirname, '../dist/index.html'), { hash: 'pomodoro-fab', query: { slave: '1' } })
+    pomodoroFabWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+      hash: 'pomodoro-fab',
+      query: { slave: '1' }
+    })
   }
 
   pomodoroFabWindow.once('ready-to-show', () => {
@@ -1088,7 +1113,13 @@ ipcMain.on('pomodoro:toggleFab', (event) => {
 })
 
 // 允许同步的字段白名单
-const POMODORO_SYNC_FIELDS = new Set(['currentMode', 'timeLeft', 'totalTime', 'hasStarted', 'completedPomodoros'])
+const POMODORO_SYNC_FIELDS = new Set([
+  'currentMode',
+  'timeLeft',
+  'totalTime',
+  'hasStarted',
+  'completedPomodoros'
+])
 
 ipcMain.on('pomodoro:stateSync', (event, state) => {
   if (!isFromMain(event)) return
@@ -1289,15 +1320,15 @@ if (!gotLock) {
           ...details.responseHeaders,
           'Content-Security-Policy': [
             "default-src 'self'; " +
-            "script-src 'self'; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            "img-src 'self' data:; " +
-            (process.env.VITE_DEV_SERVER_URL
-              ? "connect-src 'self' ws://localhost:5173 http://localhost:5173; "
-              : "connect-src 'self'; ") +
-            "font-src 'self'; " +
-            "object-src 'none'; " +
-            "base-uri 'self'"
+              "script-src 'self'; " +
+              "style-src 'self' 'unsafe-inline'; " +
+              "img-src 'self' data:; " +
+              (process.env.VITE_DEV_SERVER_URL
+                ? "connect-src 'self' ws://localhost:5173 http://localhost:5173; "
+                : "connect-src 'self'; ") +
+              "font-src 'self'; " +
+              "object-src 'none'; " +
+              "base-uri 'self'"
           ]
         }
       })

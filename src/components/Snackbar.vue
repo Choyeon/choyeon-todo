@@ -1,25 +1,12 @@
 <template>
   <Teleport to="body">
     <Transition name="snackbar">
-      <div
-        v-if="visible"
-        class="snackbar"
-        role="alert"
-        aria-live="assertive"
-      >
+      <div v-if="visible" class="snackbar" role="alert" aria-live="assertive">
         <span class="snackbar-message">{{ message }}</span>
-        <button
-          v-if="actionLabel"
-          class="snackbar-action"
-          @click="handleAction"
-        >
+        <button v-if="actionLabel" class="snackbar-action" @click="handleAction">
           {{ actionLabel }}
         </button>
-        <button
-          class="snackbar-close"
-          @click="hide"
-          aria-label="关闭"
-        >
+        <button class="snackbar-close" @click="hide" :aria-label="$t('common.close')">
           <X :size="16" />
         </button>
       </div>
@@ -88,7 +75,9 @@ const { visible, message, actionLabel, hide, handleAction } = useSnackbar()
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .snackbar-close:hover {
@@ -98,7 +87,9 @@ const { visible, message, actionLabel, hide, handleAction } = useSnackbar()
 
 .snackbar-enter-active,
 .snackbar-leave-active {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .snackbar-enter-from,

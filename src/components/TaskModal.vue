@@ -9,7 +9,7 @@
             ref="modalRef"
             role="dialog"
             aria-modal="true"
-            :aria-label="isEdit ? '编辑任务' : '添加任务'"
+            :aria-label="isEdit ? $t('task.editTask') : $t('task.newTask')"
             @keydown.esc="handleClose"
           >
             <div class="drag-handle">
@@ -18,9 +18,9 @@
 
             <div class="modal-header">
               <div>
-                <h2>{{ isEdit ? '编辑任务' : '添加任务' }}</h2>
+                <h2>{{ isEdit ? $t('task.editTask') : $t('task.newTask') }}</h2>
               </div>
-              <button class="close-btn" @click="handleClose" aria-label="关闭">
+              <button class="close-btn" @click="handleClose" :aria-label="$t('common.close')">
                 <X :size="18" />
               </button>
             </div>
@@ -30,24 +30,24 @@
                 <input
                   type="text"
                   class="form-title-input"
-                  placeholder="输入任务标题..."
+                  :placeholder="$t('task.titlePlaceholder')"
                   v-model="form.title"
                   ref="titleInput"
-                  aria-label="任务标题"
+                  :aria-label="$t('task.taskTitle')"
                 />
                 <button
                   v-if="speechRecognitionSupported"
                   class="mic-btn"
                   :class="{ recording: isRecording }"
                   @click="toggleSpeechRecognition"
-                  :aria-label="isRecording ? '停止录音' : '语音输入'"
+                  :aria-label="isRecording ? $t('common.stopRecording') : $t('common.voiceInput')"
                 >
                   <Mic :size="20" />
                 </button>
               </div>
 
-              <div class="form-section-label">分类</div>
-              <div class="category-scroll" role="radiogroup" aria-label="选择分类">
+              <div class="form-section-label">{{ $t('task.category') }}</div>
+              <div class="category-scroll" role="radiogroup" :aria-label="$t('task.selectCategory')">
                 <div
                   v-for="cat in taskStore.categories"
                   :key="cat.id"
@@ -67,8 +67,12 @@
 
               <div class="form-section-label">
                 <div class="section-label-row">
-                  <span>标签</span>
-                  <button class="add-tag-btn" @click="showAddTag = !showAddTag" aria-label="添加标签">
+                  <span>{{ $t('task.tags') }}</span>
+                  <button
+                    class="add-tag-btn"
+                    @click="showAddTag = !showAddTag"
+                    :aria-label="$t('task.addTag')"
+                  >
                     <Plus :size="14" />
                   </button>
                 </div>
@@ -100,19 +104,23 @@
                     :class="{ active: newTagColor === color }"
                     :style="{ background: color }"
                     @click="newTagColor = color"
-                    :aria-label="`选择颜色 ${color}`"
+                    :aria-label="`${$t('common.selectColor')} ${color}`"
                   ></button>
                 </div>
                 <div class="add-tag-input-row">
                   <input
                     type="text"
                     class="form-input tag-name-input"
-                    placeholder="新标签名称..."
+                    :placeholder="$t('task.newTagPlaceholder')"
                     v-model="newTagName"
                     @keyup.enter.prevent="handleAddTag"
-                    aria-label="新标签名称"
+                    :aria-label="$t('task.newTagName')"
                   />
-                  <button class="add-tag-confirm-btn" @click="handleAddTag" :disabled="!newTagName.trim()">
+                  <button
+                    class="add-tag-confirm-btn"
+                    @click="handleAddTag"
+                    :disabled="!newTagName.trim()"
+                  >
                     <Check :size="16" />
                   </button>
                 </div>
@@ -120,45 +128,39 @@
 
               <hr class="form-divider" />
 
-              <div class="form-section-label">日期与时间</div>
+              <div class="form-section-label">{{ $t('task.dateTime') }}</div>
 
               <div class="setting-row">
                 <Calendar :size="18" class="row-icon" />
-                <span class="setting-label">选择日期</span>
+                <span class="setting-label">{{ $t('task.selectDate') }}</span>
                 <div class="setting-action">
-                  <input
-                    type="date"
-                    class="date-input"
-                    v-model="form.date"
-                    aria-label="选择日期"
-                  />
+                  <input type="date" class="date-input" v-model="form.date" :aria-label="$t('task.selectDate')" />
                 </div>
               </div>
 
               <div class="setting-row">
                 <Clock :size="18" class="row-icon" />
-                <span class="setting-label">选择时间</span>
+                <span class="setting-label">{{ $t('task.selectTime') }}</span>
                 <div class="setting-action">
-                  <input
-                    type="time"
-                    class="date-input"
-                    v-model="form.time"
-                    aria-label="选择时间"
-                  />
+                  <input type="time" class="date-input" v-model="form.time" :aria-label="$t('task.selectTime')" />
                 </div>
               </div>
 
               <div class="setting-row repeat-row">
                 <RotateCcw :size="18" class="row-icon" />
-                <span class="setting-label">重复</span>
+                <span class="setting-label">{{ $t('task.repeat') }}</span>
                 <div class="setting-action">
                   <select
                     class="repeat-select"
                     :value="form.repeat ? form.repeat.frequency : ''"
                     @change="setRepeatFrequency($event.target.value || null)"
-                    aria-label="重复频率"
+                    :aria-label="$t('task.repeatFrequency')"
                   >
-                    <option v-for="opt in REPEAT_OPTIONS" :key="opt.value === null ? 'none' : opt.value" :value="opt.value === null ? '' : opt.value">
+                    <option
+                      v-for="opt in REPEAT_OPTIONS"
+                      :key="opt.value === null ? 'none' : opt.value"
+                      :value="opt.value === null ? '' : opt.value"
+                    >
                       {{ opt.label }}
                     </option>
                   </select>
@@ -167,7 +169,7 @@
 
               <div v-if="form.repeat" class="repeat-settings">
                 <div class="setting-row sub-setting">
-                  <span class="sub-setting-label">重复间隔</span>
+                  <span class="sub-setting-label">{{ $t('task.repeatInterval') }}</span>
                   <div class="setting-action interval-input-wrap">
                     <input
                       type="number"
@@ -182,15 +184,19 @@
                 </div>
 
                 <div v-if="form.repeat.frequency === 'weekly'" class="weekdays-wrap">
-                  <div class="weekdays-label">选择星期</div>
+                  <div class="weekdays-label">{{ $t('task.selectWeekday') }}</div>
                   <div class="weekdays-row">
                     <button
                       v-for="day in WEEKDAYS"
                       :key="day.value"
                       class="weekday-btn"
-                      :class="{ active: form.repeat.weekdays && form.repeat.weekdays.includes(day.value) }"
+                      :class="{
+                        active: form.repeat.weekdays && form.repeat.weekdays.includes(day.value)
+                      }"
                       @click="toggleWeekday(day.value)"
-                      :aria-pressed="form.repeat.weekdays && form.repeat.weekdays.includes(day.value)"
+                      :aria-pressed="
+                        form.repeat.weekdays && form.repeat.weekdays.includes(day.value)
+                      "
                     >
                       {{ day.label }}
                     </button>
@@ -198,23 +204,23 @@
                 </div>
 
                 <div class="setting-row sub-setting">
-                  <span class="sub-setting-label">结束重复</span>
+                  <span class="sub-setting-label">{{ $t('task.endRepeat') }}</span>
                   <div class="setting-action">
                     <select
                       class="repeat-end-select"
                       :value="repeatEndType"
                       @change="setRepeatEndType($event.target.value)"
-                      aria-label="结束重复方式"
+                      :aria-label="$t('task.endRepeatType')"
                     >
-                      <option value="never">永不</option>
-                      <option value="date">按日期</option>
-                      <option value="count">按次数</option>
+                      <option value="never">{{ $t('task.never') }}</option>
+                      <option value="date">{{ $t('task.byDate') }}</option>
+                      <option value="count">{{ $t('task.byCount') }}</option>
                     </select>
                   </div>
                 </div>
 
                 <div v-if="repeatEndType === 'date'" class="setting-row sub-setting">
-                  <span class="sub-setting-label">结束日期</span>
+                  <span class="sub-setting-label">{{ $t('task.endDate') }}</span>
                   <div class="setting-action">
                     <input
                       type="date"
@@ -226,7 +232,7 @@
                 </div>
 
                 <div v-if="repeatEndType === 'count'" class="setting-row sub-setting">
-                  <span class="sub-setting-label">重复次数</span>
+                  <span class="sub-setting-label">{{ $t('task.repeatCount') }}</span>
                   <div class="setting-action interval-input-wrap">
                     <input
                       type="number"
@@ -236,20 +242,20 @@
                       @input="setRepeatEndCount($event.target.value)"
                       class="interval-input"
                     />
-                    <span class="interval-unit">次</span>
+                    <span class="interval-unit">{{ $t('task.times') }}</span>
                   </div>
                 </div>
               </div>
 
               <hr class="form-divider" />
 
-              <div class="form-section-label">选项</div>
+              <div class="form-section-label">{{ $t('task.options') }}</div>
 
               <div class="setting-row">
                 <Bell :size="18" class="row-icon" />
                 <div class="setting-label-wrap">
-                  <span class="setting-label">提醒</span>
-                  <p class="toggle-desc">到期时发送系统通知</p>
+                  <span class="setting-label">{{ $t('task.reminder') }}</span>
+                  <p class="toggle-desc">{{ $t('task.reminderDesc') }}</p>
                 </div>
                 <div class="setting-action">
                   <button
@@ -266,8 +272,8 @@
               <div class="setting-row">
                 <Star :size="18" class="row-icon" />
                 <div class="setting-label-wrap">
-                  <span class="setting-label">标记为重要</span>
-                  <p class="toggle-desc">在侧边栏快速找到此任务</p>
+                  <span class="setting-label">{{ $t('task.markImportant') }}</span>
+                  <p class="toggle-desc">{{ $t('task.importantDesc') }}</p>
                 </div>
                 <div class="setting-action">
                   <button
@@ -284,7 +290,7 @@
               <div class="subtasks-wrap">
                 <div class="form-section-label">
                   <div class="section-label-row">
-                    <span>子任务</span>
+                    <span>{{ $t('task.subTasks') }}</span>
                     <span v-if="subTaskProgress.total > 0" class="progress-text">
                       {{ subTaskProgress.completed }}/{{ subTaskProgress.total }}
                     </span>
@@ -292,11 +298,7 @@
                 </div>
 
                 <div class="subtasks-list">
-                  <div
-                    v-for="sub in form.subTasks"
-                    :key="sub.id"
-                    class="subtask-item"
-                  >
+                  <div v-for="sub in form.subTasks" :key="sub.id" class="subtask-item">
                     <button
                       class="subtask-checkbox"
                       :class="{ checked: sub.completed }"
@@ -312,7 +314,7 @@
                     <button
                       class="subtask-delete"
                       @click="deleteSubTask(sub.id)"
-                      aria-label="删除子任务"
+                      :aria-label="$t('task.deleteSubtask')"
                     >
                       <Trash2 :size="14" />
                     </button>
@@ -323,16 +325,16 @@
                   <input
                     type="text"
                     class="form-input subtask-input"
-                    placeholder="添加子任务..."
+                    :placeholder="$t('task.addSubtaskPlaceholder')"
                     v-model="newSubTaskTitle"
                     @keyup.enter.prevent="addSubTask"
-                    aria-label="新子任务"
+                    :aria-label="$t('task.newSubtask')"
                   />
                   <button
                     class="add-subtask-btn"
                     @click="addSubTask"
                     :disabled="!newSubTaskTitle.trim()"
-                    aria-label="添加子任务"
+                    :aria-label="$t('task.addSubTask')"
                   >
                     <Plus :size="16" />
                   </button>
@@ -340,20 +342,20 @@
               </div>
 
               <div class="notes-wrap">
-                <div class="form-section-label">备注</div>
+                <div class="form-section-label">{{ $t('task.notes') }}</div>
                 <textarea
                   class="form-input"
                   rows="3"
-                  placeholder="添加备注..."
+                  :placeholder="$t('task.notesPlaceholder')"
                   v-model="form.notes"
-                  aria-label="备注"
+                  :aria-label="$t('task.notes')"
                 ></textarea>
               </div>
             </div>
 
             <div class="modal-footer">
-              <button class="save-btn" @click="handleSave">保存</button>
-              <button class="cancel-btn" @click="handleClose">取消</button>
+              <button class="save-btn" @click="handleSave">{{ $t('common.save') }}</button>
+              <button class="cancel-btn" @click="handleClose">{{ $t('common.cancel') }}</button>
             </div>
           </div>
         </Transition>
@@ -364,11 +366,25 @@
 
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTaskStore, generateId } from '../stores/taskStore'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { useSnackbar } from '../composables/useSnackbar'
 import { getTodayStr } from '../utils/date'
-import { X, Calendar, Clock, Bell, Star, Plus, Trash2, Check, Tag, RotateCcw, ListTodo, Mic } from '@lucide/vue'
+import {
+  X,
+  Calendar,
+  Clock,
+  Bell,
+  Star,
+  Plus,
+  Trash2,
+  Check,
+  Tag,
+  RotateCcw,
+  ListTodo,
+  Mic
+} from '@lucide/vue'
 
 const props = defineProps({
   visible: {
@@ -383,6 +399,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save'])
 
+const { t } = useI18n()
 const taskStore = useTaskStore()
 const { show: showSnackbar } = useSnackbar()
 const titleInput = ref(null)
@@ -438,7 +455,7 @@ const initSpeechRecognition = () => {
     console.error('[TaskModal] Speech recognition error:', event.error)
     isRecording.value = false
     if (event.error !== 'no-speech') {
-      showSnackbar('语音识别出错，请重试', { duration: 3000 })
+      showSnackbar(t('task.speechRecognitionError'), { duration: 3000 })
     }
   }
 
@@ -458,37 +475,45 @@ const toggleSpeechRecognition = () => {
       isRecording.value = true
     } catch (e) {
       console.error('[TaskModal] Failed to start speech recognition:', e)
-      showSnackbar('无法启动语音识别', { duration: 3000 })
+      showSnackbar(t('task.speechRecognitionFailed'), { duration: 3000 })
     }
   }
 }
 
 const PRESET_COLORS = [
-  '#EF4444', '#F59E0B', '#22C55E', '#3B82F6', '#8B5CF6',
-  '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#6B7280'
+  '#EF4444',
+  '#F59E0B',
+  '#22C55E',
+  '#3B82F6',
+  '#8B5CF6',
+  '#EC4899',
+  '#14B8A6',
+  '#F97316',
+  '#6366F1',
+  '#6B7280'
 ]
 
-const WEEKDAYS = [
-  { value: 1, label: '一' },
-  { value: 2, label: '二' },
-  { value: 3, label: '三' },
-  { value: 4, label: '四' },
-  { value: 5, label: '五' },
-  { value: 6, label: '六' },
-  { value: 0, label: '日' }
-]
+const WEEKDAYS = computed(() => [
+  { value: 1, label: t('task.monday') },
+  { value: 2, label: t('task.tuesday') },
+  { value: 3, label: t('task.wednesday') },
+  { value: 4, label: t('task.thursday') },
+  { value: 5, label: t('task.friday') },
+  { value: 6, label: t('task.saturday') },
+  { value: 0, label: t('task.sunday') }
+])
 
-const REPEAT_OPTIONS = [
-  { value: null, label: '不重复' },
-  { value: 'daily', label: '每天' },
-  { value: 'weekly', label: '每周' },
-  { value: 'monthly', label: '每月' },
-  { value: 'yearly', label: '每年' }
-]
+const REPEAT_OPTIONS = computed(() => [
+  { value: null, label: t('task.noRepeat') },
+  { value: 'daily', label: t('task.daily') },
+  { value: 'weekly', label: t('task.weekly') },
+  { value: 'monthly', label: t('task.monthly') },
+  { value: 'yearly', label: t('task.yearly') }
+])
 
 const subTaskProgress = computed(() => {
   const total = form.subTasks.length
-  const completed = form.subTasks.filter(st => st.completed).length
+  const completed = form.subTasks.filter((st) => st.completed).length
   return { completed, total }
 })
 
@@ -538,13 +563,13 @@ const toggleWeekday = (day) => {
 const repeatIntervalUnit = computed(() => {
   if (!form.repeat) return ''
   const units = {
-    daily: '天',
-    weekly: '周',
-    monthly: '月',
-    yearly: '年',
-    custom: '天'
+    daily: t('task.dayUnit'),
+    weekly: t('task.weekUnit'),
+    monthly: t('task.monthUnit'),
+    yearly: t('task.yearUnit'),
+    custom: t('task.dayUnit')
   }
-  return units[form.repeat.frequency] || '天'
+  return units[form.repeat.frequency] || t('task.dayUnit')
 })
 
 const repeatEndType = computed(() => {
@@ -612,12 +637,12 @@ const addSubTask = () => {
 }
 
 const toggleSubTask = (subId) => {
-  const sub = form.subTasks.find(st => st.id === subId)
+  const sub = form.subTasks.find((st) => st.id === subId)
   if (sub) sub.completed = !sub.completed
 }
 
 const deleteSubTask = (subId) => {
-  const idx = form.subTasks.findIndex(st => st.id === subId)
+  const idx = form.subTasks.findIndex((st) => st.id === subId)
   if (idx !== -1) form.subTasks.splice(idx, 1)
 }
 
@@ -636,7 +661,7 @@ watch(
         form.notes = props.task.notes || ''
         form.tags = Array.isArray(props.task.tags) ? [...props.task.tags] : []
         form.subTasks = Array.isArray(props.task.subTasks)
-          ? props.task.subTasks.map(st => ({ ...st }))
+          ? props.task.subTasks.map((st) => ({ ...st }))
           : []
         form.repeat = props.task.repeat ? { ...props.task.repeat } : null
         if (form.repeat && form.repeat.weekdays) {
@@ -644,17 +669,17 @@ watch(
         }
       } else {
         form.title = ''
-        form.category = taskStore.currentView === 'category' && taskStore.currentCategory
-          ? taskStore.currentCategory
-          : 'work'
+        form.category =
+          taskStore.currentView === 'category' && taskStore.currentCategory
+            ? taskStore.currentCategory
+            : 'work'
         form.date = getTodayStr()
         form.time = ''
         form.reminder = false
         form.important = false
         form.notes = ''
-        form.tags = taskStore.currentView === 'tag' && taskStore.currentTag
-          ? [taskStore.currentTag]
-          : []
+        form.tags =
+          taskStore.currentView === 'tag' && taskStore.currentTag ? [taskStore.currentTag] : []
         form.subTasks = []
         form.repeat = null
       }
@@ -683,7 +708,7 @@ const handleClose = () => {
 
 const handleSave = () => {
   if (!form.title.trim()) {
-    showSnackbar('请输入任务标题', { duration: 3000 })
+    showSnackbar(t('task.pleaseEnterTitle'), { duration: 3000 })
     if (titleInput.value) titleInput.value.focus()
     return
   }
@@ -697,16 +722,16 @@ const handleSave = () => {
     important: form.important,
     notes: form.notes,
     tags: [...form.tags],
-    subTasks: form.subTasks.map(st => ({ ...st })),
+    subTasks: form.subTasks.map((st) => ({ ...st })),
     repeat: form.repeat ? { ...form.repeat } : null
   }
 
   if (isEdit.value) {
     taskStore.updateTask(props.task.id, taskData)
-    showSnackbar('任务已更新')
+    showSnackbar(t('task.taskUpdated'))
   } else {
     taskStore.addTask(taskData)
-    showSnackbar('任务已添加')
+    showSnackbar(t('task.taskAdded'))
   }
 
   emit('save', taskData)
@@ -727,8 +752,12 @@ const handleSave = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-container {
@@ -885,7 +914,8 @@ const handleSave = () => {
 }
 
 @keyframes micPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
   }
   50% {
@@ -1082,7 +1112,7 @@ const handleSave = () => {
   background: var(--color-border);
 }
 
-.toggle-switch[aria-checked="true"] {
+.toggle-switch[aria-checked='true'] {
   background: var(--color-primary);
 }
 
@@ -1092,19 +1122,23 @@ const handleSave = () => {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: #ffffff;
   transition:
     left var(--transition-spring-soft),
     right var(--transition-spring-soft),
     box-shadow var(--transition-smooth);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 1px 1px rgba(0, 0, 0, 0.1);
   left: 3px;
 }
 
-.toggle-switch[aria-checked="true"] .toggle-knob {
+.toggle-switch[aria-checked='true'] .toggle-knob {
   right: 3px;
   left: auto;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .notes-wrap {
@@ -1283,7 +1317,9 @@ const handleSave = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition-micro), color var(--transition-micro);
+  transition:
+    background var(--transition-micro),
+    color var(--transition-micro);
 }
 
 .add-tag-btn:hover {
@@ -1822,7 +1858,7 @@ const handleSave = () => {
     left: 3px;
   }
 
-  .toggle-switch[aria-checked="true"] .toggle-knob {
+  .toggle-switch[aria-checked='true'] .toggle-knob {
     right: 3px;
     left: auto;
   }

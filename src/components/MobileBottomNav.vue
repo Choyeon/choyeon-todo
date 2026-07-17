@@ -5,46 +5,46 @@
         class="bottom-tab"
         :class="{ active: $route.name === 'Home' && taskStore.currentView === 'today' }"
         @click="navigateTo('today')"
-        aria-label="主页"
+        :aria-label="$t('nav.homeMobile')"
       >
         <Home :size="22" />
-        <span>主页</span>
+        <span>{{ $t('nav.homeMobile') }}</span>
       </button>
       <button
         class="bottom-tab"
         :class="{ active: $route.name === 'Home' && taskStore.currentView === 'important' }"
         @click="navigateTo('important')"
-        aria-label="重要任务"
+        :aria-label="$t('nav.importantTasks')"
       >
         <Star :size="22" />
-        <span>重要</span>
+        <span>{{ $t('nav.important') }}</span>
       </button>
       <button
         class="bottom-tab"
         :class="{ active: $route.name === 'Calendar' }"
         @click="$router.push('/calendar')"
-        aria-label="日历"
+        :aria-label="$t('nav.calendar')"
       >
         <CalendarDays :size="22" />
-        <span>日历</span>
+        <span>{{ $t('nav.calendar') }}</span>
       </button>
       <button
         class="bottom-tab"
         :class="{ active: $route.name === 'Completed' }"
         @click="$router.push('/completed')"
-        aria-label="已完成"
+        :aria-label="$t('nav.completed')"
       >
         <CheckCircle :size="22" />
-        <span>已完成</span>
+        <span>{{ $t('nav.completed') }}</span>
       </button>
       <button
         class="bottom-tab"
         :class="{ active: $route.name === 'Settings' }"
         @click="$router.push('/settings')"
-        aria-label="设置"
+        :aria-label="$t('nav.settings')"
       >
         <Settings :size="22" />
-        <span>设置</span>
+        <span>{{ $t('nav.settings') }}</span>
       </button>
     </div>
   </nav>

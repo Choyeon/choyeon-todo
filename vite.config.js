@@ -1,9 +1,53 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
+
+const pwaEnabled = process.env.PWA !== 'false'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      disable: !pwaEnabled,
+      includeAssets: ['favicon.svg', 'favicon.png'],
+      manifest: {
+        name: 'Choyeon To Do',
+        short_name: 'To Do',
+        description: '现代化任务管理应用',
+        theme_color: '#4C8BF5',
+        background_color: '#ffffff',
+        display: 'standalone',
+        start_url: './',
+        scope: './',
+        icons: [
+          {
+            src: './favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365
+              }
+            }
+          }
+        ]
+      }
+    })
+  ],
   base: process.env.GITHUB_PAGES ? '/choyeon-todo/' : './',
   build: {
     outDir: 'dist',
@@ -11,6 +55,7 @@ export default defineConfig({
     sourcemap: false,
     target: 'chrome120',
     minify: 'terser',
+    cssCodeSplit: true,
     terserOptions: {
       compress: {
         drop_console: true,
@@ -19,6 +64,9 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             if (id.includes('vue') && !id.includes('vue-router') && !id.includes('pinia')) {
@@ -29,6 +77,9 @@ export default defineConfig({
             }
             if (id.includes('vue-router')) {
               return 'router-vendor'
+            }
+            if (id.includes('@lucide')) {
+              return 'lucide-vendor'
             }
           }
         }

@@ -40,9 +40,7 @@ export const isValidDateStr = (str) => {
   if (month < 1 || month > 12) return false
   if (day < 1 || day > 31) return false
   const date = new Date(year, month - 1, day)
-  return date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
 }
 
 export const isValidTimeStr = (str) => {
@@ -62,7 +60,8 @@ export const isTaskOverdue = (task) => {
   if (task.date < today) return true
   if (task.date === today && task.time) {
     const now = new Date()
-    const currentHM = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
+    const currentHM =
+      String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
     if (task.time < currentHM) return true
   }
   return false

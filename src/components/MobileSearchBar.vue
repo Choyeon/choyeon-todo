@@ -3,9 +3,9 @@
     <Search class="search-icon" />
     <input
       type="text"
-      placeholder="搜索任务..."
+      :placeholder="$t('nav.search')"
       v-model="searchValue"
-      aria-label="搜索任务"
+      :aria-label="$t('nav.searchAria')"
       @input="onSearchInput"
     />
   </div>
@@ -56,7 +56,10 @@ onUnmounted(() => {
   font-family: var(--font-body);
   outline: none;
   box-sizing: border-box;
-  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s, box-shadow 0.15s;
+  transition:
+    background 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.15s,
+    box-shadow 0.15s;
   font-weight: 400;
 }
 

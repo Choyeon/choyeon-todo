@@ -1,6 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getTodayStr, formatDateStr, isValidDateStr, isValidTimeStr, isTaskOverdue, addDays, getNextWeekRange, getTomorrowStr } from '../utils/date'
+import {
+  getTodayStr,
+  formatDateStr,
+  isValidDateStr,
+  isValidTimeStr,
+  isTaskOverdue,
+  addDays,
+  getNextWeekRange,
+  getTomorrowStr
+} from '../utils/date'
 
 const STORAGE_KEYS = {
   tasks: 'choyeon_tasks_v2',
@@ -51,7 +60,7 @@ const sortTasks = (tasks) => {
   const todayStr = getTodayStr()
   const currentHM = getCurrentHM()
 
-  const withKeys = tasks.map(t => ({
+  const withKeys = tasks.map((t) => ({
     task: t,
     completed: t.completed ? 1 : 0,
     completedOrder: t.completedOrder ?? -1,
@@ -86,7 +95,7 @@ const sortTasks = (tasks) => {
     return b.createdAt - a.createdAt
   })
 
-  return withKeys.map(w => w.task)
+  return withKeys.map((w) => w.task)
 }
 
 const validateTask = (task) => {
@@ -115,7 +124,7 @@ const isValidRepeatConfig = (repeat) => {
   if (!['daily', 'weekly', 'monthly', 'yearly', 'custom'].includes(repeat.frequency)) return false
   if (repeat.frequency === 'weekly') {
     if (!Array.isArray(repeat.weekdays)) return false
-    if (repeat.weekdays.some(d => d < 0 || d > 6)) return false
+    if (repeat.weekdays.some((d) => d < 0 || d > 6)) return false
   }
   if (typeof repeat.interval !== 'number' || repeat.interval < 1) return false
   if (repeat.endDate !== undefined && repeat.endDate !== null) {
@@ -145,13 +154,13 @@ export const useTaskStore = defineStore('task', () => {
 
   const categoryIndexMap = computed(() => {
     const map = new Map()
-    categories.value.forEach(c => map.set(c.id, c))
+    categories.value.forEach((c) => map.set(c.id, c))
     return map
   })
 
   const tagIndexMap = computed(() => {
     const map = new Map()
-    tags.value.forEach(t => map.set(t.id, t))
+    tags.value.forEach((t) => map.set(t.id, t))
     return map
   })
 
@@ -215,12 +224,23 @@ export const useTaskStore = defineStore('task', () => {
         important: true,
         priority: 2,
         reminder: false,
-        notes: '点击左侧任务可以编辑详情，点击复选框标记完成。\n\n你可以：\n• 创建任务并设置分类\n• 设置截止日期和提醒\n• 使用番茄钟专注工作\n• 查看数据统计了解效率',
+        notes:
+          '点击左侧任务可以编辑详情，点击复选框标记完成。\n\n你可以：\n• 创建任务并设置分类\n• 设置截止日期和提醒\n• 使用番茄钟专注工作\n• 查看数据统计了解效率',
         tags: [],
         subTasks: [
-          { id: generateId('sub_'), title: '浏览侧边栏菜单，了解各个功能', completed: false, order: 0 },
+          {
+            id: generateId('sub_'),
+            title: '浏览侧边栏菜单，了解各个功能',
+            completed: false,
+            order: 0
+          },
           { id: generateId('sub_'), title: '尝试创建一个新任务', completed: false, order: 1 },
-          { id: generateId('sub_'), title: '使用番茄钟专注完成一个任务', completed: false, order: 2 }
+          {
+            id: generateId('sub_'),
+            title: '使用番茄钟专注完成一个任务',
+            completed: false,
+            order: 2
+          }
         ],
         repeat: null,
         order: 0,
@@ -317,38 +337,40 @@ export const useTaskStore = defineStore('task', () => {
       if (savedTasks) {
         const parsed = JSON.parse(savedTasks)
         if (Array.isArray(parsed)) {
-          tasks.value = parsed.filter(t =>
-            t && t.id && t.title && typeof t.title === 'string'
-          ).map(t => ({
-            ...t,
-            date: (t.date && isValidDateStr(t.date)) ? t.date : getTodayStr(),
-            completed: !!t.completed,
-            important: !!t.important,
-            reminder: !!t.reminder,
-            notes: t.notes || '',
-            time: (t.time && isValidTimeStr(t.time)) ? t.time : null,
-            completedAt: t.completedAt || null,
-            createdAt: t.createdAt || Date.now(),
-            tags: Array.isArray(t.tags) ? t.tags : [],
-            subTasks: Array.isArray(t.subTasks) ? t.subTasks.map((st, i) => ({
-              id: st.id || generateId('sub_'),
-              title: st.title || '',
-              completed: !!st.completed,
-              order: typeof st.order === 'number' ? st.order : i
-            })) : [],
-            repeat: isValidRepeatConfig(t.repeat) ? t.repeat : null,
-            order: typeof t.order === 'number' ? t.order : 0,
-            pomodoroSessions: typeof t.pomodoroSessions === 'number' ? t.pomodoroSessions : 0,
-            totalFocusTime: typeof t.totalFocusTime === 'number' ? t.totalFocusTime : 0
-          }))
+          tasks.value = parsed
+            .filter((t) => t && t.id && t.title && typeof t.title === 'string')
+            .map((t) => ({
+              ...t,
+              date: t.date && isValidDateStr(t.date) ? t.date : getTodayStr(),
+              completed: !!t.completed,
+              important: !!t.important,
+              reminder: !!t.reminder,
+              notes: t.notes || '',
+              time: t.time && isValidTimeStr(t.time) ? t.time : null,
+              completedAt: t.completedAt || null,
+              createdAt: t.createdAt || Date.now(),
+              tags: Array.isArray(t.tags) ? t.tags : [],
+              subTasks: Array.isArray(t.subTasks)
+                ? t.subTasks.map((st, i) => ({
+                    id: st.id || generateId('sub_'),
+                    title: st.title || '',
+                    completed: !!st.completed,
+                    order: typeof st.order === 'number' ? st.order : i
+                  }))
+                : [],
+              repeat: isValidRepeatConfig(t.repeat) ? t.repeat : null,
+              order: typeof t.order === 'number' ? t.order : 0,
+              pomodoroSessions: typeof t.pomodoroSessions === 'number' ? t.pomodoroSessions : 0,
+              totalFocusTime: typeof t.totalFocusTime === 'number' ? t.totalFocusTime : 0
+            }))
         }
       }
       if (savedCategories) {
         const parsed = JSON.parse(savedCategories)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const filtered = parsed.filter(c => c && c.id && c.name)
-          if (!filtered.some(c => c.id === UNDELETABLE_CATEGORY)) {
-            const defaultOther = DEFAULT_CATEGORIES.find(c => c.id === UNDELETABLE_CATEGORY)
+          const filtered = parsed.filter((c) => c && c.id && c.name)
+          if (!filtered.some((c) => c.id === UNDELETABLE_CATEGORY)) {
+            const defaultOther = DEFAULT_CATEGORIES.find((c) => c.id === UNDELETABLE_CATEGORY)
             if (defaultOther) filtered.push(defaultOther)
           }
           categories.value = filtered
@@ -357,7 +379,7 @@ export const useTaskStore = defineStore('task', () => {
       if (savedTags) {
         const parsed = JSON.parse(savedTags)
         if (Array.isArray(parsed)) {
-          tags.value = parsed.filter(t => t && t.id && t.name)
+          tags.value = parsed.filter((t) => t && t.id && t.name)
         }
       }
     } catch (e) {
@@ -450,12 +472,14 @@ export const useTaskStore = defineStore('task', () => {
       reminder: !!task.reminder,
       notes: (task.notes || '').slice(0, 5000),
       tags: Array.isArray(task.tags) ? task.tags : [],
-      subTasks: Array.isArray(task.subTasks) ? task.subTasks.map((st, i) => ({
-        id: generateId('sub_'),
-        title: st.title || '',
-        completed: false,
-        order: i
-      })) : [],
+      subTasks: Array.isArray(task.subTasks)
+        ? task.subTasks.map((st, i) => ({
+            id: generateId('sub_'),
+            title: st.title || '',
+            completed: false,
+            order: i
+          }))
+        : [],
       repeat: isValidRepeatConfig(task.repeat) ? task.repeat : null,
       order: maxOrder + 1,
       pomodoroSessions: 0,
@@ -467,7 +491,22 @@ export const useTaskStore = defineStore('task', () => {
     return newTask
   }
 
-  const UPDATABLE_FIELDS = ['title', 'category', 'date', 'time', 'completed', 'important', 'reminder', 'notes', 'tags', 'subTasks', 'repeat', 'order', 'pomodoroSessions', 'totalFocusTime']
+  const UPDATABLE_FIELDS = [
+    'title',
+    'category',
+    'date',
+    'time',
+    'completed',
+    'important',
+    'reminder',
+    'notes',
+    'tags',
+    'subTasks',
+    'repeat',
+    'order',
+    'pomodoroSessions',
+    'totalFocusTime'
+  ]
 
   const updateTask = (id, updates) => {
     if (!id || !updates) return false
@@ -513,7 +552,11 @@ export const useTaskStore = defineStore('task', () => {
     if (safeUpdates.subTasks !== undefined && !Array.isArray(safeUpdates.subTasks)) {
       return false
     }
-    if (safeUpdates.repeat !== undefined && safeUpdates.repeat !== null && !isValidRepeatConfig(safeUpdates.repeat)) {
+    if (
+      safeUpdates.repeat !== undefined &&
+      safeUpdates.repeat !== null &&
+      !isValidRepeatConfig(safeUpdates.repeat)
+    ) {
       return false
     }
     if (safeUpdates.category !== undefined) {
@@ -542,7 +585,7 @@ export const useTaskStore = defineStore('task', () => {
     if (!task) return
     task.completed = !task.completed
     task.completedAt = task.completed ? Date.now() : null
-    
+
     if (task.completed) {
       let maxOrder = -1
       for (const t of tasks.value) {
@@ -571,7 +614,7 @@ export const useTaskStore = defineStore('task', () => {
   const toggleSubTaskComplete = (taskId, subId) => {
     const task = getTaskById(taskId)
     if (!task) return
-    const sub = task.subTasks.find(st => st.id === subId)
+    const sub = task.subTasks.find((st) => st.id === subId)
     if (!sub) return
     sub.completed = !sub.completed
   }
@@ -587,7 +630,7 @@ export const useTaskStore = defineStore('task', () => {
     if (fromTask.completed !== toTask.completed) return false
 
     const sameGroupTasks = tasks.value
-      .filter(t => t.completed === fromTask.completed)
+      .filter((t) => t.completed === fromTask.completed)
       .sort((a, b) => {
         if (fromTask.completed) {
           return (a.completedOrder ?? 0) - (b.completedOrder ?? 0)
@@ -595,8 +638,8 @@ export const useTaskStore = defineStore('task', () => {
         return (a.order || 0) - (b.order || 0)
       })
 
-    const fromGroupIdx = sameGroupTasks.findIndex(t => t.id === fromId)
-    const toGroupIdx = sameGroupTasks.findIndex(t => t.id === toId)
+    const fromGroupIdx = sameGroupTasks.findIndex((t) => t.id === fromId)
+    const toGroupIdx = sameGroupTasks.findIndex((t) => t.id === toId)
     if (fromGroupIdx === -1 || toGroupIdx === -1) return false
 
     const [moved] = sameGroupTasks.splice(fromGroupIdx, 1)
@@ -626,7 +669,7 @@ export const useTaskStore = defineStore('task', () => {
       const date = new Date(y, m - 1, d)
       const currentDay = date.getDay()
       const weekdays = [...(repeat.weekdays || [])].sort((a, b) => a - b)
-      
+
       if (weekdays.length === 0) {
         nextDate = addDays(currentDate, 7 * (repeat.interval || 1))
       } else {
@@ -640,7 +683,7 @@ export const useTaskStore = defineStore('task', () => {
         if (nextDay !== null) {
           nextDate = addDays(currentDate, nextDay - currentDay)
         } else {
-          const daysToAdd = (7 - currentDay) + weekdays[0] + 7 * ((repeat.interval || 1) - 1)
+          const daysToAdd = 7 - currentDay + weekdays[0] + 7 * ((repeat.interval || 1) - 1)
           nextDate = addDays(currentDate, daysToAdd)
         }
       }
@@ -657,7 +700,8 @@ export const useTaskStore = defineStore('task', () => {
       const targetYear = y + (repeat.interval || 1)
       const isFeb29 = m === 2 && d === 29
       if (isFeb29) {
-        const isLeapYear = (targetYear % 4 === 0 && targetYear % 100 !== 0) || (targetYear % 400 === 0)
+        const isLeapYear =
+          (targetYear % 4 === 0 && targetYear % 100 !== 0) || targetYear % 400 === 0
         if (!isLeapYear) {
           nextDate = `${targetYear}-02-28`
         } else {
@@ -726,7 +770,7 @@ export const useTaskStore = defineStore('task', () => {
       reminder: task.reminder,
       notes: task.notes,
       tags: [...task.tags],
-      subTasks: task.subTasks.map(st => ({
+      subTasks: task.subTasks.map((st) => ({
         id: generateId('sub_'),
         title: st.title,
         completed: false,
@@ -790,12 +834,17 @@ export const useTaskStore = defineStore('task', () => {
       console.warn('[TaskStore] Cannot add category: name is empty')
       return null
     }
-    const existing = categories.value.find(c => c.name === category.name.trim())
+    const existing = categories.value.find((c) => c.name === category.name.trim())
     if (existing) {
       console.warn('[TaskStore] Category with this name already exists')
       return null
     }
-    if (category.color !== undefined && category.color !== null && category.color !== '' && !isValidHexColor(category.color)) {
+    if (
+      category.color !== undefined &&
+      category.color !== null &&
+      category.color !== '' &&
+      !isValidHexColor(category.color)
+    ) {
       console.warn('[TaskStore] Cannot add category: invalid color format')
       return null
     }
@@ -811,9 +860,14 @@ export const useTaskStore = defineStore('task', () => {
 
   const updateCategory = (id, updates) => {
     if (!id || !updates) return false
-    const index = categories.value.findIndex(c => c.id === id)
+    const index = categories.value.findIndex((c) => c.id === id)
     if (index === -1) return false
-    if (updates.color !== undefined && updates.color !== null && updates.color !== '' && !isValidHexColor(updates.color)) {
+    if (
+      updates.color !== undefined &&
+      updates.color !== null &&
+      updates.color !== '' &&
+      !isValidHexColor(updates.color)
+    ) {
       console.warn('[TaskStore] Cannot update category: invalid color format')
       return false
     }
@@ -832,17 +886,17 @@ export const useTaskStore = defineStore('task', () => {
       console.warn('[TaskStore] Cannot delete default category:', UNDELETABLE_CATEGORY)
       return false
     }
-    const index = categories.value.findIndex(c => c.id === id)
+    const index = categories.value.findIndex((c) => c.id === id)
     if (index === -1) return false
 
     const moveTasks = options.moveTasks !== undefined ? options.moveTasks : true
 
     if (moveTasks) {
-      tasks.value.forEach(t => {
+      tasks.value.forEach((t) => {
         if (t.category === id) t.category = UNDELETABLE_CATEGORY
       })
     } else {
-      tasks.value = tasks.value.filter(t => t.category !== id)
+      tasks.value = tasks.value.filter((t) => t.category !== id)
     }
 
     categories.value.splice(index, 1)
@@ -857,11 +911,16 @@ export const useTaskStore = defineStore('task', () => {
 
   const addTag = (tag) => {
     if (!tag || !tag.name || !tag.name.trim()) return null
-    if (tag.color !== undefined && tag.color !== null && tag.color !== '' && !isValidHexColor(tag.color)) {
+    if (
+      tag.color !== undefined &&
+      tag.color !== null &&
+      tag.color !== '' &&
+      !isValidHexColor(tag.color)
+    ) {
       console.warn('[TaskStore] Cannot add tag: invalid color format')
       return null
     }
-    const existing = tags.value.find(t => t.name === tag.name.trim())
+    const existing = tags.value.find((t) => t.name === tag.name.trim())
     if (existing) return existing
     const newTag = {
       id: generateId('tag_'),
@@ -873,9 +932,15 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const updateTag = (id, updates) => {
-    const index = tags.value.findIndex(t => t.id === id)
+    const index = tags.value.findIndex((t) => t.id === id)
     if (index === -1) return false
-    if (updates && updates.color !== undefined && updates.color !== null && updates.color !== '' && !isValidHexColor(updates.color)) {
+    if (
+      updates &&
+      updates.color !== undefined &&
+      updates.color !== null &&
+      updates.color !== '' &&
+      !isValidHexColor(updates.color)
+    ) {
       console.warn('[TaskStore] Cannot update tag: invalid color format')
       return false
     }
@@ -884,10 +949,10 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const deleteTag = (id) => {
-    const index = tags.value.findIndex(t => t.id === id)
+    const index = tags.value.findIndex((t) => t.id === id)
     if (index === -1) return false
-    tasks.value.forEach(t => {
-      t.tags = t.tags.filter(tagId => tagId !== id)
+    tasks.value.forEach((t) => {
+      t.tags = t.tags.filter((tagId) => tagId !== id)
     })
     tags.value.splice(index, 1)
     if (currentTag.value === id) {
@@ -913,9 +978,8 @@ export const useTaskStore = defineStore('task', () => {
 
     if (searchQuery.value.trim()) {
       const q = searchQuery.value.trim().toLowerCase()
-      const matched = tasks.value.filter(t =>
-        t.title.toLowerCase().includes(q) ||
-        (t.notes && t.notes.toLowerCase().includes(q))
+      const matched = tasks.value.filter(
+        (t) => t.title.toLowerCase().includes(q) || (t.notes && t.notes.toLowerCase().includes(q))
       )
       return sortTasks(matched)
     }
@@ -923,34 +987,36 @@ export const useTaskStore = defineStore('task', () => {
     let result
     switch (currentView.value) {
       case 'today':
-        result = tasks.value.filter(t => t.date === today && !t.completed)
+        result = tasks.value.filter((t) => t.date === today && !t.completed)
         break
       case 'tomorrow':
-        result = tasks.value.filter(t => t.date === tomorrow && !t.completed)
+        result = tasks.value.filter((t) => t.date === tomorrow && !t.completed)
         break
       case 'week':
-        result = tasks.value.filter(t => t.date >= nextWeek.start && t.date <= nextWeek.end && !t.completed)
+        result = tasks.value.filter(
+          (t) => t.date >= nextWeek.start && t.date <= nextWeek.end && !t.completed
+        )
         break
       case 'important':
-        result = tasks.value.filter(t => t.important && !t.completed)
+        result = tasks.value.filter((t) => t.important && !t.completed)
         break
       case 'planned':
-        result = tasks.value.filter(t => t.date >= today && !t.completed)
+        result = tasks.value.filter((t) => t.date >= today && !t.completed)
         break
       case 'all':
-        result = tasks.value.filter(t => !t.completed)
+        result = tasks.value.filter((t) => !t.completed)
         break
       case 'completed':
-        result = tasks.value.filter(t => t.completed)
+        result = tasks.value.filter((t) => t.completed)
         break
       case 'category':
         result = currentCategory.value
-          ? tasks.value.filter(t => t.category === currentCategory.value && !t.completed)
+          ? tasks.value.filter((t) => t.category === currentCategory.value && !t.completed)
           : []
         break
       case 'tag':
         result = currentTag.value
-          ? tasks.value.filter(t => t.tags.includes(currentTag.value) && !t.completed)
+          ? tasks.value.filter((t) => t.tags.includes(currentTag.value) && !t.completed)
           : []
         break
       default:
@@ -962,7 +1028,7 @@ export const useTaskStore = defineStore('task', () => {
 
   const getTasksByDate = (dateStr) => {
     if (!dateStr || !isValidDateStr(dateStr)) return []
-    const dateTasks = tasks.value.filter(t => t.date === dateStr && !t.completed)
+    const dateTasks = tasks.value.filter((t) => t.date === dateStr && !t.completed)
     return sortTasks(dateTasks)
   }
 
@@ -970,7 +1036,14 @@ export const useTaskStore = defineStore('task', () => {
     const today = getTodayStr()
     const tomorrow = getTomorrowStr()
     const nextWeek = getNextWeekRange()
-    let todayCount = 0, tomorrowCount = 0, weekCount = 0, importantCount = 0, plannedCount = 0, allCount = 0, completedCount = 0, overdueCount = 0
+    let todayCount = 0,
+      tomorrowCount = 0,
+      weekCount = 0,
+      importantCount = 0,
+      plannedCount = 0,
+      allCount = 0,
+      completedCount = 0,
+      overdueCount = 0
     const catCounts = {}
     const tagCounts = {}
 
@@ -992,21 +1065,41 @@ export const useTaskStore = defineStore('task', () => {
       }
     }
 
-    return { todayCount, tomorrowCount, weekCount, importantCount, plannedCount, allCount, completedCount, overdueCount, catCounts, tagCounts }
+    return {
+      todayCount,
+      tomorrowCount,
+      weekCount,
+      importantCount,
+      plannedCount,
+      allCount,
+      completedCount,
+      overdueCount,
+      catCounts,
+      tagCounts
+    }
   })
 
   const getCount = (view) => {
     const c = counts.value
     switch (view) {
-      case 'today': return c.todayCount
-      case 'tomorrow': return c.tomorrowCount
-      case 'week': return c.weekCount
-      case 'important': return c.importantCount
-      case 'planned': return c.plannedCount
-      case 'all': return c.allCount
-      case 'completed': return c.completedCount
-      case 'overdue': return c.overdueCount
-      default: return 0
+      case 'today':
+        return c.todayCount
+      case 'tomorrow':
+        return c.tomorrowCount
+      case 'week':
+        return c.weekCount
+      case 'important':
+        return c.importantCount
+      case 'planned':
+        return c.plannedCount
+      case 'all':
+        return c.allCount
+      case 'completed':
+        return c.completedCount
+      case 'overdue':
+        return c.overdueCount
+      default:
+        return 0
     }
   }
 
@@ -1033,7 +1126,7 @@ export const useTaskStore = defineStore('task', () => {
   const getStats = (days = 7) => {
     const todayStr = getTodayStr()
     const cacheKey = tasks.value.length + '-' + todayStr + '-' + days
-    
+
     if (statsCache && statsCacheKey === cacheKey && statsCacheDays === days) {
       return statsCache
     }
@@ -1046,7 +1139,14 @@ export const useTaskStore = defineStore('task', () => {
       d.setDate(d.getDate() - i)
       const dateStr = formatDateStr(d)
       dateToIndex[dateStr] = dateList.length
-      dateList.push({ date: dateStr, created: 0, completed: 0, focusTime: 0, pomodoroCount: 0, dayOfWeek: d.getDay() })
+      dateList.push({
+        date: dateStr,
+        created: 0,
+        completed: 0,
+        focusTime: 0,
+        pomodoroCount: 0,
+        dayOfWeek: d.getDay()
+      })
     }
     const startDate = dateList[0].date
     const endDate = dateList[dateList.length - 1].date
@@ -1116,10 +1216,12 @@ export const useTaskStore = defineStore('task', () => {
               }
 
               if (task.category) {
-                completedCategoryStats[task.category] = (completedCategoryStats[task.category] || 0) + 1
+                completedCategoryStats[task.category] =
+                  (completedCategoryStats[task.category] || 0) + 1
               }
               if (task.priority !== undefined) {
-                priorityStats.completed[task.priority] = (priorityStats.completed[task.priority] || 0) + 1
+                priorityStats.completed[task.priority] =
+                  (priorityStats.completed[task.priority] || 0) + 1
               }
             }
           }
@@ -1140,7 +1242,7 @@ export const useTaskStore = defineStore('task', () => {
       }
     }
 
-    const dailyStats = dateList.map(d => ({
+    const dailyStats = dateList.map((d) => ({
       date: d.date,
       created: d.created,
       completed: d.completed,
@@ -1171,19 +1273,18 @@ export const useTaskStore = defineStore('task', () => {
       }
     }
 
-    const completionRate = totalCreatedInRange > 0
-      ? Math.round((completedInRange / totalCreatedInRange) * 100)
-      : 0
+    const completionRate =
+      totalCreatedInRange > 0 ? Math.round((completedInRange / totalCreatedInRange) * 100) : 0
 
-    const onTimeRate = (onTimeCompleted + overdueCompleted) > 0
-      ? Math.round((onTimeCompleted / (onTimeCompleted + overdueCompleted)) * 100)
-      : 0
+    const onTimeRate =
+      onTimeCompleted + overdueCompleted > 0
+        ? Math.round((onTimeCompleted / (onTimeCompleted + overdueCompleted)) * 100)
+        : 0
 
     const avgDailyCompleted = days > 0 ? Math.round((completedInRange / days) * 10) / 10 : 0
     const avgDailyCreated = days > 0 ? Math.round((totalCreatedInRange / days) * 10) / 10 : 0
-    const avgCompletionTimeHours = completionTimeCount > 0
-      ? Math.round((avgCompletionTime / completionTimeCount) * 10) / 10
-      : 0
+    const avgCompletionTimeHours =
+      completionTimeCount > 0 ? Math.round((avgCompletionTime / completionTimeCount) * 10) / 10 : 0
 
     let bestDay = { day: 0, count: 0 }
     for (let i = 0; i < 7; i++) {
@@ -1227,7 +1328,7 @@ export const useTaskStore = defineStore('task', () => {
 
   const clearCompleted = () => {
     const beforeCount = tasks.value.length
-    tasks.value = tasks.value.filter(t => !t.completed)
+    tasks.value = tasks.value.filter((t) => !t.completed)
     return beforeCount - tasks.value.length
   }
 
@@ -1242,13 +1343,17 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const exportData = () => {
-    return JSON.stringify({
-      version: 2,
-      exportedAt: new Date().toISOString(),
-      tasks: tasks.value,
-      categories: categories.value,
-      tags: tags.value
-    }, null, 2)
+    return JSON.stringify(
+      {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        tasks: tasks.value,
+        categories: categories.value,
+        tags: tags.value
+      },
+      null,
+      2
+    )
   }
 
   const importData = (jsonStr) => {
@@ -1262,12 +1367,12 @@ export const useTaskStore = defineStore('task', () => {
       let importedCount = 0
 
       if (data.tasks && Array.isArray(data.tasks)) {
-        const validTasks = data.tasks.filter(t => {
+        const validTasks = data.tasks.filter((t) => {
           const v = validateTask(t)
           return v.valid
         })
         if (validTasks.length > 0) {
-          tasks.value = validTasks.map(t => ({
+          tasks.value = validTasks.map((t) => ({
             id: t.id || generateId('task_'),
             title: String(t.title).trim().slice(0, 500),
             category: t.category || UNDELETABLE_CATEGORY,
@@ -1278,12 +1383,14 @@ export const useTaskStore = defineStore('task', () => {
             reminder: !!t.reminder,
             notes: (t.notes || '').slice(0, 5000),
             tags: Array.isArray(t.tags) ? t.tags : [],
-            subTasks: Array.isArray(t.subTasks) ? t.subTasks.map((st, i) => ({
-              id: st.id || generateId('sub_'),
-              title: st.title || '',
-              completed: !!st.completed,
-              order: typeof st.order === 'number' ? st.order : i
-            })) : [],
+            subTasks: Array.isArray(t.subTasks)
+              ? t.subTasks.map((st, i) => ({
+                  id: st.id || generateId('sub_'),
+                  title: st.title || '',
+                  completed: !!st.completed,
+                  order: typeof st.order === 'number' ? st.order : i
+                }))
+              : [],
             repeat: isValidRepeatConfig(t.repeat) ? t.repeat : null,
             order: typeof t.order === 'number' ? t.order : 0,
             pomodoroSessions: typeof t.pomodoroSessions === 'number' ? t.pomodoroSessions : 0,
@@ -1298,11 +1405,11 @@ export const useTaskStore = defineStore('task', () => {
       }
 
       if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
-        const validCats = data.categories.filter(c => c && c.id && c.name)
+        const validCats = data.categories.filter((c) => c && c.id && c.name)
         if (validCats.length > 0) {
-          const hasOther = validCats.some(c => c.id === UNDELETABLE_CATEGORY)
+          const hasOther = validCats.some((c) => c.id === UNDELETABLE_CATEGORY)
           if (!hasOther) {
-            const otherCat = DEFAULT_CATEGORIES.find(c => c.id === UNDELETABLE_CATEGORY)
+            const otherCat = DEFAULT_CATEGORIES.find((c) => c.id === UNDELETABLE_CATEGORY)
             validCats.push(otherCat)
           }
           categories.value = validCats
@@ -1310,7 +1417,7 @@ export const useTaskStore = defineStore('task', () => {
       }
 
       if (data.tags && Array.isArray(data.tags)) {
-        const validTags = data.tags.filter(t => t && t.id && t.name)
+        const validTags = data.tags.filter((t) => t && t.id && t.name)
         if (validTags.length > 0) {
           tags.value = validTags
         }
@@ -1326,12 +1433,12 @@ export const useTaskStore = defineStore('task', () => {
   const markAllComplete = () => {
     const now = Date.now()
     let maxCompletedOrder = -1
-    tasks.value.forEach(t => {
+    tasks.value.forEach((t) => {
       if (typeof t.completedOrder === 'number' && t.completedOrder > maxCompletedOrder) {
         maxCompletedOrder = t.completedOrder
       }
     })
-    tasks.value.forEach(t => {
+    tasks.value.forEach((t) => {
       if (!t.completed) {
         t.completed = true
         t.completedAt = now

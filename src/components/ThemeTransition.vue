@@ -62,17 +62,20 @@ const onTransitionEnd = () => {
   }
 }
 
-watch(() => props.trigger, () => {
-  // 尊重用户的减少动画偏好
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    emit('complete')
-    return
+watch(
+  () => props.trigger,
+  () => {
+    // 尊重用户的减少动画偏好
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      emit('complete')
+      return
+    }
+    isAnimating.value = true
+    requestAnimationFrame(() => {
+      isExpanding.value = true
+    })
   }
-  isAnimating.value = true
-  requestAnimationFrame(() => {
-    isExpanding.value = true
-  })
-})
+)
 
 onMounted(() => {
   if (props.trigger > 0) {
@@ -91,9 +94,10 @@ onMounted(() => {
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: width, height, opacity;
 }
 </style>

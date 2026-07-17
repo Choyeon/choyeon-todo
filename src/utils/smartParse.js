@@ -1,21 +1,56 @@
 import { formatDateStr, addDays, getTodayStr } from './date'
 
 const WEEKDAY_MAP = {
-  '周日': 0, '周天': 0, '星期天': 0, '星期日': 0,
-  '周一': 1, '星期一': 1,
-  '周二': 2, '星期二': 2,
-  '周三': 3, '星期三': 3,
-  '周四': 4, '星期四': 4,
-  '周五': 5, '星期五': 5,
-  '周六': 6, '星期六': 6, '礼拜天': 0, '礼拜一': 1, '礼拜二': 2, '礼拜三': 3, '礼拜四': 4, '礼拜五': 5, '礼拜六': 6
+  周日: 0,
+  周天: 0,
+  星期天: 0,
+  星期日: 0,
+  周一: 1,
+  星期一: 1,
+  周二: 2,
+  星期二: 2,
+  周三: 3,
+  星期三: 3,
+  周四: 4,
+  星期四: 4,
+  周五: 5,
+  星期五: 5,
+  周六: 6,
+  星期六: 6,
+  礼拜天: 0,
+  礼拜一: 1,
+  礼拜二: 2,
+  礼拜三: 3,
+  礼拜四: 4,
+  礼拜五: 5,
+  礼拜六: 6
 }
 
 const PRIORITY_MAP = {
-  'P0': 0, 'p0': 0, '最高': 0, '紧急': 0, '重要紧急': 0,
-  'P1': 1, 'p1': 1, '高': 1, '高优先级': 1, '很重要': 1,
-  'P2': 2, 'p2': 2, '中': 2, '中优先级': 2, '一般': 2,
-  'P3': 3, 'p3': 3, '低': 3, '低优先级': 3, '不重要': 3,
-  'P4': 4, 'p4': 4, '无': 4, '最低': 4
+  P0: 0,
+  p0: 0,
+  最高: 0,
+  紧急: 0,
+  重要紧急: 0,
+  P1: 1,
+  p1: 1,
+  高: 1,
+  高优先级: 1,
+  很重要: 1,
+  P2: 2,
+  p2: 2,
+  中: 2,
+  中优先级: 2,
+  一般: 2,
+  P3: 3,
+  p3: 3,
+  低: 3,
+  低优先级: 3,
+  不重要: 3,
+  P4: 4,
+  p4: 4,
+  无: 4,
+  最低: 4
 }
 
 const parseDateKeyword = (text, now) => {
@@ -90,7 +125,9 @@ const parseTimeKeyword = (text) => {
   let time = null
   let matched = ''
 
-  const timeMatch = text.match(/(上午|下午|晚上|早上|中午|凌晨|清晨)?\s*(\d{1,2})([点:：]\s*(\d{1,2})?|点半|点一刻)?(分)?/)
+  const timeMatch = text.match(
+    /(上午|下午|晚上|早上|中午|凌晨|清晨)?\s*(\d{1,2})([点:：]\s*(\d{1,2})?|点半|点一刻)?(分)?/
+  )
   if (timeMatch) {
     let hour = parseInt(timeMatch[2])
     let minute = 0
@@ -158,9 +195,7 @@ const parseTags = (text, allTags) => {
   if (tagMatches) {
     for (const match of tagMatches) {
       const tagName = match.replace(/^[#＃]\s*/, '')
-      const existingTag = allTags.find(t =>
-        t.name.toLowerCase() === tagName.toLowerCase()
-      )
+      const existingTag = allTags.find((t) => t.name.toLowerCase() === tagName.toLowerCase())
       if (existingTag) {
         tags.push(existingTag.id)
       }

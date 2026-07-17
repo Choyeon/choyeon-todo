@@ -2,7 +2,11 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
-  versions: { electron: process.versions.electron, chrome: process.versions.chrome, node: process.versions.node },
+  versions: {
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+    node: process.versions.node
+  },
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   toggleMaximizeWindow: () => ipcRenderer.send('window:toggleMaximize'),
   closeWindow: () => ipcRenderer.send('window:close'),
@@ -11,7 +15,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openDebugWindow: () => ipcRenderer.send('debug:openWindow'),
   closeDebugWindow: () => ipcRenderer.send('debug:closeWindow'),
   minimizeDebugWindow: () => ipcRenderer.send('debug:minimizeWindow'),
-  sendNotification: (title, body, taskId) => ipcRenderer.send('notification:send', { title, body, taskId }),
+  sendNotification: (title, body, taskId) =>
+    ipcRenderer.send('notification:send', { title, body, taskId }),
   syncTasks: (tasks, categories) => ipcRenderer.send('tasks:sync', { tasks, categories }),
   // 返回清理函数，避免监听器累积泄漏
   onNotificationResponse: (callback) => {
@@ -63,7 +68,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 获取免打扰模式
   getDoNotDisturb: () => ipcRenderer.invoke('settings:getDoNotDisturb'),
   // 设置全局快捷键开关
-  setGlobalShortcutEnabled: (enabled) => ipcRenderer.invoke('settings:setGlobalShortcutEnabled', enabled),
+  setGlobalShortcutEnabled: (enabled) =>
+    ipcRenderer.invoke('settings:setGlobalShortcutEnabled', enabled),
   // 获取全局快捷键开关状态
   getGlobalShortcutEnabled: () => ipcRenderer.invoke('settings:getGlobalShortcutEnabled'),
   // 查询窗口是否可见
@@ -120,5 +126,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('pomodoro:timerEnded', listener)
     return () => ipcRenderer.removeListener('pomodoro:timerEnded', listener)
   },
-  setPomodoroDuration: (mode, minutes) => ipcRenderer.send('pomodoro:setDuration', { mode, minutes })
+  setPomodoroDuration: (mode, minutes) =>
+    ipcRenderer.send('pomodoro:setDuration', { mode, minutes })
 })

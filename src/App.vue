@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container" :class="{ 'standalone': isStandaloneRoute, 'web-mode': isWebMode }">
+  <div class="app-container" :class="{ standalone: isStandaloneRoute, 'web-mode': isWebMode }">
     <template v-if="!isStandaloneRoute">
       <TitleBar v-if="!isWebMode" />
       <div class="main-body">
@@ -47,21 +47,15 @@
             <div class="shortcuts-group">
               <h4>全局操作</h4>
               <div class="shortcut-item">
-                <span class="shortcut-keys">
-                  <kbd>Ctrl</kbd> + <kbd>N</kbd>
-                </span>
+                <span class="shortcut-keys"> <kbd>Ctrl</kbd> + <kbd>N</kbd> </span>
                 <span class="shortcut-desc">新建任务</span>
               </div>
               <div class="shortcut-item">
-                <span class="shortcut-keys">
-                  <kbd>Ctrl</kbd> + <kbd>K</kbd>
-                </span>
+                <span class="shortcut-keys"> <kbd>Ctrl</kbd> + <kbd>K</kbd> </span>
                 <span class="shortcut-desc">搜索任务</span>
               </div>
               <div class="shortcut-item">
-                <span class="shortcut-keys">
-                  <kbd>Ctrl</kbd> + <kbd>/</kbd>
-                </span>
+                <span class="shortcut-keys"> <kbd>Ctrl</kbd> + <kbd>/</kbd> </span>
                 <span class="shortcut-desc">显示快捷键帮助</span>
               </div>
               <div class="shortcut-item">
@@ -75,15 +69,11 @@
             <div class="shortcuts-group">
               <h4>任务导航</h4>
               <div class="shortcut-item">
-                <span class="shortcut-keys">
-                  <kbd>J</kbd> / <kbd>↓</kbd>
-                </span>
+                <span class="shortcut-keys"> <kbd>J</kbd> / <kbd>↓</kbd> </span>
                 <span class="shortcut-desc">下一个任务</span>
               </div>
               <div class="shortcut-item">
-                <span class="shortcut-keys">
-                  <kbd>K</kbd> / <kbd>↑</kbd>
-                </span>
+                <span class="shortcut-keys"> <kbd>K</kbd> / <kbd>↑</kbd> </span>
                 <span class="shortcut-desc">上一个任务</span>
               </div>
               <div class="shortcut-item">
@@ -133,6 +123,7 @@ import { ref, computed, onMounted, onUnmounted, provide, nextTick, watch } from 
 import { useRoute, useRouter } from 'vue-router'
 import { useTaskStore } from './stores/taskStore'
 import { useSettingsStore } from './stores/settingsStore'
+import { usePomodoroStore } from './stores/pomodoroStore'
 import { getTodayStr } from './utils/date'
 import { X } from '@lucide/vue'
 import TitleBar from './components/TitleBar.vue'
@@ -150,6 +141,7 @@ const route = useRoute()
 const router = useRouter()
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
+const pomodoroStore = usePomodoroStore()
 
 const isMobile = ref(false)
 const showTaskModal = ref(false)
@@ -163,7 +155,10 @@ const themeTransitionX = ref(0)
 const themeTransitionY = ref(0)
 const themeTransitionTarget = ref('dark')
 
-const isStandaloneRoute = computed(() => route.name === 'Debug' || route.name === 'PomodoroFullscreen' || route.name === 'PomodoroFab')
+const isStandaloneRoute = computed(
+  () =>
+    route.name === 'Debug' || route.name === 'PomodoroFullscreen' || route.name === 'PomodoroFab'
+)
 
 const isWebMode = computed(() => !window.electronAPI)
 
@@ -205,7 +200,7 @@ const onThemeTransitionComplete = () => {}
 const focusTask = async (taskId) => {
   if (!taskId) return
 
-  const task = taskStore.tasks.find(t => t.id === taskId)
+  const task = taskStore.tasks.find((t) => t.id === taskId)
   if (!task) return
 
   taskStore.searchQuery = ''
@@ -264,7 +259,7 @@ const moveFocus = (direction) => {
   if (tasks.length === 0) return
 
   const currentIndex = taskStore.focusedTaskId
-    ? tasks.findIndex(t => t.id === taskStore.focusedTaskId)
+    ? tasks.findIndex((t) => t.id === taskStore.focusedTaskId)
     : -1
 
   let newIndex
@@ -298,7 +293,7 @@ const toggleFocusedTaskImportant = () => {
 
 const openFocusedTaskDate = () => {
   if (taskStore.focusedTaskId) {
-    const task = taskStore.tasks.find(t => t.id === taskStore.focusedTaskId)
+    const task = taskStore.tasks.find((t) => t.id === taskStore.focusedTaskId)
     if (task) {
       openEditTask(task)
     }
@@ -326,6 +321,22 @@ const handleKeyDown = (e) => {
   if (modifier && e.key === '/') {
     e.preventDefault()
     showShortcutsHelp.value = !showShortcutsHelp.value
+    return
+  }
+
+  if (modifier && e.key === ',') {
+    e.preventDefault()
+    router.push('/settings')
+    return
+  }
+
+  if (modifier && e.shiftKey && e.key.toLowerCase() === 'p') {
+    e.preventDefault()
+    if (router.currentRoute.value.name !== 'Pomodoro') {
+      router.push('/pomodoro')
+    } else {
+      pomodoroStore.toggleTimer?.()
+    }
     return
   }
 
@@ -387,15 +398,19 @@ const setupElectronListeners = () => {
   cleanupFns.push(window.electronAPI.onTaskFocus?.(({ taskId }) => focusTask(taskId)))
   cleanupFns.push(window.electronAPI.onNotificationTaskClick?.(({ taskId }) => focusTask(taskId)))
   cleanupFns.push(window.electronAPI.onNavigateSettings?.(() => router.push('/settings')))
-  cleanupFns.push(window.electronAPI.onDoNotDisturbChanged?.((enabled) => {
-    settingsStore.doNotDisturb = enabled
-  }))
+  cleanupFns.push(
+    window.electronAPI.onDoNotDisturbChanged?.((enabled) => {
+      settingsStore.doNotDisturb = enabled
+    })
+  )
 }
 
 const syncTasksToTray = () => {
   // IPC 仅能克隆可序列化数据：传纯数组副本，避免 Pinia ref/Proxy 对象导致 "An object could not be cloned"
-  const tasks = Array.isArray(taskStore.tasks) ? taskStore.tasks.map(t => ({ ...t })) : []
-  const categories = Array.isArray(taskStore.categories) ? taskStore.categories.map(c => ({ ...c })) : []
+  const tasks = Array.isArray(taskStore.tasks) ? taskStore.tasks.map((t) => ({ ...t })) : []
+  const categories = Array.isArray(taskStore.categories)
+    ? taskStore.categories.map((c) => ({ ...c }))
+    : []
   window.electronAPI?.syncTasks?.(tasks, categories)
 }
 
@@ -407,11 +422,7 @@ onMounted(() => {
   setupElectronListeners()
   syncTasksToTray()
 
-  watch(
-    () => [taskStore.tasks, taskStore.categories],
-    syncTasksToTray,
-    { deep: true }
-  )
+  watch(() => [taskStore.tasks, taskStore.categories], syncTasksToTray, { deep: true })
 
   watch(
     () => settingsStore.doNotDisturb,
@@ -425,7 +436,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
   window.removeEventListener('keydown', handleKeyDown)
   if (highlightTimeout) clearTimeout(highlightTimeout)
-  cleanupFns.forEach(fn => fn?.())
+  cleanupFns.forEach((fn) => fn?.())
   cleanupFns = []
 })
 </script>
@@ -528,7 +539,9 @@ onUnmounted(() => {
   color: var(--color-text-secondary);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--transition-smooth), color var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth);
 }
 
 .shortcuts-close:hover {
@@ -600,18 +613,24 @@ onUnmounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .route-enter-active {
-  transition: opacity var(--duration-normal) var(--ease-out-expo),
-              transform var(--duration-normal) var(--ease-out-expo);
+  transition:
+    opacity var(--duration-normal) var(--ease-out-expo),
+    transform var(--duration-normal) var(--ease-out-expo);
 }
 
 .route-leave-active {
-  transition: opacity var(--duration-fast) var(--ease-standard),
-              transform var(--duration-fast) var(--ease-standard);
+  transition:
+    opacity var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
 }
 
 .route-enter-from {

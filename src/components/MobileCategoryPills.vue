@@ -5,43 +5,45 @@
         class="mobile-cat-btn"
         :class="{ active: taskStore.currentView === 'today' }"
         @click="navigateTo('today')"
-        aria-label="我的一天"
+        :aria-label="$t('nav.myDay')"
       >
         <Sun :size="14" />
-        我的一天
+        {{ $t('nav.myDay') }}
       </button>
       <button
         class="mobile-cat-btn"
         :class="{ active: taskStore.currentView === 'important' }"
         @click="navigateTo('important')"
-        aria-label="重要"
+        :aria-label="$t('nav.important')"
       >
         <Star :size="14" />
-        重要
+        {{ $t('nav.important') }}
       </button>
       <button
         class="mobile-cat-btn"
         :class="{ active: taskStore.currentView === 'planned' }"
         @click="navigateTo('planned')"
-        aria-label="已计划"
+        :aria-label="$t('nav.planned')"
       >
         <Calendar :size="14" />
-        已计划
+        {{ $t('nav.planned') }}
       </button>
       <button
         class="mobile-cat-btn"
         :class="{ active: taskStore.currentView === 'all' }"
         @click="navigateTo('all')"
-        aria-label="全部"
+        :aria-label="$t('nav.allShort')"
       >
         <ListTodo :size="14" />
-        全部
+        {{ $t('nav.allShort') }}
       </button>
       <button
         v-for="cat in taskStore.categories"
         :key="cat.id"
         class="mobile-cat-btn"
-        :class="{ active: taskStore.currentView === 'category' && taskStore.currentCategory === cat.id }"
+        :class="{
+          active: taskStore.currentView === 'category' && taskStore.currentCategory === cat.id
+        }"
         :aria-label="cat.name"
         @click="navigateToCategory(cat.id)"
       >
@@ -56,22 +58,30 @@
 import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import {
-  Sun, Star, Calendar, ListTodo,
-  Briefcase, User, BookOpen, ShoppingCart,
-  Heart, MoreHorizontal, Folder
+  Sun,
+  Star,
+  Calendar,
+  ListTodo,
+  Briefcase,
+  User,
+  BookOpen,
+  ShoppingCart,
+  Heart,
+  MoreHorizontal,
+  Folder
 } from '@lucide/vue'
 
 const router = useRouter()
 const taskStore = useTaskStore()
 
 const iconMap = {
-  'briefcase': Briefcase,
-  'user': User,
+  briefcase: Briefcase,
+  user: User,
   'book-open': BookOpen,
   'shopping-cart': ShoppingCart,
-  'heart': Heart,
+  heart: Heart,
   'more-horizontal': MoreHorizontal,
-  'folder': Folder
+  folder: Folder
 }
 
 const getIcon = (iconName) => {
@@ -126,7 +136,10 @@ const navigateToCategory = (catId) => {
   font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .mobile-cat-btn:hover {

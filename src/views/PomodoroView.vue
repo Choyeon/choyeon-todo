@@ -1,8 +1,8 @@
 <template>
   <div class="pomodoro-view">
     <header class="view-header">
-      <h1 class="view-title">番茄钟</h1>
-      <p class="view-subtitle">专注工作，高效休息</p>
+      <h1 class="view-title">{{ $t('nav.pomodoro') }}</h1>
+      <p class="view-subtitle">{{ $t('pomodoro.viewSubtitle') }}</p>
     </header>
     <div class="view-content">
       <PomodoroTimer />

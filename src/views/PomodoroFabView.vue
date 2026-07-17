@@ -1,6 +1,13 @@
 <template>
-  <div class="fab-wrapper" @contextmenu.prevent="showContextMenu = true" @click="showContextMenu = false">
-    <div class="pomodoro-fab" :class="[`mode-${pomodoroStore.currentMode}`, { running: pomodoroStore.isRunning }]">
+  <div
+    class="fab-wrapper"
+    @contextmenu.prevent="showContextMenu = true"
+    @click="showContextMenu = false"
+  >
+    <div
+      class="pomodoro-fab"
+      :class="[`mode-${pomodoroStore.currentMode}`, { running: pomodoroStore.isRunning }]"
+    >
       <div class="fab-bg"></div>
       <svg class="progress-ring" viewBox="0 0 120 120">
         <circle class="progress-bg" cx="60" cy="60" r="52" />
@@ -15,10 +22,10 @@
       </svg>
       <div class="time-display" @click.stop="pomodoroStore.toggleTimer()">
         <span class="time-text">{{ pomodoroStore.formattedTime }}</span>
-        <span class="mode-label">{{ pomodoroStore.currentModeLabel }}</span>
+        <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
       </div>
       <div class="fab-actions">
-        <button class="fab-btn reset-btn" @click.stop="pomodoroStore.resetTimer()" title="重置">
+        <button class="fab-btn reset-btn" @click.stop="pomodoroStore.resetTimer()" :title="$t('pomodoro.reset')">
           <RotateCcw :size="12" />
         </button>
       </div>
@@ -27,16 +34,16 @@
     <div v-if="showContextMenu" class="context-menu" @click.stop>
       <div class="menu-item" @click="handleClose">
         <X :size="14" />
-        <span>关闭悬浮球</span>
+        <span>{{ $t('pomodoro.closeFab') }}</span>
       </div>
       <div class="menu-item" @click="handleTogglePause">
         <Play v-if="!pomodoroStore.isRunning" :size="14" />
         <Pause v-else :size="14" />
-        <span>{{ pomodoroStore.isRunning ? '暂停' : '继续' }}</span>
+        <span>{{ pomodoroStore.isRunning ? $t('pomodoro.pause') : $t('pomodoro.resume') }}</span>
       </div>
       <div class="menu-item" @click="handleReset">
         <RotateCcw :size="14" />
-        <span>重置</span>
+        <span>{{ $t('pomodoro.reset') }}</span>
       </div>
     </div>
   </div>
@@ -93,7 +100,7 @@ onMounted(async () => {
       app.style.backgroundColor = 'transparent'
     }
     const containers = document.querySelectorAll('.app-container, .standalone-content')
-    containers.forEach(el => {
+    containers.forEach((el) => {
       el.style.background = 'transparent'
       el.style.backgroundColor = 'transparent'
     })
@@ -132,7 +139,9 @@ onMounted(async () => {
   background: rgba(20, 20, 28, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
 .progress-ring {
@@ -157,15 +166,15 @@ onMounted(async () => {
 }
 
 .mode-work .progress-fill {
-  stroke: #EF4444;
+  stroke: #ef4444;
 }
 
 .mode-shortBreak .progress-fill {
-  stroke: #22C55E;
+  stroke: #22c55e;
 }
 
 .mode-longBreak .progress-fill {
-  stroke: #06B6D4;
+  stroke: #06b6d4;
 }
 
 .time-display {
@@ -230,11 +239,11 @@ onMounted(async () => {
 }
 
 .reset-btn:hover {
-  color: #9CA3AF;
+  color: #9ca3af;
 }
 
 .skip-btn:hover {
-  color: #22C55E;
+  color: #22c55e;
 }
 
 .context-menu {
@@ -248,7 +257,9 @@ onMounted(async () => {
   border-radius: 12px;
   padding: 6px;
   min-width: 120px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   z-index: 100;
 }
 

@@ -5,7 +5,7 @@
         <div class="debug-badge">
           <Bug :size="14" />
         </div>
-        <span class="debug-title">调试工具</span>
+        <span class="debug-title">{{ $t('debug.title') }}</span>
       </div>
       <button class="debug-close" @click="handleClose">
         <X :size="14" />
@@ -16,7 +16,7 @@
       <div class="debug-menu-section">
         <div class="debug-menu-section-title">
           <Palette :size="14" />
-          <span>外观</span>
+          <span>{{ $t('debug.appearance') }}</span>
         </div>
         <div class="debug-menu-item-group">
           <button
@@ -37,7 +37,7 @@
         </div>
         <button class="debug-menu-item debug-menu-item-secondary" @click="setTitlebarStyle('auto')">
           <RotateCcw :size="14" />
-          <span class="item-label">恢复系统默认</span>
+          <span class="item-label">{{ $t('debug.restoreDefault') }}</span>
         </button>
       </div>
 
@@ -46,13 +46,63 @@
       <div class="debug-menu-section">
         <div class="debug-menu-section-title">
           <Terminal :size="14" />
-          <span>开发工具</span>
+          <span>{{ $t('debug.devTools') }}</span>
         </div>
         <button class="debug-menu-item" @click="handleOpenDevTools">
           <Code :size="14" />
-          <span class="item-label">打开开发者工具</span>
+          <span class="item-label">{{ $t('debug.openDevTools') }}</span>
           <span class="item-desc">Chrome DevTools</span>
         </button>
+        <button class="debug-menu-item" @click="showErrorMonitor = !showErrorMonitor">
+          <AlertTriangle :size="14" />
+          <span class="item-label">{{ $t('debug.errorMonitor') }}</span>
+          <span class="item-desc">{{ errorTotal }} {{ $t('debug.totalRecords') }}</span>
+        </button>
+      </div>
+
+      <div v-if="showErrorMonitor" class="error-monitor-panel">
+        <div class="error-monitor-stats">
+          <div class="err-stat">
+            <span class="err-stat-num">{{ errorTotal }}</span>
+            <span class="err-stat-label">{{ $t('debug.total') }}</span>
+          </div>
+          <div class="err-stat">
+            <span class="err-stat-num">{{ errorLast24h }}</span>
+            <span class="err-stat-label">{{ $t('debug.last24h') }}</span>
+          </div>
+          <div class="err-stat">
+            <span class="err-stat-num">{{ errorTypes }}</span>
+            <span class="err-stat-label">{{ $t('debug.types') }}</span>
+          </div>
+        </div>
+        <div class="err-actions">
+          <button class="err-action-btn" @click="refreshErrors">
+            <RefreshCw :size="12" />
+            {{ $t('debug.refresh') }}
+          </button>
+          <button class="err-action-btn danger" @click="handleClearErrors">
+            <Trash2 :size="12" />
+            {{ $t('debug.clear') }}
+          </button>
+          <button class="err-action-btn" @click="handleTestError">
+            <Bug :size="12" />
+            {{ $t('debug.mockError') }}
+          </button>
+        </div>
+        <div class="err-list" v-if="recentErrors.length > 0">
+          <div v-for="err in recentErrors" :key="err.id" class="err-item">
+            <div class="err-item-header">
+              <span class="err-name">{{ err.name }}</span>
+              <span class="err-time">{{ formatErrTime(err.timestamp) }}</span>
+            </div>
+            <p class="err-msg">{{ err.message }}</p>
+            <span class="err-type-tag">{{ err.type }}</span>
+          </div>
+        </div>
+        <div v-else class="err-empty">
+          <CheckCircle :size="20" />
+          <span>{{ $t('debug.noErrors') }}</span>
+        </div>
       </div>
 
       <div class="debug-menu-divider"></div>
@@ -60,12 +110,12 @@
       <div class="debug-menu-section">
         <div class="debug-menu-section-title">
           <Bell :size="14" />
-          <span>通知测试</span>
+          <span>{{ $t('debug.notification') }}</span>
         </div>
         <button class="debug-menu-item" @click="handleTestNotification">
           <Send :size="14" />
-          <span class="item-label">发送测试通知</span>
-          <span class="item-desc">查看右下角弹窗</span>
+          <span class="item-label">{{ $t('debug.sendTest') }}</span>
+          <span class="item-desc">{{ $t('debug.viewToast') }}</span>
         </button>
         <div v-if="notificationStatus" class="debug-status" :class="notificationStatus.type">
           <component :is="notificationStatus.icon" :size="12" />
@@ -78,11 +128,11 @@
       <div class="debug-menu-section">
         <div class="debug-menu-section-title">
           <Info :size="14" />
-          <span>系统信息</span>
+          <span>{{ $t('debug.systemInfo') }}</span>
         </div>
         <div class="debug-info-grid">
           <div class="debug-info-item">
-            <span class="debug-info-label">平台</span>
+            <span class="debug-info-label">{{ $t('debug.platform') }}</span>
             <span class="debug-info-value">{{ platform }}</span>
           </div>
           <div class="debug-info-item">
@@ -109,17 +159,43 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Bug, Terminal, Bell, CheckCircle, AlertCircle, RotateCcw, X, Palette, Monitor, Type, Code, Send, Info } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
+import {
+  Bug,
+  Terminal,
+  Bell,
+  CheckCircle,
+  AlertCircle,
+  RotateCcw,
+  X,
+  Palette,
+  Monitor,
+  Type,
+  Code,
+  Send,
+  Info,
+  AlertTriangle,
+  Trash2,
+  RefreshCw
+} from '@lucide/vue'
+import {
+  getErrorLogs,
+  getErrorStats,
+  clearErrorLogs,
+  captureError
+} from '../utils/errorMonitor'
+
+const { t } = useI18n()
 
 const notificationStatus = ref(null)
 let notificationCleanup = null
 let statusTimeout = null
 
-const titlebarStyles = [
-  { value: 'win32', label: 'Windows', preview: '毛玻璃效果' },
-  { value: 'darwin', label: 'macOS', preview: '三色按钮' },
-  { value: 'linux', label: 'Linux', preview: '简洁风格' }
-]
+const titlebarStyles = computed(() => [
+  { value: 'win32', label: t('debug.windows'), preview: t('debug.winGlass') },
+  { value: 'darwin', label: t('debug.macos'), preview: t('debug.macTrafficLights') },
+  { value: 'linux', label: t('debug.linux'), preview: t('debug.linuxSimple') }
+])
 
 const currentTitlebarStyle = ref('auto')
 const appVersion = computed(() => window.electronAPI?.versions?.app || '1.0.0')
@@ -128,6 +204,41 @@ const platform = computed(() => window.electronAPI?.platform || 'Web')
 const electronVersion = computed(() => window.electronAPI?.versions?.electron || 'N/A')
 const nodeVersion = computed(() => window.electronAPI?.versions?.node || 'N/A')
 const chromeVersion = computed(() => window.electronAPI?.versions?.chrome || 'N/A')
+
+const showErrorMonitor = ref(false)
+const errorLogs = ref([])
+const errorStats = ref({ total: 0, last24h: 0, typeCount: {} })
+
+const errorTotal = computed(() => errorStats.value.total)
+const errorLast24h = computed(() => errorStats.value.last24h)
+const errorTypes = computed(() => Object.keys(errorStats.value.typeCount || {}).length)
+const recentErrors = computed(() => errorLogs.value.slice(0, 10))
+
+const refreshErrors = () => {
+  errorLogs.value = getErrorLogs()
+  errorStats.value = getErrorStats()
+}
+
+const handleClearErrors = () => {
+  if (confirm(t('debug.clearConfirm'))) {
+    clearErrorLogs()
+    refreshErrors()
+  }
+}
+
+const handleTestError = () => {
+  try {
+    throw new Error(t('debug.testError'))
+  } catch (e) {
+    captureError(e, { type: 'test' })
+    refreshErrors()
+  }
+}
+
+const formatErrTime = (ts) => {
+  const d = new Date(ts)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`
+}
 
 const setTitlebarStyle = (style) => {
   currentTitlebarStyle.value = style
@@ -170,7 +281,7 @@ const handleTestNotification = () => {
     notificationStatus.value = {
       type: 'error',
       icon: AlertCircle,
-      message: '通知API不可用'
+      message: t('debug.notificationApiUnavailable')
     }
     return
   }
@@ -178,16 +289,16 @@ const handleTestNotification = () => {
   notificationStatus.value = {
     type: 'loading',
     icon: Bell,
-    message: '正在发送...'
+    message: t('debug.sending')
   }
 
-  window.electronAPI.sendNotification('Choyeon To Do', '测试通知：请查看右下角toast弹窗')
+  window.electronAPI.sendNotification('Choyeon To Do', t('debug.testNotificationContent'))
 
   notificationCleanup = window.electronAPI.onNotificationResponse((response) => {
     notificationStatus.value = {
       type: 'success',
       icon: CheckCircle,
-      message: response.action === 'clicked' ? '通知已点击' : '通知已关闭'
+      message: response.action === 'clicked' ? t('debug.notificationClicked') : t('debug.notificationClosed')
     }
     if (statusTimeout) {
       clearTimeout(statusTimeout)
@@ -200,7 +311,7 @@ const handleTestNotification = () => {
       notificationStatus.value = {
         type: 'success',
         icon: CheckCircle,
-        message: '通知已发送'
+        message: t('debug.notificationSent')
       }
     }
     statusTimeout = null
@@ -209,6 +320,7 @@ const handleTestNotification = () => {
 
 onMounted(() => {
   currentTitlebarStyle.value = localStorage.getItem('choyeon_debug_titlebar') || 'auto'
+  refreshErrors()
 })
 
 onUnmounted(() => {
@@ -224,7 +336,9 @@ onUnmounted(() => {
   background: var(--color-surface);
   overflow: hidden;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .debug-header {
@@ -407,8 +521,14 @@ onUnmounted(() => {
 }
 
 @keyframes statusFadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .debug-status.success {
@@ -474,5 +594,151 @@ onUnmounted(() => {
 .debug-footer-text {
   font-size: 11px;
   color: var(--color-text-tertiary);
+}
+
+.error-monitor-panel {
+  margin: 8px 4px 4px;
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  animation: panelSlide 0.2s ease-out;
+}
+
+@keyframes panelSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-monitor-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.err-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+}
+
+.err-stat-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.err-stat-label {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+.err-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.err-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.err-action-btn:hover {
+  border-color: var(--color-primary-alpha);
+  color: var(--color-primary);
+}
+
+.err-action-btn.danger:hover {
+  border-color: var(--color-error, #ef4444);
+  color: var(--color-error, #ef4444);
+}
+
+.err-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.err-item {
+  padding: 8px 10px;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--color-error, #ef4444);
+}
+
+.err-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.err-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.err-time {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.err-msg {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.err-type-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+}
+
+.err-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
 }
 </style>

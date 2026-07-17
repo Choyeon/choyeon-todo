@@ -2,664 +2,19 @@
   <div class="settings-view">
     <div class="content-inner">
       <div class="content-header">
-        <h1>设置</h1>
-        <p class="header-subtitle">个性化你的任务体验</p>
+        <h1>{{ $t('settings.title') }}</h1>
+        <p class="header-subtitle">{{ $t('settings.subtitle') }}</p>
       </div>
 
-      <div class="settings-card">
-        <div class="settings-section-header">
-          <div class="settings-section-icon icon-primary-tint">
-            <Palette :size="18" />
-          </div>
-          <h3 class="settings-section-title">外观</h3>
-        </div>
-
-        <div class="setting-row no-hover">
-          <div class="setting-icon-wrap icon-primary-tint">
-            <component :is="settingsStore.isDark ? Moon : Sun" :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">主题模式</span>
-            <p class="setting-desc">选择浅色、深色或跟随系统</p>
-          </div>
-        </div>
-
-        <div class="segmented-control">
-          <button
-            class="segment-btn"
-            :class="{ active: settingsStore.themeMode === 'light' }"
-            @click="setThemeMode('light')"
-            aria-label="浅色模式"
-          >
-            <Sun :size="16" />
-            <span>浅色</span>
-          </button>
-          <button
-            class="segment-btn"
-            :class="{ active: settingsStore.themeMode === 'dark' }"
-            @click="setThemeMode('dark')"
-            aria-label="深色模式"
-          >
-            <Moon :size="16" />
-            <span>深色</span>
-          </button>
-          <button
-            class="segment-btn"
-            :class="{ active: settingsStore.themeMode === 'system' }"
-            @click="setThemeMode('system')"
-            aria-label="跟随系统"
-          >
-            <Monitor :size="16" />
-            <span>系统</span>
-          </button>
-        </div>
-
-        <div class="setting-row no-hover">
-          <div class="setting-icon-wrap icon-blue">
-            <Type :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">字体大小</span>
-            <p class="setting-desc">调整界面文字大小</p>
-          </div>
-        </div>
-
-        <div class="segmented-control">
-          <button
-            class="segment-btn"
-            :class="{ active: settingsStore.fontSize === 'small' }"
-            @click="setFontSize('small')"
-            aria-label="小字体"
-          >
-            <span>小</span>
-          </button>
-          <button
-            class="segment-btn"
-            :class="{ active: settingsStore.fontSize === 'medium' }"
-            @click="setFontSize('medium')"
-            aria-label="中字体"
-          >
-            <span>中</span>
-          </button>
-          <button
-            class="segment-btn"
-            :class="{ active: settingsStore.fontSize === 'large' }"
-            @click="setFontSize('large')"
-            aria-label="大字体"
-          >
-            <span>大</span>
-          </button>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-icon-wrap icon-orange">
-            <PanelLeft :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">侧边栏折叠</span>
-            <p class="setting-desc">折叠侧边栏以获得更多空间</p>
-          </div>
-          <button
-            class="toggle-switch"
-            role="switch"
-            :aria-checked="settingsStore.sidebarCollapsed"
-            @click.stop="toggleSidebar"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-icon-wrap icon-cyan">
-            <Layers :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">毛玻璃效果</span>
-            <p class="setting-desc">启用半透明亚克力风格界面</p>
-          </div>
-          <button
-            class="toggle-switch"
-            role="switch"
-            :aria-checked="settingsStore.glassEffectEnabled"
-            aria-label="毛玻璃效果开关"
-            @click.stop="toggleGlassEffect"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-
-        <div class="color-picker-row">
-          <div class="setting-icon-wrap icon-primary-tint">
-            <Palette :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">主题色</span>
-            <p class="setting-desc">选择你喜欢的主题颜色</p>
-          </div>
-        </div>
-
-        <div class="color-options">
-          <button
-            v-for="color in settingsStore.themeColors"
-            :key="color.value"
-            class="color-option"
-            :class="{ active: settingsStore.primaryColor === color.value }"
-            :style="{ background: color.value }"
-            :title="color.name"
-            :aria-label="`主题色 ${color.name}`"
-            @click="setThemeColor(color.value)"
-          >
-            <Check v-if="settingsStore.primaryColor === color.value" :size="16" />
-          </button>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="category-header">
-          <div class="settings-section-header">
-            <div class="settings-section-icon icon-orange">
-              <FolderTree :size="18" />
-            </div>
-            <h3 class="settings-section-title">分类管理</h3>
-          </div>
-          <button
-            v-if="selectedCategories.length > 0"
-            class="batch-delete-btn"
-            @click="handleBatchDelete"
-          >
-            <Trash2 :size="14" />
-            删除选中 ({{ selectedCategories.length }})
-          </button>
-        </div>
-
-        <div class="category-list">
-          <div
-            v-for="cat in taskStore.categories"
-            :key="cat.id"
-            class="category-item"
-          >
-            <label class="category-checkbox" v-if="cat.id !== 'other'">
-              <input
-                type="checkbox"
-                :checked="selectedCategories.includes(cat.id)"
-                @change="toggleSelectCategory(cat.id)"
-              />
-              <span class="checkmark"></span>
-            </label>
-            <span class="category-dot" :style="{ background: cat.color }"></span>
-            <span class="category-name">{{ cat.name }}</span>
-            <span class="category-count">{{ taskStore.getCategoryCount(cat.id) }}</span>
-            <div class="category-actions" v-if="cat.id !== 'other'">
-              <button class="cat-action-btn" @click="startEditCategory(cat)" title="编辑" aria-label="编辑分类">
-                <Pencil :size="14" />
-              </button>
-              <button class="cat-action-btn delete" @click="handleDeleteCategory(cat)" title="删除" aria-label="删除分类">
-                <Trash2 :size="14" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <button class="add-category-btn" @click="openAddCategory">
-          <Plus :size="18" />
-          添加新分类
-        </button>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-section-header">
-          <div class="settings-section-icon icon-red">
-            <Timer :size="18" />
-          </div>
-          <h3 class="settings-section-title">番茄钟</h3>
-        </div>
-
-        <div class="setting-row no-hover">
-          <div class="setting-icon-wrap icon-red">
-            <Timer :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">专注时长</span>
-            <p class="setting-desc">每个番茄钟的工作时间（分钟）</p>
-          </div>
-          <div class="number-input-wrap">
-            <input
-              type="number"
-              class="number-input"
-              :value="settingsStore.pomodoroWorkMinutes"
-              min="1"
-              max="180"
-              @change="onPomodoroWorkChange"
-              aria-label="专注时长"
-            />
-          </div>
-        </div>
-
-        <div class="setting-row no-hover">
-          <div class="setting-icon-wrap icon-green">
-            <Coffee :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">短休息时长</span>
-            <p class="setting-desc">每个番茄钟后的短休息（分钟）</p>
-          </div>
-          <div class="number-input-wrap">
-            <input
-              type="number"
-              class="number-input"
-              :value="settingsStore.pomodoroBreakMinutes"
-              min="1"
-              max="60"
-              @change="onPomodoroBreakChange"
-              aria-label="短休息时长"
-            />
-          </div>
-        </div>
-
-        <div class="setting-row no-hover">
-          <div class="setting-icon-wrap icon-blue">
-            <Sofa :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">长休息时长</span>
-            <p class="setting-desc">长休息的持续时间（分钟）</p>
-          </div>
-          <div class="number-input-wrap">
-            <input
-              type="number"
-              class="number-input"
-              :value="settingsStore.pomodoroLongBreakMinutes"
-              min="1"
-              max="120"
-              @change="onPomodoroLongBreakChange"
-              aria-label="长休息时长"
-            />
-          </div>
-        </div>
-
-        <div class="setting-row no-hover">
-          <div class="setting-icon-wrap icon-purple">
-            <Repeat :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">长休息间隔</span>
-            <p class="setting-desc">多少个番茄钟后进行长休息</p>
-          </div>
-          <div class="number-input-wrap">
-            <input
-              type="number"
-              class="number-input"
-              :value="settingsStore.pomodoroSessionsBeforeLongBreak"
-              min="1"
-              max="12"
-              @change="onPomodoroSessionsChange"
-              aria-label="长休息间隔"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-section-header">
-          <div class="settings-section-icon icon-blue">
-            <Bell :size="18" />
-          </div>
-          <h3 class="settings-section-title">通知</h3>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-icon-wrap icon-blue">
-            <Bell :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">通知提醒</span>
-            <p class="setting-desc">任务到期时发送系统通知</p>
-          </div>
-          <button
-            class="toggle-switch"
-            role="switch"
-            :aria-checked="settingsStore.notificationsEnabled"
-            aria-label="通知提醒开关"
-            @click.stop="toggleNotifications"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-icon-wrap icon-purple">
-            <Moon :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">免打扰模式</span>
-            <p class="setting-desc">开启后暂停所有通知提醒</p>
-          </div>
-          <button
-            class="toggle-switch"
-            role="switch"
-            :aria-checked="settingsStore.doNotDisturb"
-            aria-label="免打扰模式开关"
-            @click.stop="toggleDoNotDisturb"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-
-        <div class="setting-row no-hover">
-          <div class="setting-icon-wrap icon-orange">
-            <Clock :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">默认提醒时间</span>
-            <p class="setting-desc">任务到期前多少分钟提醒</p>
-          </div>
-          <select
-            class="reminder-select"
-            :value="settingsStore.defaultReminderTime"
-            aria-label="默认提醒时间"
-            @change="onReminderTimeChange"
-          >
-            <option :value="5">5 分钟</option>
-            <option :value="10">10 分钟</option>
-            <option :value="15">15 分钟</option>
-            <option :value="30">30 分钟</option>
-            <option :value="60">1 小时</option>
-            <option :value="1440">1 天</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-section-header">
-          <div class="settings-section-icon icon-green">
-            <Power :size="18" />
-          </div>
-          <h3 class="settings-section-title">系统</h3>
-        </div>
-
-        <div class="setting-row" v-if="isElectron">
-          <div class="setting-icon-wrap icon-green">
-            <Power :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">开机自启</span>
-            <p class="setting-desc">系统启动时自动打开应用</p>
-          </div>
-          <button
-            class="toggle-switch"
-            role="switch"
-            :aria-checked="settingsStore.autoStart"
-            aria-label="开机自启开关"
-            @click.stop="toggleAutoStart"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-
-        <div class="setting-row" v-if="isElectron">
-          <div class="setting-icon-wrap icon-slate">
-            <X :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">关闭窗口即退出</span>
-            <p class="setting-desc">关闭窗口时直接退出应用</p>
-          </div>
-          <button
-            class="toggle-switch"
-            role="switch"
-            :aria-checked="settingsStore.closeToQuit"
-            aria-label="关闭窗口即退出开关"
-            @click.stop="toggleCloseToQuit"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-section-header">
-          <div class="settings-section-icon icon-purple">
-            <Keyboard :size="18" />
-          </div>
-          <h3 class="settings-section-title">快捷键</h3>
-        </div>
-
-        <div class="shortcut-item">
-          <div class="shortcut-info">
-            <Keyboard :size="18" class="shortcut-icon" />
-            <span class="shortcut-label">新建任务</span>
-          </div>
-          <div class="shortcut-keys">
-            <kbd class="kbd">Ctrl</kbd>
-            <span class="kbd-plus">+</span>
-            <kbd class="kbd">N</kbd>
-          </div>
-        </div>
-
-        <div class="shortcut-item">
-          <div class="shortcut-info">
-            <Search :size="18" class="shortcut-icon" />
-            <span class="shortcut-label">搜索</span>
-          </div>
-          <div class="shortcut-keys">
-            <kbd class="kbd">Ctrl</kbd>
-            <span class="kbd-plus">+</span>
-            <kbd class="kbd">K</kbd>
-          </div>
-        </div>
-
-        <div class="shortcut-item">
-          <div class="shortcut-info">
-            <ArrowUpDown :size="18" class="shortcut-icon" />
-            <span class="shortcut-label">上下移动</span>
-          </div>
-          <div class="shortcut-keys">
-            <kbd class="kbd">J</kbd>
-            <span class="kbd-slash">/</span>
-            <kbd class="kbd">K</kbd>
-          </div>
-        </div>
-
-        <div class="shortcut-item">
-          <div class="shortcut-info">
-            <CheckCircle :size="18" class="shortcut-icon" />
-            <span class="shortcut-label">完成任务</span>
-          </div>
-          <div class="shortcut-keys">
-            <kbd class="kbd">Space</kbd>
-          </div>
-        </div>
-
-        <div class="shortcut-item">
-          <div class="shortcut-info">
-            <Star :size="18" class="shortcut-icon" />
-            <span class="shortcut-label">标记重要</span>
-          </div>
-          <div class="shortcut-keys">
-            <kbd class="kbd">I</kbd>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-section-header">
-          <div class="settings-section-icon icon-slate">
-            <Database :size="18" />
-          </div>
-          <h3 class="settings-section-title">数据</h3>
-        </div>
-
-        <div class="setting-row" @click="exportData">
-          <div class="setting-icon-wrap icon-green">
-            <Download :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">导出数据</span>
-            <p class="setting-desc">将任务数据导出为JSON文件</p>
-          </div>
-          <ChevronRight :size="20" class="chevron" />
-        </div>
-
-        <div class="setting-row" @click="importData">
-          <div class="setting-icon-wrap icon-blue">
-            <Upload :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">导入数据</span>
-            <p class="setting-desc">从JSON文件导入任务数据</p>
-          </div>
-          <ChevronRight :size="20" class="chevron" />
-        </div>
-
-        <div class="setting-row" @click="showResetDataModal = true">
-          <div class="setting-icon-wrap icon-amber">
-            <RefreshCw :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">恢复默认数据</span>
-            <p class="setting-desc">清除当前数据并恢复默认示例数据</p>
-          </div>
-          <ChevronRight :size="20" class="chevron" />
-        </div>
-
-        <div class="setting-row danger" @click="showClearDataModal = true">
-          <div class="setting-icon-wrap icon-red">
-            <AlertTriangle :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">清除所有数据</span>
-            <p class="setting-desc">删除所有任务和设置数据</p>
-          </div>
-          <ChevronRight :size="20" class="chevron" />
-        </div>
-
-        <div class="setting-row" @click="testNotification">
-          <div class="setting-icon-wrap icon-blue">
-            <Bell :size="20" />
-          </div>
-          <div class="setting-label-wrap">
-            <span class="setting-label">测试通知</span>
-            <p class="setting-desc">发送一条测试Windows通知</p>
-          </div>
-          <ChevronRight :size="20" class="chevron" />
-        </div>
-      </div>
-
-      <div class="settings-card version-card" @click="handleVersionClick">
-        <div class="version-info">
-          <div class="version-logo">
-            <svg width="28" height="28" viewBox="0 0 512 512">
-              <rect width="512" height="512" rx="112" fill="#4C8BF5"/>
-              <text x="256" y="320" font-family="'Segoe UI',Arial,sans-serif" font-size="200" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="-4">ToDo</text>
-            </svg>
-          </div>
-          <p class="version-title">Choyeon To Do</p>
-          <p class="version-desc">版本 1.0.0</p>
-        </div>
-      </div>
-
-      <div class="settings-card links-card">
-        <a href="https://github.com/Choyeon/choyeon-todo" target="_blank" rel="noopener noreferrer" class="link-row" @click.stop>
-          <div class="link-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-            </svg>
-          </div>
-          <div class="link-text">
-            <span class="link-label">GitHub 仓库</span>
-            <span class="link-desc">github.com/Choyeon/choyeon-todo</span>
-          </div>
-          <svg class="link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </a>
-        <a href="https://chuyuchoyeon.github.io/choyeon-todo/" target="_blank" rel="noopener noreferrer" class="link-row" @click.stop>
-          <div class="link-icon link-icon-globe">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-          </div>
-          <div class="link-text">
-            <span class="link-label">在线演示</span>
-            <span class="link-desc">chuyuchoyeon.github.io/choyeon-todo</span>
-          </div>
-          <svg class="link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </a>
-      </div>
+      <SettingsAppearance />
+      <SettingsCategories ref="categoriesRef" />
+      <SettingsPomodoro />
+      <SettingsNotifications />
+      <SettingsSystem />
+      <SettingsShortcuts />
+      <SettingsData @show-clear="showClearDataModal = true" @show-reset="showResetDataModal = true" />
+      <SettingsAbout />
     </div>
-
-    <Teleport to="body">
-      <Transition name="fade">
-        <div v-if="showCategoryModal" class="modal-backdrop" @click.self="closeCategoryModal">
-          <Transition name="slide-up">
-            <div v-if="showCategoryModal" class="category-modal" @keydown.esc="closeCategoryModal">
-              <h3 class="modal-title">{{ editingCategory ? '编辑分类' : '添加新分类' }}</h3>
-              <input
-                type="text"
-                class="form-input"
-                placeholder="分类名称"
-                v-model="categoryForm.name"
-                ref="categoryNameInput"
-                aria-label="分类名称"
-                @keyup.enter="saveCategory"
-              />
-              <div class="modal-colors-label">选择颜色</div>
-              <div class="modal-colors">
-                <button
-                  v-for="color in settingsStore.themeColors"
-                  :key="color.value"
-                  class="color-option small"
-                  :class="{ active: categoryForm.color === color.value }"
-                  :style="{ background: color.value }"
-                  :title="color.name"
-                  :aria-label="`分类颜色 ${color.name}`"
-                  @click="categoryForm.color = color.value"
-                >
-                  <Check v-if="categoryForm.color === color.value" :size="12" />
-                </button>
-              </div>
-              <div class="modal-actions">
-                <button class="cancel-btn" @click="closeCategoryModal">取消</button>
-                <button class="save-btn" @click="saveCategory">{{ editingCategory ? '保存' : '添加' }}</button>
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </Transition>
-    </Teleport>
-
-    <Teleport to="body">
-      <Transition name="fade">
-        <div v-if="showDeleteModal" class="modal-backdrop" @click.self="closeDeleteModal">
-          <Transition name="slide-up">
-            <div v-if="showDeleteModal" class="category-modal delete-modal" @keydown.esc="closeDeleteModal">
-              <div class="delete-icon">
-                <AlertTriangle :size="32" />
-              </div>
-              <h3 class="modal-title">确认删除</h3>
-              <p class="delete-desc">
-                {{ deleteModalMessage }}
-              </p>
-              <div class="delete-options">
-                <button class="delete-option-btn move" @click="confirmDeleteWithMove">
-                  <ArrowRight :size="16" />
-                  移动到默认分类
-                </button>
-                <button class="delete-option-btn delete" @click="confirmDeleteWithRemove">
-                  <Trash2 :size="16" />
-                  删除待办事项
-                </button>
-              </div>
-              <button class="cancel-btn full-width" @click="closeDeleteModal">取消</button>
-            </div>
-          </Transition>
-        </div>
-      </Transition>
-    </Teleport>
 
     <Teleport to="body">
       <Transition name="fade">
@@ -669,41 +24,42 @@
               <div class="delete-icon">
                 <AlertTriangle :size="32" />
               </div>
-              <h3 class="modal-title">确认清除所有数据</h3>
+              <h3 class="modal-title">{{ $t('settings.clearAllDataConfirm') }}</h3>
               <p class="delete-desc">
-                所有任务、分类和设置将被删除。此操作不可撤销，清除后页面将重新加载。
+                {{ $t('settings.clearAllDataDesc') }}
               </p>
               <div class="delete-options">
                 <button class="delete-option-btn delete" @click="confirmClearAllData">
                   <Trash2 :size="16" />
-                  确认清除
+                  {{ $t('settings.confirmClear') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="showClearDataModal = false">取消</button>
+              <button class="cancel-btn full-width" @click="showClearDataModal = false">{{ $t('common.cancel') }}</button>
             </div>
           </Transition>
         </div>
       </Transition>
     </Teleport>
+
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="showResetDataModal" class="modal-backdrop" @click.self="showResetDataModal = false">
           <Transition name="slide-up">
             <div v-if="showResetDataModal" class="category-modal delete-modal" @keydown.esc="showResetDataModal = false">
-              <div class="delete-icon" style="background: rgba(245, 158, 11, 0.12); color: #F59E0B;">
+              <div class="delete-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b">
                 <RefreshCw :size="32" />
               </div>
-              <h3 class="modal-title">确认恢复默认数据</h3>
+              <h3 class="modal-title">{{ $t('settings.resetDataConfirm') }}</h3>
               <p class="delete-desc">
-                所有当前任务和设置将被清除，并恢复为默认示例数据。此操作不可撤销。
+                {{ $t('settings.resetDataDesc') }}
               </p>
               <div class="delete-options">
-                <button class="delete-option-btn" style="background: rgba(245, 158, 11, 0.12); color: #D97706;" @click="confirmResetData">
+                <button class="delete-option-btn" style="background: rgba(245, 158, 11, 0.12); color: #d97706" @click="confirmResetData">
                   <RefreshCw :size="16" />
-                  确认恢复
+                  {{ $t('settings.confirmReset') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="showResetDataModal = false">取消</button>
+              <button class="cancel-btn full-width" @click="showResetDataModal = false">{{ $t('common.cancel') }}</button>
             </div>
           </Transition>
         </div>
@@ -713,393 +69,30 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, computed, onMounted, onUnmounted, inject } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useTaskStore } from '../stores/taskStore'
 import { useSnackbar } from '../composables/useSnackbar'
-import {
-  Sun, Moon, Palette, Plus, Download, Upload, AlertTriangle,
-  Check, ChevronRight, Pencil, Trash2, ArrowRight, Bell,
-  Clock, Power, X, Monitor, Type, PanelLeft,
-  Timer, Coffee, Sofa, Repeat, Keyboard, Search, ArrowUpDown,
-  CheckCircle, Star, RefreshCw, FolderTree, Database, Layers
-} from '@lucide/vue'
+import { AlertTriangle, Trash2, RefreshCw } from '@lucide/vue'
+
+const { t } = useI18n()
+import SettingsAppearance from '../components/settings/SettingsAppearance.vue'
+import SettingsCategories from '../components/settings/SettingsCategories.vue'
+import SettingsPomodoro from '../components/settings/SettingsPomodoro.vue'
+import SettingsNotifications from '../components/settings/SettingsNotifications.vue'
+import SettingsSystem from '../components/settings/SettingsSystem.vue'
+import SettingsShortcuts from '../components/settings/SettingsShortcuts.vue'
+import SettingsData from '../components/settings/SettingsData.vue'
+import SettingsAbout from '../components/settings/SettingsAbout.vue'
 
 const settingsStore = useSettingsStore()
 const taskStore = useTaskStore()
 const { show: showSnackbar } = useSnackbar()
-const triggerThemeTransition = inject('triggerThemeTransition')
 
-const isElectron = typeof window !== 'undefined' && !!window.electronAPI
-
-// Debug触发：2秒内点击版本号5次
-let versionClickCount = 0
-let versionClickTimer = null
-const handleVersionClick = () => {
-  versionClickCount++
-  if (versionClickTimer) clearTimeout(versionClickTimer)
-  versionClickTimer = setTimeout(() => {
-    versionClickCount = 0
-  }, 2000)
-  if (versionClickCount >= 5) {
-    versionClickCount = 0
-    if (versionClickTimer) {
-      clearTimeout(versionClickTimer)
-      versionClickTimer = null
-    }
-    if (window.electronAPI?.openDebugWindow) {
-      window.electronAPI.openDebugWindow()
-    }
-  }
-}
-
-const showCategoryModal = ref(false)
-const showDeleteModal = ref(false)
 const showClearDataModal = ref(false)
 const showResetDataModal = ref(false)
-const editingCategory = ref(null)
-const categoryNameInput = ref(null)
-const selectedCategories = ref([])
-const deletingCategory = ref(null)
-const deletingCategories = ref([])
-
-const categoryForm = reactive({
-  name: '',
-  color: '#4A90D9'
-})
-
-const deleteModalMessage = computed(() => {
-  if (deletingCategories.value.length > 0) {
-    const totalCount = deletingCategories.value.reduce((sum, catId) => {
-      return sum + taskStore.getCategoryCount(catId)
-    }, 0)
-    return `即将删除 ${deletingCategories.value.length} 个分类，共包含 ${totalCount} 个待办事项。这些待办事项如何处理？`
-  }
-  if (deletingCategory.value) {
-    const count = taskStore.getCategoryCount(deletingCategory.value.id)
-    return `即将删除分类 "${deletingCategory.value.name}"，该分类下有 ${count} 个待办事项。这些待办事项如何处理？`
-  }
-  return ''
-})
-
-const toggleTheme = (e) => {
-  const targetTheme = settingsStore.themeMode === 'light' ? 'dark' : 'light'
-  
-  if (e && triggerThemeTransition) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
-    triggerThemeTransition(x, y, targetTheme)
-  }
-  
-  settingsStore.toggleTheme()
-}
-
-const setThemeMode = (mode) => {
-  settingsStore.setThemeMode(mode)
-  showSnackbar('主题模式已更新')
-}
-
-const setFontSize = (size) => {
-  settingsStore.setFontSize(size)
-  showSnackbar('字体大小已更新')
-}
-
-const toggleSidebar = () => {
-  settingsStore.toggleSidebar()
-  showSnackbar(settingsStore.sidebarCollapsed ? '侧边栏已折叠' : '侧边栏已展开')
-}
-
-const toggleGlassEffect = () => {
-  settingsStore.toggleGlassEffect()
-  showSnackbar(settingsStore.glassEffectEnabled ? '毛玻璃效果已开启' : '毛玻璃效果已关闭')
-}
-
-const onPomodoroWorkChange = (e) => {
-  const value = parseInt(e.target.value, 10)
-  if (!isNaN(value) && value >= 1 && value <= 180) {
-    settingsStore.pomodoroWorkMinutes = value
-    showSnackbar('专注时长已更新')
-  }
-}
-
-const onPomodoroBreakChange = (e) => {
-  const value = parseInt(e.target.value, 10)
-  if (!isNaN(value) && value >= 1 && value <= 60) {
-    settingsStore.pomodoroBreakMinutes = value
-    showSnackbar('短休息时长已更新')
-  }
-}
-
-const onPomodoroLongBreakChange = (e) => {
-  const value = parseInt(e.target.value, 10)
-  if (!isNaN(value) && value >= 1 && value <= 120) {
-    settingsStore.pomodoroLongBreakMinutes = value
-    showSnackbar('长休息时长已更新')
-  }
-}
-
-const onPomodoroSessionsChange = (e) => {
-  const value = parseInt(e.target.value, 10)
-  if (!isNaN(value) && value >= 1 && value <= 12) {
-    settingsStore.pomodoroSessionsBeforeLongBreak = value
-    showSnackbar('长休息间隔已更新')
-  }
-}
-
-const setThemeColor = (color) => {
-  settingsStore.setPrimaryColor(color)
-}
-
-const openAddCategory = () => {
-  editingCategory.value = null
-  categoryForm.name = ''
-  categoryForm.color = '#4A90D9'
-  showCategoryModal.value = true
-  nextTick(() => {
-    if (categoryNameInput.value) {
-      categoryNameInput.value.focus()
-    }
-  })
-}
-
-const startEditCategory = (cat) => {
-  editingCategory.value = cat
-  categoryForm.name = cat.name
-  categoryForm.color = cat.color
-  showCategoryModal.value = true
-  nextTick(() => {
-    if (categoryNameInput.value) {
-      categoryNameInput.value.focus()
-    }
-  })
-}
-
-const closeCategoryModal = () => {
-  showCategoryModal.value = false
-  editingCategory.value = null
-}
-
-const saveCategory = () => {
-  if (!categoryForm.name.trim()) {
-    showSnackbar('请输入分类名称', { duration: 3000 })
-    return
-  }
-
-  if (editingCategory.value) {
-    taskStore.updateCategory(editingCategory.value.id, {
-      name: categoryForm.name.trim(),
-      color: categoryForm.color
-    })
-    showSnackbar('分类已更新')
-  } else {
-    taskStore.addCategory({
-      name: categoryForm.name.trim(),
-      color: categoryForm.color
-    })
-    showSnackbar('分类已添加')
-  }
-
-  closeCategoryModal()
-}
-
-const toggleSelectCategory = (catId) => {
-  const index = selectedCategories.value.indexOf(catId)
-  if (index > -1) {
-    selectedCategories.value.splice(index, 1)
-  } else {
-    selectedCategories.value.push(catId)
-  }
-}
-
-const openDeleteModal = (category) => {
-  deletingCategory.value = category
-  deletingCategories.value = []
-  showDeleteModal.value = true
-}
-
-const openBatchDeleteModal = () => {
-  deletingCategories.value = [...selectedCategories.value]
-  deletingCategory.value = null
-  showDeleteModal.value = true
-}
-
-const closeDeleteModal = () => {
-  showDeleteModal.value = false
-  deletingCategory.value = null
-  deletingCategories.value = []
-}
-
-const confirmDeleteWithMove = () => {
-  if (deletingCategory.value) {
-    taskStore.deleteCategory(deletingCategory.value.id, { moveTasks: true })
-    showSnackbar('分类已删除，任务已移动到默认分类')
-  } else if (deletingCategories.value.length > 0) {
-    deletingCategories.value.forEach(catId => {
-      taskStore.deleteCategory(catId, { moveTasks: true })
-    })
-    selectedCategories.value = []
-    showSnackbar(`${deletingCategories.value.length} 个分类已删除`)
-  }
-  closeDeleteModal()
-}
-
-const confirmDeleteWithRemove = () => {
-  if (deletingCategory.value) {
-    taskStore.deleteCategory(deletingCategory.value.id, { moveTasks: false })
-    showSnackbar('分类及任务已删除')
-  } else if (deletingCategories.value.length > 0) {
-    deletingCategories.value.forEach(catId => {
-      taskStore.deleteCategory(catId, { moveTasks: false })
-    })
-    selectedCategories.value = []
-    showSnackbar(`${deletingCategories.value.length} 个分类及任务已删除`)
-  }
-  closeDeleteModal()
-}
-
-const handleDeleteCategory = (category) => {
-  openDeleteModal(category)
-}
-
-const handleBatchDelete = () => {
-  if (selectedCategories.value.length > 0) {
-    openBatchDeleteModal()
-  }
-}
-
-const exportData = () => {
-  try {
-    const data = {
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      tasks: taskStore.tasks,
-      categories: taskStore.categories,
-      settings: {
-        themeMode: settingsStore.themeMode,
-        primaryColor: settingsStore.primaryColor,
-        fontSize: settingsStore.fontSize,
-        sidebarCollapsed: settingsStore.sidebarCollapsed,
-        language: settingsStore.language,
-        notificationsEnabled: settingsStore.notificationsEnabled,
-        defaultReminderTime: settingsStore.defaultReminderTime,
-        doNotDisturb: settingsStore.doNotDisturb,
-        autoStart: settingsStore.autoStart,
-        closeToQuit: settingsStore.closeToQuit,
-        pomodoroWorkMinutes: settingsStore.pomodoroWorkMinutes,
-        pomodoroBreakMinutes: settingsStore.pomodoroBreakMinutes,
-        pomodoroLongBreakMinutes: settingsStore.pomodoroLongBreakMinutes,
-        pomodoroSessionsBeforeLongBreak: settingsStore.pomodoroSessionsBeforeLongBreak
-      }
-    }
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const dateStr = new Date().toISOString().split('T')[0]
-    a.download = `choyeon-backup-${dateStr}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    showSnackbar('数据已导出')
-  } catch (e) {
-    console.error('[SettingsView] Export failed:', e)
-    showSnackbar('导出失败：' + e.message, { duration: 4000 })
-  }
-}
-
-const importData = () => {
-  try {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = '.json,application/json'
-
-    const handleChange = (e) => {
-      const file = e.target.files[0]
-      if (!file) return
-
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        try {
-          const data = JSON.parse(event.target.result)
-
-          const result = taskStore.importData(JSON.stringify(data))
-
-          if (!result.success) {
-            showSnackbar('导入失败：' + result.error, { duration: 4000 })
-            return
-          }
-
-          // 恢复全部设置
-          if (result.settings) {
-            const s = result.settings
-            if (s.themeMode && ['light', 'dark', 'system'].includes(s.themeMode)) {
-              settingsStore.setThemeMode(s.themeMode)
-            }
-            if (s.primaryColor && /^#[0-9A-Fa-f]{6}$/.test(s.primaryColor)) {
-              settingsStore.setPrimaryColor(s.primaryColor)
-            }
-            if (s.fontSize && ['small', 'medium', 'large'].includes(s.fontSize)) {
-              settingsStore.setFontSize(s.fontSize)
-            }
-            if (typeof s.sidebarCollapsed === 'boolean') {
-              settingsStore.sidebarCollapsed = s.sidebarCollapsed
-            }
-            if (s.language && typeof s.language === 'string') {
-              settingsStore.language = s.language
-            }
-            if (typeof s.notificationsEnabled === 'boolean') {
-              settingsStore.notificationsEnabled = s.notificationsEnabled
-            }
-            if (typeof s.defaultReminderTime === 'number' && s.defaultReminderTime > 0 && s.defaultReminderTime <= 1440) {
-              settingsStore.defaultReminderTime = s.defaultReminderTime
-            }
-            if (typeof s.doNotDisturb === 'boolean') {
-              settingsStore.doNotDisturb = s.doNotDisturb
-            }
-            if (typeof s.autoStart === 'boolean') {
-              settingsStore.autoStart = s.autoStart
-            }
-            if (typeof s.closeToQuit === 'boolean') {
-              settingsStore.closeToQuit = s.closeToQuit
-            }
-            if (typeof s.pomodoroWorkMinutes === 'number' && s.pomodoroWorkMinutes > 0 && s.pomodoroWorkMinutes <= 180) {
-              settingsStore.pomodoroWorkMinutes = s.pomodoroWorkMinutes
-            }
-            if (typeof s.pomodoroBreakMinutes === 'number' && s.pomodoroBreakMinutes > 0 && s.pomodoroBreakMinutes <= 60) {
-              settingsStore.pomodoroBreakMinutes = s.pomodoroBreakMinutes
-            }
-            if (typeof s.pomodoroLongBreakMinutes === 'number' && s.pomodoroLongBreakMinutes > 0 && s.pomodoroLongBreakMinutes <= 120) {
-              settingsStore.pomodoroLongBreakMinutes = s.pomodoroLongBreakMinutes
-            }
-            if (typeof s.pomodoroSessionsBeforeLongBreak === 'number' && s.pomodoroSessionsBeforeLongBreak > 0 && s.pomodoroSessionsBeforeLongBreak <= 12) {
-              settingsStore.pomodoroSessionsBeforeLongBreak = s.pomodoroSessionsBeforeLongBreak
-            }
-          }
-
-          showSnackbar(`导入成功！共导入 ${result.imported} 个任务`)
-        } catch (err) {
-          console.error('[SettingsView] Import parse failed:', err)
-          showSnackbar('导入失败：文件格式错误', { duration: 4000 })
-        }
-      }
-      reader.onerror = () => {
-        showSnackbar('导入失败：文件读取错误', { duration: 4000 })
-      }
-      reader.readAsText(file)
-
-      input.removeEventListener('change', handleChange)
-    }
-
-    input.addEventListener('change', handleChange)
-    input.click()
-  } catch (e) {
-    console.error('[SettingsView] Import failed:', e)
-    showSnackbar('导入失败：' + e.message, { duration: 4000 })
-  }
-}
+const categoriesRef = ref(null)
 
 const confirmClearAllData = () => {
   showClearDataModal.value = false
@@ -1108,62 +101,16 @@ const confirmClearAllData = () => {
     settingsStore.resetSettings()
     if (typeof localStorage !== 'undefined') {
       localStorage.clear()
-      // 设置标志，防止重新加载后生成样本数据
       localStorage.setItem('choyeon_skip_sample', '1')
     }
-    showSnackbar('数据已清除，页面即将重新加载...', { duration: 2000 })
+    showSnackbar(t('settings.dataCleared'), { duration: 2000 })
     setTimeout(() => {
       window.location.reload()
     }, 1500)
   } catch (e) {
     console.error('[SettingsView] Clear data failed:', e)
-    showSnackbar('清除数据失败：' + e.message, { duration: 4000 })
+    showSnackbar(t('settings.clearDataFailed') + e.message, { duration: 4000 })
   }
-}
-
-const toggleNotifications = () => {
-  settingsStore.notificationsEnabled = !settingsStore.notificationsEnabled
-  showSnackbar(settingsStore.notificationsEnabled ? '通知已开启' : '通知已关闭')
-}
-
-const toggleDoNotDisturb = () => {
-  settingsStore.doNotDisturb = !settingsStore.doNotDisturb
-  showSnackbar(settingsStore.doNotDisturb ? '免打扰模式已开启' : '免打扰模式已关闭')
-}
-
-const onReminderTimeChange = (e) => {
-  const value = parseInt(e.target.value, 10)
-  if (!isNaN(value) && value > 0 && value <= 1440) {
-    settingsStore.defaultReminderTime = value
-    showSnackbar('提醒时间已更新')
-  }
-}
-
-const toggleAutoStart = () => {
-  if (!window.electronAPI?.setAutoStart) {
-    showSnackbar('此功能仅在桌面版可用', { duration: 3000 })
-    return
-  }
-  const newValue = !settingsStore.autoStart
-  window.electronAPI.setAutoStart(newValue).then((success) => {
-    if (success) {
-      settingsStore.autoStart = newValue
-      showSnackbar(newValue ? '开机自启已开启' : '开机自启已关闭')
-    } else {
-      showSnackbar('设置失败，请稍后重试', { duration: 3000 })
-    }
-  })
-}
-
-const toggleCloseToQuit = () => {
-  if (!window.electronAPI?.setCloseToQuit) {
-    showSnackbar('此功能仅在桌面版可用', { duration: 3000 })
-    return
-  }
-  const newValue = !settingsStore.closeToQuit
-  window.electronAPI.setCloseToQuit(newValue)
-  settingsStore.closeToQuit = newValue
-  showSnackbar(newValue ? '关闭窗口即退出已开启' : '关闭窗口最小化到托盘')
 }
 
 const confirmResetData = () => {
@@ -1173,32 +120,25 @@ const confirmResetData = () => {
       localStorage.removeItem('choyeon_skip_sample')
     }
     taskStore.resetToDefault()
-    showSnackbar('已恢复默认数据', { duration: 2000 })
+    showSnackbar(t('settings.resetDataSuccess'), { duration: 2000 })
   } catch (e) {
     console.error('[SettingsView] Reset data failed:', e)
-    showSnackbar('恢复默认数据失败：' + e.message, { duration: 4000 })
+    showSnackbar(t('settings.resetDataFailed') + e.message, { duration: 4000 })
   }
 }
 
-const testNotification = () => {
-  if (!window.electronAPI || !window.electronAPI.sendNotification) {
-    showSnackbar('通知API不可用（非Electron环境）', { duration: 3000 })
-    return
-  }
-
-  window.electronAPI.sendNotification('Choyeon To Do', '测试通知：您的任务提醒功能正常工作！')
-  showSnackbar('测试通知已发送，请查看系统通知栏')
-}
-
-// 监听来自 Sidebar 右键菜单的 CustomEvent
 const onEditCategory = (e) => {
-  if (e.detail) startEditCategory(e.detail)
+  if (e.detail && categoriesRef.value) {
+    categoriesRef.value.startEditCategory?.(e.detail)
+  }
 }
 const onAddCategory = () => {
-  openAddCategory()
+  categoriesRef.value?.openAddCategory?.()
 }
 const onDeleteCategory = (e) => {
-  if (e.detail) handleDeleteCategory(e.detail)
+  if (e.detail && categoriesRef.value) {
+    categoriesRef.value.handleDeleteCategory?.(e.detail)
+  }
 }
 
 onMounted(() => {
@@ -1213,8 +153,7 @@ onUnmounted(() => {
   window.removeEventListener('delete-category', onDeleteCategory)
 })
 </script>
-
-<style scoped>
+<style>
 .settings-view {
   min-height: 100%;
   background: transparent;
@@ -1262,17 +201,33 @@ onUnmounted(() => {
   padding: 8px 0;
   margin-bottom: 16px;
   box-shadow: var(--card-shadow);
-  transition: box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+  transition:
+    box-shadow var(--transition-smooth),
+    border-color var(--transition-smooth);
   animation: cardEnter var(--duration-moderate) var(--ease-out-quart) backwards;
 }
 
-.settings-card:nth-child(2) { animation-delay: 0.05s; }
-.settings-card:nth-child(3) { animation-delay: 0.1s; }
-.settings-card:nth-child(4) { animation-delay: 0.15s; }
-.settings-card:nth-child(5) { animation-delay: 0.2s; }
-.settings-card:nth-child(6) { animation-delay: 0.25s; }
-.settings-card:nth-child(7) { animation-delay: 0.3s; }
-.settings-card:nth-child(8) { animation-delay: 0.35s; }
+.settings-card:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.settings-card:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.settings-card:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.settings-card:nth-child(5) {
+  animation-delay: 0.2s;
+}
+.settings-card:nth-child(6) {
+  animation-delay: 0.25s;
+}
+.settings-card:nth-child(7) {
+  animation-delay: 0.3s;
+}
+.settings-card:nth-child(8) {
+  animation-delay: 0.35s;
+}
 
 @keyframes cardEnter {
   from {
@@ -1337,7 +292,9 @@ onUnmounted(() => {
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
-  transition: background var(--transition-micro), transform var(--transition-micro);
+  transition:
+    background var(--transition-micro),
+    transform var(--transition-micro);
   flex-shrink: 0;
 }
 
@@ -1402,12 +359,12 @@ onUnmounted(() => {
 }
 
 .icon-green {
-  background: rgba(34, 197, 94, 0.10);
+  background: rgba(34, 197, 94, 0.1);
   color: #22c55e;
 }
 
 .icon-blue {
-  background: rgba(59, 130, 246, 0.10);
+  background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
 }
 
@@ -1468,7 +425,9 @@ onUnmounted(() => {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
-  transition: transform var(--transition-smooth), color var(--transition-smooth);
+  transition:
+    transform var(--transition-smooth),
+    color var(--transition-smooth);
 }
 
 .setting-row:hover .chevron {
@@ -1495,7 +454,7 @@ onUnmounted(() => {
   box-shadow: 0 0 0 3px var(--color-primary-ring);
 }
 
-.toggle-switch[aria-checked="true"] {
+.toggle-switch[aria-checked='true'] {
   background: var(--color-primary);
 }
 
@@ -1507,13 +466,19 @@ onUnmounted(() => {
   height: 22px;
   border-radius: 50%;
   background: var(--color-surface);
-  transition: left var(--transition-spring-soft), box-shadow var(--transition-smooth);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.1);
+  transition:
+    left var(--transition-spring-soft),
+    box-shadow var(--transition-smooth);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-switch[aria-checked="true"] .toggle-knob {
+.toggle-switch[aria-checked='true'] .toggle-knob {
   left: 23px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .toggle-switch:active .toggle-knob {
@@ -1535,7 +500,9 @@ onUnmounted(() => {
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 16px;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-spring-soft);
+  transition:
+    border-color var(--transition-smooth),
+    box-shadow var(--transition-spring-soft);
 }
 
 .reminder-select:hover {
@@ -1573,7 +540,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   color: var(--color-text-on-primary);
-  transition: transform var(--transition-spring-soft), box-shadow var(--transition-smooth);
+  transition:
+    transform var(--transition-spring-soft),
+    box-shadow var(--transition-smooth);
   box-sizing: border-box;
   position: relative;
 }
@@ -1583,7 +552,9 @@ onUnmounted(() => {
 }
 
 .color-option.active {
-  box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 5px currentColor;
+  box-shadow:
+    0 0 0 3px var(--color-surface),
+    0 0 0 5px currentColor;
 }
 
 .color-option.active::after {
@@ -1625,8 +596,11 @@ onUnmounted(() => {
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
-  transition: color var(--transition-smooth), background var(--transition-smooth),
-              box-shadow var(--transition-smooth), transform var(--transition-spring-soft);
+  transition:
+    color var(--transition-smooth),
+    background var(--transition-smooth),
+    box-shadow var(--transition-smooth),
+    transform var(--transition-spring-soft);
   position: relative;
   overflow: hidden;
 }
@@ -1666,7 +640,9 @@ onUnmounted(() => {
   font-family: var(--font-body);
   text-align: center;
   outline: none;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-spring-soft);
+  transition:
+    border-color var(--transition-smooth),
+    box-shadow var(--transition-spring-soft);
 }
 
 .number-input:hover {
@@ -1684,7 +660,7 @@ onUnmounted(() => {
   margin: 0;
 }
 
-.number-input[type=number] {
+.number-input[type='number'] {
   -moz-appearance: textfield;
 }
 
@@ -1748,13 +724,17 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-mono, var(--font-body));
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 -1.5px 0 rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    inset 0 -1.5px 0 rgba(0, 0, 0, 0.06);
   transition: transform var(--transition-micro);
 }
 
 .shortcut-item:hover .kbd {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 -1.5px 0 rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 -1.5px 0 rgba(0, 0, 0, 0.06);
 }
 
 .kbd-plus,
@@ -1806,7 +786,9 @@ onUnmounted(() => {
   height: 18px;
   border: 2px solid var(--color-border);
   border-radius: 4px;
-  transition: border-color var(--transition-smooth), background var(--transition-spring-soft);
+  transition:
+    border-color var(--transition-smooth),
+    background var(--transition-spring-soft);
 }
 
 .category-checkbox:hover .checkmark {
@@ -1820,9 +802,15 @@ onUnmounted(() => {
 }
 
 @keyframes checkPop {
-  0% { transform: scale(0.8); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .category-checkbox input:checked + .checkmark::after {
@@ -1873,7 +861,9 @@ onUnmounted(() => {
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--color-bg-secondary);
-  transition: background var(--transition-smooth), color var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth);
 }
 
 .category-item:hover .category-count {
@@ -1898,7 +888,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition-micro), color var(--transition-micro), transform var(--transition-spring-soft);
+  transition:
+    background var(--transition-micro),
+    color var(--transition-micro),
+    transform var(--transition-spring-soft);
   opacity: 0;
 }
 
@@ -1943,8 +936,10 @@ onUnmounted(() => {
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
-  transition: background var(--transition-smooth), border-color var(--transition-smooth),
-              transform var(--transition-spring-soft);
+  transition:
+    background var(--transition-smooth),
+    border-color var(--transition-smooth),
+    transform var(--transition-spring-soft);
 }
 
 .add-category-btn:hover {
@@ -2094,8 +1089,12 @@ onUnmounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .category-modal {
@@ -2137,9 +1136,15 @@ onUnmounted(() => {
 }
 
 @keyframes iconBounce {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .delete-desc {
@@ -2169,7 +1174,9 @@ onUnmounted(() => {
   font-family: var(--font-body);
   cursor: pointer;
   border: none;
-  transition: background var(--transition-smooth), transform var(--transition-spring-soft);
+  transition:
+    background var(--transition-smooth),
+    transform var(--transition-spring-soft);
 }
 
 .delete-option-btn:active {
@@ -2217,7 +1224,9 @@ onUnmounted(() => {
   font-family: var(--font-body);
   font-size: 14px;
   outline: none;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-spring-soft);
+  transition:
+    border-color var(--transition-smooth),
+    box-shadow var(--transition-spring-soft);
   box-sizing: border-box;
   margin-bottom: 16px;
 }
@@ -2257,8 +1266,10 @@ onUnmounted(() => {
   font-family: var(--font-body);
   cursor: pointer;
   border: none;
-  transition: background var(--transition-smooth), box-shadow var(--transition-smooth),
-              transform var(--transition-micro);
+  transition:
+    background var(--transition-smooth),
+    box-shadow var(--transition-smooth),
+    transform var(--transition-micro);
   letter-spacing: 0.5px;
 }
 
@@ -2421,7 +1432,7 @@ onUnmounted(() => {
     left: 3px;
   }
 
-  .toggle-switch[aria-checked="true"] .toggle-knob {
+  .toggle-switch[aria-checked='true'] .toggle-knob {
     left: 23px;
   }
 
@@ -2516,7 +1527,9 @@ onUnmounted(() => {
 
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide-up-enter-from,

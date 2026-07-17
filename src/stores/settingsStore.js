@@ -34,7 +34,13 @@ const THEME_COLORS = [
 const hexToRgb = (hex) => {
   try {
     const h = hex.replace('#', '')
-    const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
+    const full =
+      h.length === 3
+        ? h
+            .split('')
+            .map((c) => c + c)
+            .join('')
+        : h
     const r = parseInt(full.substring(0, 2), 16)
     const g = parseInt(full.substring(2, 4), 16)
     const b = parseInt(full.substring(4, 6), 16)
@@ -166,8 +172,6 @@ export const useSettingsStore = defineStore('settings', () => {
         root.setAttribute('data-theme', 'light')
       }
 
-
-
       root.setAttribute('data-font-size', fontSize.value)
       root.setAttribute('data-glass', glassEffectEnabled.value ? 'true' : 'false')
     } catch (e) {
@@ -181,7 +185,8 @@ export const useSettingsStore = defineStore('settings', () => {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const data = JSON.parse(saved)
-        if (typeof data.sidebarCollapsed === 'boolean') sidebarCollapsed.value = data.sidebarCollapsed
+        if (typeof data.sidebarCollapsed === 'boolean')
+          sidebarCollapsed.value = data.sidebarCollapsed
         if (data.themeMode && ['light', 'dark', 'system'].includes(data.themeMode)) {
           themeMode.value = data.themeMode
         }
@@ -195,37 +200,59 @@ export const useSettingsStore = defineStore('settings', () => {
           language.value = data.language
         }
         if (typeof data.notificationsEnabled === 'boolean') {
-        notificationsEnabled.value = data.notificationsEnabled
-      }
-      if (typeof data.soundsEnabled === 'boolean') {
-        soundsEnabled.value = data.soundsEnabled
-      }
-      if (typeof data.glassEffectEnabled === 'boolean') {
-        glassEffectEnabled.value = data.glassEffectEnabled
-      }
-      if (typeof data.defaultReminderTime === 'number' && data.defaultReminderTime > 0 && data.defaultReminderTime <= 1440) {
+          notificationsEnabled.value = data.notificationsEnabled
+        }
+        if (typeof data.soundsEnabled === 'boolean') {
+          soundsEnabled.value = data.soundsEnabled
+        }
+        if (typeof data.glassEffectEnabled === 'boolean') {
+          glassEffectEnabled.value = data.glassEffectEnabled
+        }
+        if (
+          typeof data.defaultReminderTime === 'number' &&
+          data.defaultReminderTime > 0 &&
+          data.defaultReminderTime <= 1440
+        ) {
           defaultReminderTime.value = data.defaultReminderTime
         }
         if (typeof data.doNotDisturb === 'boolean') doNotDisturb.value = data.doNotDisturb
         if (typeof data.autoStart === 'boolean') autoStart.value = data.autoStart
         if (typeof data.closeToQuit === 'boolean') closeToQuit.value = data.closeToQuit
-        if (typeof data.pomodoroWorkMinutes === 'number' && data.pomodoroWorkMinutes > 0 && data.pomodoroWorkMinutes <= 180) {
+        if (
+          typeof data.pomodoroWorkMinutes === 'number' &&
+          data.pomodoroWorkMinutes > 0 &&
+          data.pomodoroWorkMinutes <= 180
+        ) {
           pomodoroWorkMinutes.value = data.pomodoroWorkMinutes
         }
-        if (typeof data.pomodoroBreakMinutes === 'number' && data.pomodoroBreakMinutes > 0 && data.pomodoroBreakMinutes <= 60) {
+        if (
+          typeof data.pomodoroBreakMinutes === 'number' &&
+          data.pomodoroBreakMinutes > 0 &&
+          data.pomodoroBreakMinutes <= 60
+        ) {
           pomodoroBreakMinutes.value = data.pomodoroBreakMinutes
         }
-        if (typeof data.pomodoroLongBreakMinutes === 'number' && data.pomodoroLongBreakMinutes > 0 && data.pomodoroLongBreakMinutes <= 120) {
+        if (
+          typeof data.pomodoroLongBreakMinutes === 'number' &&
+          data.pomodoroLongBreakMinutes > 0 &&
+          data.pomodoroLongBreakMinutes <= 120
+        ) {
           pomodoroLongBreakMinutes.value = data.pomodoroLongBreakMinutes
         }
-        if (typeof data.pomodoroSessionsBeforeLongBreak === 'number' && data.pomodoroSessionsBeforeLongBreak > 0 && data.pomodoroSessionsBeforeLongBreak <= 12) {
+        if (
+          typeof data.pomodoroSessionsBeforeLongBreak === 'number' &&
+          data.pomodoroSessionsBeforeLongBreak > 0 &&
+          data.pomodoroSessionsBeforeLongBreak <= 12
+        ) {
           pomodoroSessionsBeforeLongBreak.value = data.pomodoroSessionsBeforeLongBreak
         }
       }
       applyTheme()
     } catch (e) {
       console.error('[SettingsStore] Failed to load settings:', e)
-      try { localStorage.removeItem(STORAGE_KEY) } catch (_) {}
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+      } catch (_) {}
       applyTheme()
     }
   }
@@ -233,24 +260,27 @@ export const useSettingsStore = defineStore('settings', () => {
   const saveToStorage = () => {
     try {
       if (typeof localStorage === 'undefined') return
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        sidebarCollapsed: sidebarCollapsed.value,
-        themeMode: themeMode.value,
-        primaryColor: primaryColor.value,
-        fontSize: fontSize.value,
-        language: language.value,
-        notificationsEnabled: notificationsEnabled.value,
-        soundsEnabled: soundsEnabled.value,
-        glassEffectEnabled: glassEffectEnabled.value,
-        defaultReminderTime: defaultReminderTime.value,
-        doNotDisturb: doNotDisturb.value,
-        autoStart: autoStart.value,
-        closeToQuit: closeToQuit.value,
-        pomodoroWorkMinutes: pomodoroWorkMinutes.value,
-        pomodoroBreakMinutes: pomodoroBreakMinutes.value,
-        pomodoroLongBreakMinutes: pomodoroLongBreakMinutes.value,
-        pomodoroSessionsBeforeLongBreak: pomodoroSessionsBeforeLongBreak.value
-      }))
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          sidebarCollapsed: sidebarCollapsed.value,
+          themeMode: themeMode.value,
+          primaryColor: primaryColor.value,
+          fontSize: fontSize.value,
+          language: language.value,
+          notificationsEnabled: notificationsEnabled.value,
+          soundsEnabled: soundsEnabled.value,
+          glassEffectEnabled: glassEffectEnabled.value,
+          defaultReminderTime: defaultReminderTime.value,
+          doNotDisturb: doNotDisturb.value,
+          autoStart: autoStart.value,
+          closeToQuit: closeToQuit.value,
+          pomodoroWorkMinutes: pomodoroWorkMinutes.value,
+          pomodoroBreakMinutes: pomodoroBreakMinutes.value,
+          pomodoroLongBreakMinutes: pomodoroLongBreakMinutes.value,
+          pomodoroSessionsBeforeLongBreak: pomodoroSessionsBeforeLongBreak.value
+        })
+      )
     } catch (e) {
       console.error('[SettingsStore] Failed to save settings:', e)
     }
@@ -266,10 +296,22 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const setupStorageWatch = (watchFn) => {
     const watchSources = [
-      sidebarCollapsed, themeMode, primaryColor, fontSize,
-      language, notificationsEnabled, soundsEnabled, glassEffectEnabled, defaultReminderTime, doNotDisturb,
-      autoStart, closeToQuit, pomodoroWorkMinutes, pomodoroBreakMinutes,
-      pomodoroLongBreakMinutes, pomodoroSessionsBeforeLongBreak
+      sidebarCollapsed,
+      themeMode,
+      primaryColor,
+      fontSize,
+      language,
+      notificationsEnabled,
+      soundsEnabled,
+      glassEffectEnabled,
+      defaultReminderTime,
+      doNotDisturb,
+      autoStart,
+      closeToQuit,
+      pomodoroWorkMinutes,
+      pomodoroBreakMinutes,
+      pomodoroLongBreakMinutes,
+      pomodoroSessionsBeforeLongBreak
     ]
     watchFn(watchSources, debouncedSave)
   }

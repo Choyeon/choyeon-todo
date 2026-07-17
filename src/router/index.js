@@ -4,47 +4,53 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/HomeView.vue')
+    component: () => import(/* webpackChunkName: "home" */ '../views/HomeView.vue')
   },
   {
     path: '/calendar',
     name: 'Calendar',
-    component: () => import('../views/CalendarView.vue')
+    component: () => import(/* webpackChunkName: "calendar" */ '../views/CalendarView.vue')
   },
   {
     path: '/completed',
     name: 'Completed',
-    component: () => import('../views/CompletedView.vue')
+    component: () => import(/* webpackChunkName: "completed" */ '../views/CompletedView.vue')
   },
   {
     path: '/stats',
     name: 'Stats',
-    component: () => import('../views/StatsView.vue')
+    component: () => import(/* webpackChunkName: "stats" */ '../views/StatsView.vue')
   },
   {
     path: '/pomodoro',
     name: 'Pomodoro',
-    component: () => import('../views/PomodoroView.vue')
+    component: () => import(/* webpackChunkName: "pomodoro" */ '../views/PomodoroView.vue')
   },
   {
     path: '/settings',
     name: 'Settings',
-    component: () => import('../views/SettingsView.vue')
+    component: () => import(/* webpackChunkName: "settings" */ '../views/SettingsView.vue')
   },
   {
     path: '/pomodoro-fullscreen',
     name: 'PomodoroFullscreen',
-    component: () => import('../views/PomodoroFullscreenView.vue')
+    component: () =>
+      import(/* webpackChunkName: "pomodoro-fullscreen" */ '../views/PomodoroFullscreenView.vue')
   },
   {
     path: '/pomodoro-fab',
     name: 'PomodoroFab',
-    component: () => import('../views/PomodoroFabView.vue')
+    component: () => import(/* webpackChunkName: "pomodoro-fab" */ '../views/PomodoroFabView.vue')
   },
   {
     path: '/debug',
     name: 'Debug',
-    component: () => import('../views/DebugView.vue')
+    component: () => import(/* webpackChunkName: "debug" */ '../views/DebugView.vue')
+  },
+  {
+    path: '/error-monitor',
+    name: 'ErrorMonitor',
+    component: () => import(/* webpackChunkName: "error-monitor" */ '../views/ErrorMonitorView.vue')
   },
   {
     path: '/:pathMatch(.*)*',

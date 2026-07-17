@@ -9,7 +9,7 @@
           :class="{ active: pomodoroStore.currentMode === mode.value }"
           @click="pomodoroStore.switchMode(mode.value)"
         >
-          {{ mode.label }}
+          {{ $t('pomodoro.' + mode.value) }}
         </button>
       </div>
 
@@ -17,8 +17,11 @@
         <svg class="progress-ring" viewBox="0 0 400 400">
           <circle cx="200" cy="200" r="180" fill="none" stroke-width="10" class="ring-bg" />
           <circle
-            cx="200" cy="200" r="180"
-            fill="none" stroke-width="10"
+            cx="200"
+            cy="200"
+            r="180"
+            fill="none"
+            stroke-width="10"
             stroke-linecap="round"
             :stroke-dasharray="circumference"
             :stroke-dashoffset="progressOffset"
@@ -28,7 +31,7 @@
         </svg>
         <div class="timer-display">
           <span class="time-text">{{ pomodoroStore.formattedTime }}</span>
-          <span class="mode-label">{{ pomodoroStore.currentModeLabel }}</span>
+          <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
         </div>
       </div>
 
@@ -37,7 +40,7 @@
         <span class="task-title">{{ taskStore.focusedTask.title }}</span>
       </div>
       <div class="current-task empty" v-else>
-        <span>选择任务开始专注</span>
+        <span>{{ $t('pomodoro.selectTaskShort') }}</span>
       </div>
 
       <div class="pomodoro-count">
@@ -47,7 +50,7 @@
           class="dot"
           :class="{ filled: isDotFilled(i) }"
         ></span>
-        <span class="count-text">已完成 {{ pomodoroStore.completedPomodoros }} 个番茄</span>
+        <span class="count-text">{{ $t('pomodoro.completedTomatoes', { count: pomodoroStore.completedPomodoros }) }}</span>
       </div>
 
       <div v-if="pomodoroStore.isCustomEditing" class="custom-row">
@@ -55,20 +58,32 @@
           type="number"
           class="custom-input"
           :value="pomodoroStore.customMinutes"
-          min="1" max="180"
-          @input="pomodoroStore.customMinutes = Math.max(1, Math.min(180, parseInt($event.target.value) || 1))"
+          min="1"
+          max="180"
+          @input="
+            pomodoroStore.customMinutes = Math.max(
+              1,
+              Math.min(180, parseInt($event.target.value) || 1)
+            )
+          "
           @keyup.enter="pomodoroStore.applyCustomDuration()"
         />
-        <span class="custom-unit">分钟</span>
-        <button class="custom-ok" @click="pomodoroStore.applyCustomDuration()">确定</button>
-        <button class="custom-cancel" @click="pomodoroStore.isCustomEditing = false">取消</button>
+        <span class="custom-unit">{{ $t('pomodoro.minutes') }}</span>
+        <button class="custom-ok" @click="pomodoroStore.applyCustomDuration()">{{ $t('common.confirm') }}</button>
+        <button class="custom-cancel" @click="pomodoroStore.isCustomEditing = false">{{ $t('common.cancel') }}</button>
       </div>
       <button v-else class="custom-toggle" @click="pomodoroStore.isCustomEditing = true">
-        <Edit3 :size="13" /> 自定义时长
+        <Edit3 :size="13" /> {{ $t('pomodoro.customDuration') }}
       </button>
 
       <div class="controls">
-        <button class="ctrl-btn" :class="{ disabled: !pomodoroStore.hasStarted }" @click="pomodoroStore.resetTimer" :disabled="!pomodoroStore.hasStarted" title="重置">
+        <button
+          class="ctrl-btn"
+          :class="{ disabled: !pomodoroStore.hasStarted }"
+          @click="pomodoroStore.resetTimer"
+          :disabled="!pomodoroStore.hasStarted"
+          :title="$t('pomodoro.reset')"
+        >
           <RotateCcw :size="22" />
         </button>
         <button class="ctrl-btn primary" @click="pomodoroStore.toggleTimer()">
@@ -78,9 +93,7 @@
         <div class="ctrl-btn-placeholder"></div>
       </div>
 
-      <button class="exit-btn" @click="exitFullscreen">
-        退出专注模式
-      </button>
+      <button class="exit-btn" @click="exitFullscreen">{{ $t('pomodoro.exitFullscreen') }}</button>
     </div>
   </div>
 </template>
@@ -98,7 +111,9 @@ const pomodoroStore = usePomodoroStore()
 
 const circumference = 2 * Math.PI * 180
 
-const progressOffset = computed(() => circumference * (1 - pomodoroStore.timeLeft / pomodoroStore.totalTime))
+const progressOffset = computed(
+  () => circumference * (1 - pomodoroStore.timeLeft / pomodoroStore.totalTime)
+)
 
 const isDotFilled = (i) => {
   const total = settingsStore.pomodoroSessionsBeforeLongBreak
@@ -172,16 +187,24 @@ onMounted(async () => {
   font-family: var(--font-body);
 }
 
-.mode-tab:hover { color: rgba(255, 255, 255, 0.6); }
+.mode-tab:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
 
 .mode-tab.active {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
 }
 
-.mode-work .mode-tab.active { color: #EF4444; }
-.mode-shortBreak .mode-tab.active { color: #22C55E; }
-.mode-longBreak .mode-tab.active { color: #06B6D4; }
+.mode-work .mode-tab.active {
+  color: #ef4444;
+}
+.mode-shortBreak .mode-tab.active {
+  color: #22c55e;
+}
+.mode-longBreak .mode-tab.active {
+  color: #06b6d4;
+}
 
 .timer-container {
   position: relative;
@@ -195,8 +218,12 @@ onMounted(async () => {
   transform: rotate(-90deg);
 }
 
-.ring-bg { stroke: rgba(255, 255, 255, 0.06); }
-.ring-fill { transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.ring-bg {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+.ring-fill {
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 .timer-display {
   position: absolute;
@@ -241,8 +268,13 @@ onMounted(async () => {
   font-size: 14px;
 }
 
-.task-icon { flex-shrink: 0; color: rgba(255, 255, 255, 0.3); }
-.mode-work .task-icon { color: #EF4444; }
+.task-icon {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.3);
+}
+.mode-work .task-icon {
+  color: #ef4444;
+}
 
 .task-title {
   font-size: 15px;
@@ -267,13 +299,13 @@ onMounted(async () => {
 }
 
 .dot.filled {
-  background: #EF4444;
+  background: #ef4444;
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
 }
 
 .mode-shortBreak .dot.filled,
 .mode-longBreak .dot.filled {
-  background: #22C55E;
+  background: #22c55e;
   box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
 }
 
@@ -322,8 +354,14 @@ onMounted(async () => {
   font-family: var(--font-body);
 }
 
-.custom-input:focus { outline: none; border-color: rgba(255, 255, 255, 0.3); }
-.custom-unit { font-size: 13px; color: rgba(255, 255, 255, 0.3); }
+.custom-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.custom-unit {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.3);
+}
 
 .custom-ok,
 .custom-cancel {
@@ -341,9 +379,16 @@ onMounted(async () => {
   color: rgba(255, 255, 255, 0.7);
 }
 
-.custom-ok:hover { background: rgba(255, 255, 255, 0.2); }
-.custom-cancel { background: transparent; color: rgba(255, 255, 255, 0.25); }
-.custom-cancel:hover { color: rgba(255, 255, 255, 0.5); }
+.custom-ok:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.custom-cancel {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.25);
+}
+.custom-cancel:hover {
+  color: rgba(255, 255, 255, 0.5);
+}
 
 .controls {
   display: flex;
@@ -382,23 +427,27 @@ onMounted(async () => {
 .ctrl-btn.primary {
   width: 76px;
   height: 76px;
-  background: #EF4444;
+  background: #ef4444;
   color: white;
   box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
 }
 
 .mode-shortBreak .ctrl-btn.primary {
-  background: #22C55E;
+  background: #22c55e;
   box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
 }
 
 .mode-longBreak .ctrl-btn.primary {
-  background: #06B6D4;
+  background: #06b6d4;
   box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
 }
 
-.ctrl-btn.primary:hover { transform: scale(1.05); }
-.ctrl-btn.primary:active { transform: scale(0.97); }
+.ctrl-btn.primary:hover {
+  transform: scale(1.05);
+}
+.ctrl-btn.primary:active {
+  transform: scale(0.97);
+}
 
 .ctrl-btn-placeholder {
   width: 52px;

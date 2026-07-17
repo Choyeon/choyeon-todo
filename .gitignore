@@ -44,3 +44,4 @@ build/*.p12
 *.njsproj
 *.sln
 *.sw?
+release-assets/

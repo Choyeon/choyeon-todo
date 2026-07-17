@@ -126,7 +126,7 @@ describe('TaskModal', () => {
     })
     const container = document.querySelector('.modal-container')
     expect(container).not.toBeNull()
-    expect(container.querySelector('h2').textContent).toBe('添加任务')
+    expect(container.querySelector('h2').textContent).toBe('新建任务')
     wrapper.unmount()
   })
 })

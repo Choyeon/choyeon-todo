@@ -1,11 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="confirm-fade">
-      <div
-        v-if="visible"
-        class="confirm-backdrop"
-        @click.self="handleCancel"
-      >
+      <div v-if="visible" class="confirm-backdrop" @click.self="handleCancel">
         <Transition name="confirm-pop">
           <div
             v-if="visible"
@@ -20,10 +16,7 @@
             <h3 v-if="title" class="confirm-title">{{ title }}</h3>
             <p class="confirm-message">{{ message }}</p>
             <div class="confirm-actions">
-              <button
-                class="confirm-btn cancel-btn"
-                @click="handleCancel"
-              >
+              <button class="confirm-btn cancel-btn" @click="handleCancel">
                 {{ cancelLabel }}
               </button>
               <button
@@ -45,7 +38,8 @@
 import { ref, watch, nextTick } from 'vue'
 import { useConfirm } from '../composables/useConfirm'
 
-const { visible, title, message, confirmLabel, cancelLabel, danger, handleConfirm, handleCancel } = useConfirm()
+const { visible, title, message, confirmLabel, cancelLabel, danger, handleConfirm, handleCancel } =
+  useConfirm()
 
 const dialogRef = ref(null)
 
@@ -74,8 +68,12 @@ watch(visible, (val) => {
 }
 
 @keyframes confirmFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .confirm-dialog {
@@ -153,11 +151,11 @@ watch(visible, (val) => {
 }
 
 .confirm-action-btn.danger {
-  background: var(--color-danger, #EF4444);
+  background: var(--color-danger, #ef4444);
 }
 
 .confirm-action-btn.danger:hover {
-  background: var(--color-danger-hover, #DC2626);
+  background: var(--color-danger-hover, #dc2626);
   box-shadow: var(--shadow-sm);
 }
 

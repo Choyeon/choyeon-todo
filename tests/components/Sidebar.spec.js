@@ -16,7 +16,7 @@ describe('Sidebar', () => {
     store = useTaskStore()
     store.resetAll()
     store.initSampleData()
-    
+
     router = createRouter({
       history: createMemoryHistory(),
       routes: [
@@ -31,7 +31,7 @@ describe('Sidebar', () => {
   test('应该渲染侧边栏', async () => {
     await router.push('/')
     await router.isReady()
-    
+
     const wrapper = mount(Sidebar, {
       global: {
         plugins: [pinia, router]
@@ -43,7 +43,7 @@ describe('Sidebar', () => {
   test('应该显示搜索框', async () => {
     await router.push('/')
     await router.isReady()
-    
+
     const wrapper = mount(Sidebar, {
       global: {
         plugins: [pinia, router]
@@ -56,7 +56,7 @@ describe('Sidebar', () => {
   test('应该显示导航按钮', async () => {
     await router.push('/')
     await router.isReady()
-    
+
     const wrapper = mount(Sidebar, {
       global: {
         plugins: [pinia, router]
@@ -69,14 +69,14 @@ describe('Sidebar', () => {
   test('应该显示分类列表', async () => {
     await router.push('/')
     await router.isReady()
-    
+
     const wrapper = mount(Sidebar, {
       global: {
         plugins: [pinia, router]
       }
     })
-    expect(wrapper.find('.sidebar-label').exists()).toBe(true)
-    expect(wrapper.findAll('.nav-btn').length).toBeGreaterThan(0)
+    expect(wrapper.find('.nav-section-label').exists()).toBe(true)
+    expect(wrapper.findAll('.cat-btn').length).toBeGreaterThan(0)
   })
 
   test('搜索应该更新 store 的 searchQuery', async () => {

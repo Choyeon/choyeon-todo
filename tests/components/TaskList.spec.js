@@ -15,7 +15,7 @@ describe('TaskList', () => {
   })
 
   const getTasks = () => {
-    return store.tasks.filter(t => !t.completed)
+    return store.tasks.filter((t) => !t.completed)
   }
 
   test('应该渲染任务列表', () => {
@@ -115,7 +115,7 @@ describe('TaskList', () => {
   test('任务完成后应该有删除线样式', () => {
     const task = store.tasks[0]
     store.toggleComplete(task.id)
-    const tasks = store.tasks.filter(t => t.completed)
+    const tasks = store.tasks.filter((t) => t.completed)
     const wrapper = mount(TaskList, {
       props: {
         tasks

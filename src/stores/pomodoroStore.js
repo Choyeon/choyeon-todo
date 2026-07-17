@@ -51,25 +51,33 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   ]
 
   const currentModeLabel = computed(() => {
-    const mode = modes.find(m => m.value === currentMode.value)
+    const mode = modes.find((m) => m.value === currentMode.value)
     return mode ? mode.label : ''
   })
 
   const currentColor = computed(() => {
     switch (currentMode.value) {
-      case 'work': return '#EF4444'
-      case 'shortBreak': return '#22C55E'
-      case 'longBreak': return '#06B6D4'
-      default: return '#EF4444'
+      case 'work':
+        return '#EF4444'
+      case 'shortBreak':
+        return '#22C55E'
+      case 'longBreak':
+        return '#06B6D4'
+      default:
+        return '#EF4444'
     }
   })
 
   const totalTime = computed(() => {
     switch (currentMode.value) {
-      case 'work': return settingsStore.pomodoroWorkMinutes * 60
-      case 'shortBreak': return settingsStore.pomodoroBreakMinutes * 60
-      case 'longBreak': return settingsStore.pomodoroLongBreakMinutes * 60
-      default: return settingsStore.pomodoroWorkMinutes * 60
+      case 'work':
+        return settingsStore.pomodoroWorkMinutes * 60
+      case 'shortBreak':
+        return settingsStore.pomodoroBreakMinutes * 60
+      case 'longBreak':
+        return settingsStore.pomodoroLongBreakMinutes * 60
+      default:
+        return settingsStore.pomodoroWorkMinutes * 60
     }
   })
 
@@ -222,14 +230,15 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     lastSyncState.value = { ...state }
     lastSyncTime.value = state.syncTimestamp || Date.now()
 
-    if (state.currentMode && modes.some(m => m.value === state.currentMode)) {
+    if (state.currentMode && modes.some((m) => m.value === state.currentMode)) {
       if (currentMode.value !== state.currentMode) {
         currentMode.value = state.currentMode
-        customMinutes.value = currentMode.value === 'work'
-          ? settingsStore.pomodoroWorkMinutes
-          : currentMode.value === 'shortBreak'
-            ? settingsStore.pomodoroBreakMinutes
-            : settingsStore.pomodoroLongBreakMinutes
+        customMinutes.value =
+          currentMode.value === 'work'
+            ? settingsStore.pomodoroWorkMinutes
+            : currentMode.value === 'shortBreak'
+              ? settingsStore.pomodoroBreakMinutes
+              : settingsStore.pomodoroLongBreakMinutes
       }
     }
 
@@ -279,11 +288,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
 
   const handleTimerEnded = (data) => {
     if (isSlaveWindow) return
-    
+
     const wasWorkMode = data?.currentMode === 'work'
-    
+
     playBeep('complete')
-    
+
     if (wasWorkMode) {
       if (taskStore.focusedTaskId && hasStarted.value) {
         const elapsed = totalTime.value - timeLeft.value
@@ -304,7 +313,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       showNotification('休息结束！', '开始新的专注吧')
       sendAction('switchWork')
     }
-    
+
     saveToStorage()
   }
 
@@ -397,11 +406,12 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     hasStarted.value = false
     currentMode.value = mode
     timeLeft.value = totalTime.value
-    customMinutes.value = currentMode.value === 'work'
-      ? settingsStore.pomodoroWorkMinutes
-      : currentMode.value === 'shortBreak'
-        ? settingsStore.pomodoroBreakMinutes
-        : settingsStore.pomodoroLongBreakMinutes
+    customMinutes.value =
+      currentMode.value === 'work'
+        ? settingsStore.pomodoroWorkMinutes
+        : currentMode.value === 'shortBreak'
+          ? settingsStore.pomodoroBreakMinutes
+          : settingsStore.pomodoroLongBreakMinutes
     saveToStorage()
   }
 
@@ -467,13 +477,16 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     if (isSlaveWindow) return
     try {
       if (typeof localStorage === 'undefined') return
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        currentMode: currentMode.value,
-        timeLeft: timeLeft.value,
-        isRunning: false,
-        hasStarted: hasStarted.value,
-        completedPomodoros: completedPomodoros.value
-      }))
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          currentMode: currentMode.value,
+          timeLeft: timeLeft.value,
+          isRunning: false,
+          hasStarted: hasStarted.value,
+          completedPomodoros: completedPomodoros.value
+        })
+      )
     } catch (e) {
       console.warn('[Pomodoro] Failed to save to storage:', e)
     }
@@ -486,7 +499,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const data = JSON.parse(saved)
-        if (data.currentMode && modes.some(m => m.value === data.currentMode)) {
+        if (data.currentMode && modes.some((m) => m.value === data.currentMode)) {
           currentMode.value = data.currentMode
         }
         if (typeof data.timeLeft === 'number' && data.timeLeft > 0) {
@@ -498,11 +511,12 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
         if (typeof data.completedPomodoros === 'number') {
           completedPomodoros.value = Math.max(0, data.completedPomodoros)
         }
-        customMinutes.value = currentMode.value === 'work'
-          ? settingsStore.pomodoroWorkMinutes
-          : currentMode.value === 'shortBreak'
-            ? settingsStore.pomodoroBreakMinutes
-            : settingsStore.pomodoroLongBreakMinutes
+        customMinutes.value =
+          currentMode.value === 'work'
+            ? settingsStore.pomodoroWorkMinutes
+            : currentMode.value === 'shortBreak'
+              ? settingsStore.pomodoroBreakMinutes
+              : settingsStore.pomodoroLongBreakMinutes
       }
     } catch (e) {
       console.warn('[Pomodoro] Failed to load from storage:', e)
@@ -574,27 +588,42 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     if (watchersSetup) return
     watchersSetup = true
 
-    watchFn(() => settingsStore.pomodoroWorkMinutes, () => {
-      if (currentMode.value === 'work' && !isRunning.value && !hasStarted.value) {
-        timeLeft.value = settingsStore.pomodoroWorkMinutes * 60
+    watchFn(
+      () => settingsStore.pomodoroWorkMinutes,
+      () => {
+        if (currentMode.value === 'work' && !isRunning.value && !hasStarted.value) {
+          timeLeft.value = settingsStore.pomodoroWorkMinutes * 60
+        }
       }
-    })
+    )
 
-    watchFn(() => settingsStore.pomodoroBreakMinutes, () => {
-      if (currentMode.value === 'shortBreak' && !isRunning.value && !hasStarted.value) {
-        timeLeft.value = settingsStore.pomodoroBreakMinutes * 60
+    watchFn(
+      () => settingsStore.pomodoroBreakMinutes,
+      () => {
+        if (currentMode.value === 'shortBreak' && !isRunning.value && !hasStarted.value) {
+          timeLeft.value = settingsStore.pomodoroBreakMinutes * 60
+        }
       }
-    })
+    )
 
-    watchFn(() => settingsStore.pomodoroLongBreakMinutes, () => {
-      if (currentMode.value === 'longBreak' && !isRunning.value && !hasStarted.value) {
-        timeLeft.value = settingsStore.pomodoroLongBreakMinutes * 60
+    watchFn(
+      () => settingsStore.pomodoroLongBreakMinutes,
+      () => {
+        if (currentMode.value === 'longBreak' && !isRunning.value && !hasStarted.value) {
+          timeLeft.value = settingsStore.pomodoroLongBreakMinutes * 60
+        }
       }
-    })
+    )
 
     if (!isElectron) {
       watchFn(
-        () => [timeLeft.value, isRunning.value, currentMode.value, hasStarted.value, completedPomodoros.value],
+        () => [
+          timeLeft.value,
+          isRunning.value,
+          currentMode.value,
+          hasStarted.value,
+          completedPomodoros.value
+        ],
         () => {
           saveToStorage()
         }
