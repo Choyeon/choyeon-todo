@@ -1,0 +1,153 @@
+{
+  "name": "todolist-app",
+  "private": true,
+  "version": "1.0.0",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "description": "Choyeon To Do - A modern task management application",
+  "author": "Choyeon <c******@***********>",
+  "homepage": "https://github.com/choyeon/todolist-app",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .",
+    "electron:build": "vite build && electron-builder",
+    "electron:build:win": "vite build && electron-builder --win",
+    "electron:build:mac": "vite build && electron-builder --mac",
+    "electron:build:linux": "vite build && electron-builder --linux",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.23.0",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.39",
+    "vue-router": "^5.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.7",
+    "@vitest/coverage-v8": "^1.6.1",
+    "@vue/test-utils": "^2.4.0",
+    "cross-env": "^7.0.3",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
+    "jsdom": "^24.0.0",
+    "sharp": "^0.35.3",
+    "terser": "^5.49.0",
+    "vite": "^8.1.1",
+    "vitest": "^1.5.0"
+  },
+  "build": {
+    "appId": "com.choyeon.todo",
+    "productName": "Choyeon To Do",
+    "copyright": "Copyright © 2026 Choyeon",
+    "asar": true,
+    "directories": {
+      "output": "app-build",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "!dist/**/*.map",
+      "electron/main.cjs",
+      "electron/preload.cjs",
+      "electron/debug-preload.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Choyeon To Do",
+      "artifactName": "${productName} Setup ${version}.${ext}",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "${productName} Portable ${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "identity": null
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png",
+      "synopsis": "Modern task management application",
+      "description": "Choyeon To Do - A modern task management application",
+      "maintainer": "Choyeon <c******@***********>"
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "deb": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
+  }
+}

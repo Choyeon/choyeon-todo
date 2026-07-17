@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# 打包输出
+release/
+app-build/
+build-output/
+build-output-new/
+dist-electron/
+pack-out/
+
+# 调试文件
+debug_tasklist.py
+
+# 测试覆盖率
+coverage/
+
+# 代码签名证书（敏感文件，切勿提交）
+*.pfx
+*.p12
+*.cer
+*.key
+build/*.pfx
+build/*.p12
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
