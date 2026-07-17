@@ -358,7 +358,7 @@ export default {
   },
   about: {
     title: '关于',
-    tagline: '一款现代化的跨平台任务管理应用，让每一天都井井有条',
+    tagline: '一款跨平台任务管理应用，让每一天都井井有条',
     smartTask: '智能任务管理',
     smartTaskDesc: '自然语言输入，自动识别时间与优先级',
     calendarView: '日历视图',
