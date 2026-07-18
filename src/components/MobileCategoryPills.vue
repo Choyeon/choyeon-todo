@@ -132,7 +132,7 @@ const navigateToCategory = (catId) => {
   color: var(--color-text-secondary);
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;

@@ -65,7 +65,7 @@ import TaskList from '../components/TaskList.vue'
 import { PlusCircle, Plus, Check, Sparkles } from '@lucide/vue'
 import { smartParseTask, getSmartHint } from '../utils/smartParse'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
 
 const taskStore = useTaskStore()
 const quickAddTitle = ref('')
@@ -107,7 +107,7 @@ const headerSubtitle = computed(() => {
     return t('task.searchResultCount', { count: taskStore.filteredTasks.length })
   }
   const now = new Date()
-  const weekdays = t('date.weekdays')
+  const weekdays = tm('date.weekdays')
 
   if (taskStore.currentView === 'today') {
     return `${now.getMonth() + 1}月${now.getDate()}日 ${weekdays[now.getDay()]}`
@@ -208,7 +208,7 @@ const quickAdd = () => {
 }
 
 .content-header h1 {
-  font-size: 32px;
+  font-size: var(--font-size-h1);
   font-weight: 300;
   margin: 0;
   color: var(--color-text-primary);
@@ -218,7 +218,7 @@ const quickAdd = () => {
 }
 
 .header-subtitle {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0;
   font-weight: 400;
@@ -240,7 +240,7 @@ const quickAdd = () => {
   border-radius: var(--radius-full);
   background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
@@ -309,7 +309,7 @@ const quickAdd = () => {
   border: none;
   outline: none;
   background: transparent;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-family: var(--font-body);
   color: var(--color-text-primary);
   letter-spacing: 0.2px;
@@ -344,12 +344,12 @@ const quickAdd = () => {
 }
 
 .hint-text {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
 }
 
 .hint-tag {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   padding: 2px 8px;
   background: var(--color-primary-surface);
   color: var(--color-primary);
@@ -418,7 +418,7 @@ const quickAdd = () => {
   }
 
   .content-header h1 {
-    font-size: 26px;
+    font-size: var(--font-size-3xl);
   }
 }
 
@@ -439,7 +439,7 @@ const quickAdd = () => {
   }
 
   .content-header h1 {
-    font-size: 24px;
+    font-size: var(--font-size-h2);
   }
 
   .add-task-row {
@@ -450,7 +450,7 @@ const quickAdd = () => {
 
   .action-btn {
     padding: 5px 12px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 }
 </style>

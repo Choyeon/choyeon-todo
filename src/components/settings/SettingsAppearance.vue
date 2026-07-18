@@ -253,7 +253,7 @@ const changeLanguage = (loc) => {
   border-radius: 10px;
   background: var(--color-surface-2);
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);

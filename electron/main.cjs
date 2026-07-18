@@ -1240,6 +1240,10 @@ ipcMain.on('tasks:sync', (event, { tasks, categories }) => {
   refreshTrayMenu()
 })
 
+ipcMain.handle('app:getVersion', () => {
+  return app.getVersion()
+})
+
 ipcMain.on('notification:send', (event, { title, body, taskId }) => {
   // 允许主窗口和调试窗口发送通知
   if (!isFromMain(event) && !isFromDebug(event)) return

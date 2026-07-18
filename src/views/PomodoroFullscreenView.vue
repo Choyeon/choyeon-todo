@@ -179,7 +179,7 @@ onMounted(async () => {
   border: none;
   background: transparent;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   border-radius: 999px;
   cursor: pointer;
@@ -246,7 +246,7 @@ onMounted(async () => {
 
 .mode-label {
   display: block;
-  font-size: 15px;
+  font-size: var(--font-size-base);
   color: rgba(255, 255, 255, 0.35);
   font-weight: 500;
   letter-spacing: 2px;
@@ -265,7 +265,7 @@ onMounted(async () => {
 
 .current-task.empty {
   color: rgba(255, 255, 255, 0.25);
-  font-size: 14px;
+  font-size: var(--font-size-body);
 }
 
 .task-icon {
@@ -277,7 +277,7 @@ onMounted(async () => {
 }
 
 .task-title {
-  font-size: 15px;
+  font-size: var(--font-size-base);
   color: rgba(255, 255, 255, 0.6);
   white-space: nowrap;
   overflow: hidden;
@@ -310,7 +310,7 @@ onMounted(async () => {
 }
 
 .count-text {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.25);
   margin-left: 4px;
 }
@@ -323,7 +323,7 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: transparent;
   color: rgba(255, 255, 255, 0.3);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-body);
   cursor: pointer;
   border-radius: 999px;
@@ -347,7 +347,7 @@ onMounted(async () => {
   padding: 6px 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   text-align: center;
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.8);
@@ -359,7 +359,7 @@ onMounted(async () => {
   border-color: rgba(255, 255, 255, 0.3);
 }
 .custom-unit {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.3);
 }
 
@@ -368,7 +368,7 @@ onMounted(async () => {
   padding: 4px 14px;
   border: none;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-body);
   cursor: pointer;
   transition: all 0.15s;
@@ -460,7 +460,7 @@ onMounted(async () => {
   border-radius: 999px;
   background: transparent;
   color: rgba(255, 255, 255, 0.3);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-family: var(--font-body);
   cursor: pointer;
   transition: all 0.2s;

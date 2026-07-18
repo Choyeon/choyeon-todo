@@ -33,7 +33,7 @@ import PomodoroTimer from '../components/PomodoroTimer.vue'
 }
 
 .view-title {
-  font-size: 24px;
+  font-size: var(--font-size-h2);
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
@@ -44,7 +44,7 @@ import PomodoroTimer from '../components/PomodoroTimer.vue'
 }
 
 .view-subtitle {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0;
   word-break: break-word;
@@ -110,11 +110,11 @@ import PomodoroTimer from '../components/PomodoroTimer.vue'
   }
 
   .view-title {
-    font-size: 20px;
+    font-size: var(--font-size-h3);
   }
 
   .view-subtitle {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .view-content {
@@ -129,7 +129,7 @@ import PomodoroTimer from '../components/PomodoroTimer.vue'
   }
 
   .view-title {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
   }
 }
 

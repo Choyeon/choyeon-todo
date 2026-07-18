@@ -341,14 +341,14 @@ onMounted(() => {
 }
 
 .monitor-title {
-  font-size: 26px;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   margin: 0 0 4px 0;
   color: var(--color-text-primary);
 }
 
 .monitor-subtitle {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0;
 }
@@ -368,7 +368,7 @@ onMounted(() => {
   border: 1px solid var(--color-border-light);
   background: var(--color-surface-2);
   color: var(--color-text-primary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -437,14 +437,14 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1.2;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin-top: 2px;
 }
@@ -478,7 +478,7 @@ onMounted(() => {
 }
 
 .panel-header h3 {
-  font-size: 15px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   margin: 0;
   color: var(--color-text-primary);
@@ -496,7 +496,7 @@ onMounted(() => {
   border-radius: 6px;
   background: var(--color-surface-2);
   color: var(--color-text-primary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   outline: none;
   transition: border-color var(--transition-fast);
 }
@@ -540,7 +540,7 @@ onMounted(() => {
 }
 
 .error-name {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
 }
 
@@ -550,13 +550,13 @@ onMounted(() => {
 .error-name.type-runtime { color: #6b7280; }
 
 .error-time {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-tertiary);
   flex-shrink: 0;
 }
 
 .error-message {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin: 0 0 8px 0;
   line-height: 1.4;
@@ -574,7 +574,7 @@ onMounted(() => {
 
 .error-type-tag,
 .error-component {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   padding: 2px 6px;
   border-radius: 4px;
   background: var(--color-surface-3);
@@ -620,13 +620,13 @@ onMounted(() => {
 }
 
 .detail-label {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   flex-shrink: 0;
 }
 
 .detail-value {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-primary);
   text-align: right;
   word-break: break-all;
@@ -634,17 +634,17 @@ onMounted(() => {
 
 .detail-value.mono {
   font-family: 'SF Mono', Monaco, monospace;
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
 }
 
 .detail-value.small {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
 }
 
 .type-badge {
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 500;
 }
 
@@ -664,7 +664,7 @@ onMounted(() => {
 }
 
 .detail-message {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   padding: 10px 12px;
   background: var(--color-surface-2);
@@ -674,7 +674,7 @@ onMounted(() => {
 }
 
 .stack-trace {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-family: 'SF Mono', Monaco, monospace;
   padding: 12px;
   background: var(--color-surface-2);
@@ -718,7 +718,7 @@ onMounted(() => {
 
 .empty-state p {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-body);
 }
 
 .top-errors-section {
@@ -729,7 +729,7 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 15px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   margin: 0 0 16px 0;
   color: var(--color-text-primary);
@@ -757,7 +757,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 700;
   flex-shrink: 0;
   background: var(--color-surface-3);
@@ -777,13 +777,13 @@ onMounted(() => {
 }
 
 .top-error-name {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .top-error-msg {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -798,13 +798,13 @@ onMounted(() => {
 }
 
 .count-num {
-  font-size: 18px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-primary);
 }
 
 .count-label {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-tertiary);
 }
 </style>

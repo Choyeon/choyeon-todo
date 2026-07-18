@@ -189,7 +189,7 @@ onMounted(async () => {
 }
 
 .time-text {
-  font-size: 24px;
+  font-size: var(--font-size-3xl);
   font-weight: 600;
   color: #fff;
   font-variant-numeric: tabular-nums;
@@ -197,7 +197,7 @@ onMounted(async () => {
 }
 
 .mode-label {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   color: rgba(255, 255, 255, 0.6);
   line-height: 1;
 }
@@ -271,7 +271,7 @@ onMounted(async () => {
   border-radius: 8px;
   cursor: pointer;
   color: #fff;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   transition: all 0.15s ease;
 }
 

@@ -90,7 +90,7 @@ watch(visible, (val) => {
 }
 
 .confirm-title {
-  font-size: 18px;
+  font-size: var(--font-size-xl);
   font-weight: 500;
   color: var(--color-text-primary);
   margin: 0;
@@ -100,7 +100,7 @@ watch(visible, (val) => {
 }
 
 .confirm-message {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.5;
@@ -118,7 +118,7 @@ watch(visible, (val) => {
 .confirm-btn {
   padding: 8px 20px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;

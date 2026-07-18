@@ -255,7 +255,7 @@ onMounted(() => {
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   border-radius: var(--radius-full);
   cursor: pointer;
@@ -433,7 +433,7 @@ onMounted(() => {
 
 .mode-label {
   display: block;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-weight: 500;
   letter-spacing: 1.5px;
@@ -481,7 +481,7 @@ onMounted(() => {
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-body);
   cursor: pointer;
   border-radius: var(--radius-full);
@@ -513,7 +513,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -522,7 +522,7 @@ onMounted(() => {
   padding: 6px 10px;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   text-align: center;
   background: var(--color-surface);
   color: var(--color-text-primary);
@@ -544,7 +544,7 @@ onMounted(() => {
   padding: 5px 18px;
   border: none;
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
@@ -592,7 +592,7 @@ onMounted(() => {
 
 .current-task.no-task {
   color: var(--color-text-tertiary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 .task-icon {
@@ -607,7 +607,7 @@ onMounted(() => {
 }
 
 .task-title {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   font-weight: 500;
   white-space: nowrap;
@@ -659,7 +659,7 @@ onMounted(() => {
 }
 
 .count-number {
-  font-size: 15px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-secondary);
   font-family: var(--font-mono, var(--font-body));
@@ -668,7 +668,7 @@ onMounted(() => {
 }
 
 .count-label {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-tertiary);
   font-weight: 500;
 }
@@ -794,7 +794,7 @@ onMounted(() => {
   border-radius: var(--radius-full);
   background: transparent;
   color: var(--color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
@@ -818,7 +818,7 @@ onMounted(() => {
   border-radius: var(--radius-full);
   background: transparent;
   color: var(--color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
@@ -846,7 +846,7 @@ onMounted(() => {
 
   .mode-tab {
     padding: 6px 10px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     min-height: 44px;
     gap: 4px;
   }
@@ -871,7 +871,7 @@ onMounted(() => {
   }
 
   .mode-label {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
     letter-spacing: 1px;
   }
 
@@ -887,7 +887,7 @@ onMounted(() => {
 
   .task-title {
     max-width: none;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .pomodoro-count {
@@ -910,11 +910,11 @@ onMounted(() => {
   }
 
   .count-number {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .count-label {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .controls {
@@ -953,7 +953,7 @@ onMounted(() => {
 
   .mode-tab {
     padding: 8px 6px;
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
     min-height: 44px;
   }
 
@@ -973,7 +973,7 @@ onMounted(() => {
   }
 
   .mode-label {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
     letter-spacing: 0.5px;
   }
 
@@ -983,7 +983,7 @@ onMounted(() => {
   }
 
   .task-title {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .pomodoro-count {
@@ -1002,7 +1002,7 @@ onMounted(() => {
   }
 
   .count-number {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .count-label {
@@ -1032,7 +1032,7 @@ onMounted(() => {
   .fullscreen-btn,
   .fab-btn {
     padding: 8px 12px;
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
     min-height: 44px;
   }
 }
@@ -1057,7 +1057,7 @@ onMounted(() => {
   }
 
   .mode-label {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .current-task {
@@ -1066,7 +1066,7 @@ onMounted(() => {
   }
 
   .task-title {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .pomodoro-count {
@@ -1092,7 +1092,7 @@ onMounted(() => {
   .fullscreen-btn,
   .fab-btn {
     padding: 6px 10px;
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 }
 

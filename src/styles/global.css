@@ -52,6 +52,8 @@
   --font-size-body: 14px;
   --font-size-sm: 13px;
   --font-size-xs: 12px;
+  --font-size-2xs: 11px;
+  --font-size-3xs: 10px;
 
   --font-weight-h1: 700;
   --font-weight-h2: 600;
@@ -62,6 +64,11 @@
 
   --font-size-base: 14px;
   --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 28px;
+  --font-size-5xl: 32px;
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -182,8 +189,15 @@
   --font-size-body: 13px;
   --font-size-sm: 12px;
   --font-size-xs: 11px;
+  --font-size-2xs: 10px;
+  --font-size-3xs: 9px;
   --font-size-base: 13px;
   --font-size-lg: 15px;
+  --font-size-xl: 16px;
+  --font-size-2xl: 17px;
+  --font-size-3xl: 20px;
+  --font-size-4xl: 24px;
+  --font-size-5xl: 28px;
 }
 
 [data-font-size='large'] {
@@ -194,8 +208,15 @@
   --font-size-body: 16px;
   --font-size-sm: 14px;
   --font-size-xs: 13px;
+  --font-size-2xs: 12px;
+  --font-size-3xs: 11px;
   --font-size-base: 16px;
   --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 32px;
+  --font-size-5xl: 36px;
 }
 
 [data-theme='dark'] {
@@ -1026,7 +1047,7 @@ a:focus-visible,
   justify-content: center;
   padding: 2px 8px;
   border-radius: var(--radius-full);
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 500;
   line-height: 1.5;
   letter-spacing: 0.2px;

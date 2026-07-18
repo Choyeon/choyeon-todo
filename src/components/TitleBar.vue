@@ -343,7 +343,7 @@ onUnmounted(() => {
 }
 
 .title-bar-text {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-body);

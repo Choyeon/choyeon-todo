@@ -208,7 +208,7 @@ defineEmits(['add-task'])
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
 const { show: showSnackbar } = useSnackbar()
-const { t } = useI18n()
+const { t, tm } = useI18n()
 const openEditTask = inject('openEditTask')
 
 let audioContext = null
@@ -410,7 +410,7 @@ const formatDate = (task) => {
   }
 
   const date = parseDateStr(task.date)
-  const weekdays = t('date.weekdays')
+  const weekdays = tm('date.weekdays')
   const dayName = weekdays[date.getDay()]
 
   const todayDate = parseDateStr(today)
@@ -848,7 +848,7 @@ const getConfettiStyle = (n) => {
 }
 
 .priority-badge {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
@@ -877,7 +877,7 @@ const getConfettiStyle = (n) => {
 }
 
 .task-title {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 400;
   color: var(--color-text-primary);
   margin: 0;
@@ -939,7 +939,7 @@ const getConfettiStyle = (n) => {
 }
 
 .cat-pill {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   padding: 2px 8px;
   border-radius: var(--radius-full);
   font-weight: 500;
@@ -958,7 +958,7 @@ const getConfettiStyle = (n) => {
 }
 
 .task-date {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   letter-spacing: 0.2px;
   font-weight: 400;
@@ -978,7 +978,7 @@ const getConfettiStyle = (n) => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-secondary);
   background: var(--color-bg-secondary);
   border: none;
@@ -1023,7 +1023,7 @@ const getConfettiStyle = (n) => {
 }
 
 .tag-pill {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   padding: 2px 8px;
   border-radius: var(--radius-full);
   font-weight: 500;
@@ -1164,7 +1164,7 @@ const getConfettiStyle = (n) => {
 }
 
 .subtask-title {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.4;
   flex: 1;
@@ -1317,16 +1317,16 @@ const getConfettiStyle = (n) => {
   }
 
   .cat-pill {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
     padding: 1px 6px;
   }
 
   .task-date {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .subtask-toggle {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
     padding: 1px 6px;
   }
 
@@ -1335,7 +1335,7 @@ const getConfettiStyle = (n) => {
   }
 
   .tag-pill {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
     padding: 1px 6px;
   }
 

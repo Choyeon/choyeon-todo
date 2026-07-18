@@ -522,7 +522,7 @@ onUnmounted(() => {
 
 .shortcuts-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-h4);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-title);
@@ -560,7 +560,7 @@ onUnmounted(() => {
 }
 
 .shortcuts-group h4 {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-tertiary);
   text-transform: uppercase;
@@ -596,7 +596,7 @@ onUnmounted(() => {
   height: 24px;
   padding: 0 6px;
   font-family: var(--font-mono, monospace);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-text-secondary);
   background: var(--color-bg-secondary);
@@ -606,7 +606,7 @@ onUnmounted(() => {
 }
 
 .shortcut-desc {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   font-family: var(--font-body);
   font-weight: 400;

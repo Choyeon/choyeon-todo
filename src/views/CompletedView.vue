@@ -86,7 +86,7 @@ const confirmClear = () => {
 }
 
 .content-header h1 {
-  font-size: 32px;
+  font-size: var(--font-size-h1);
   font-weight: 300;
   margin: 0 0 4px 0;
   color: var(--color-text-primary);
@@ -99,7 +99,7 @@ const confirmClear = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0;
   font-weight: 400;
@@ -121,7 +121,7 @@ const confirmClear = () => {
   background: transparent;
   color: var(--state-error);
   border: none;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -193,7 +193,7 @@ const confirmClear = () => {
 
 .confirm-title {
   font-family: var(--font-title);
-  font-size: 20px;
+  font-size: var(--font-size-h3);
   font-weight: 400;
   color: var(--color-text-primary);
   margin: 0 0 12px 0;
@@ -201,7 +201,7 @@ const confirmClear = () => {
 }
 
 .confirm-desc {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0 0 20px 0;
   line-height: 1.5;
@@ -220,7 +220,7 @@ const confirmClear = () => {
   gap: 8px;
   padding: 10px 16px;
   border-radius: var(--radius-full);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -256,7 +256,7 @@ const confirmClear = () => {
   }
 
   .content-header h1 {
-    font-size: 24px;
+    font-size: var(--font-size-h2);
   }
 }
 
@@ -270,7 +270,7 @@ const confirmClear = () => {
   }
 
   .content-header h1 {
-    font-size: 22px;
+    font-size: var(--font-size-2xl);
   }
 }
 

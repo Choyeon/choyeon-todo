@@ -198,7 +198,7 @@ const titlebarStyles = computed(() => [
 ])
 
 const currentTitlebarStyle = ref('auto')
-const appVersion = computed(() => window.electronAPI?.versions?.app || '1.0.0')
+const appVersion = ref(__APP_VERSION__)
 
 const platform = computed(() => window.electronAPI?.platform || 'Web')
 const electronVersion = computed(() => window.electronAPI?.versions?.electron || 'N/A')
@@ -321,6 +321,11 @@ const handleTestNotification = () => {
 onMounted(() => {
   currentTitlebarStyle.value = localStorage.getItem('choyeon_debug_titlebar') || 'auto'
   refreshErrors()
+  if (window.electronAPI?.getAppVersion) {
+    window.electronAPI.getAppVersion().then((ver) => {
+      if (ver) appVersion.value = ver
+    }).catch(() => {})
+  }
 })
 
 onUnmounted(() => {
@@ -377,7 +382,7 @@ onUnmounted(() => {
 }
 
 .debug-title {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -419,7 +424,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 600;
   color: var(--color-text-tertiary);
   text-transform: uppercase;
@@ -442,7 +447,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -498,7 +503,7 @@ onUnmounted(() => {
 }
 
 .item-desc {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 400;
   color: var(--color-text-tertiary);
 }
@@ -516,7 +521,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   animation: statusFadeIn 0.2s ease-out;
 }
 
@@ -565,7 +570,7 @@ onUnmounted(() => {
 }
 
 .debug-info-label {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -574,7 +579,7 @@ onUnmounted(() => {
 }
 
 .debug-info-value {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: monospace;
@@ -592,7 +597,7 @@ onUnmounted(() => {
 }
 
 .debug-footer-text {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-tertiary);
 }
 
@@ -632,14 +637,14 @@ onUnmounted(() => {
 }
 
 .err-stat-num {
-  font-size: 18px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1.2;
 }
 
 .err-stat-label {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   color: var(--color-text-tertiary);
   margin-top: 2px;
 }
@@ -661,7 +666,7 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -700,20 +705,20 @@ onUnmounted(() => {
 }
 
 .err-name {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .err-time {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   color: var(--color-text-tertiary);
   flex-shrink: 0;
   margin-left: 8px;
 }
 
 .err-msg {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-secondary);
   margin: 0 0 6px 0;
   line-height: 1.4;
@@ -725,7 +730,7 @@ onUnmounted(() => {
 }
 
 .err-type-tag {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   padding: 1px 6px;
   border-radius: 4px;
   background: var(--color-bg-tertiary);
@@ -739,6 +744,6 @@ onUnmounted(() => {
   gap: 6px;
   padding: 16px;
   color: var(--color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }
 </style>

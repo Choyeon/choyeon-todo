@@ -198,7 +198,7 @@ import TaskList from '../components/TaskList.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { ChevronLeft, ChevronRight, Calendar, Clock, Star, Bell } from '@lucide/vue'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
 
 const taskStore = useTaskStore()
 const openEditTask = inject('openEditTask')
@@ -232,7 +232,7 @@ const selectedDateFormatted = computed(() => {
 
 const selectedWeekday = computed(() => {
   const date = parseDateStr(selectedDate.value)
-  const weekdays = t('date.weekdays')
+  const weekdays = tm('date.weekdays')
   return weekdays[date.getDay()]
 })
 
@@ -241,7 +241,7 @@ const currentYearMonthFormatted = computed(() => {
 })
 
 const weekdayLabels = computed(() => {
-  const weekdays = t('date.weekdays')
+  const weekdays = tm('date.weekdays')
   return [weekdays[1], weekdays[2], weekdays[3], weekdays[4], weekdays[5], weekdays[6], weekdays[0]]
 })
 
@@ -499,7 +499,7 @@ const onDrop = (e) => {
 }
 
 .content-header h1 {
-  font-size: 32px;
+  font-size: var(--font-size-h1);
   font-weight: 300;
   margin: 0;
   color: var(--color-text-primary);
@@ -524,7 +524,7 @@ const onDrop = (e) => {
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -890,7 +890,7 @@ const onDrop = (e) => {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 500;
   color: var(--color-text-tertiary);
   padding-top: 4px;
@@ -1073,7 +1073,7 @@ const onDrop = (e) => {
 }
 
 .task-time {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 600;
   color: var(--color-primary);
   margin-bottom: 4px;
@@ -1119,7 +1119,7 @@ const onDrop = (e) => {
 }
 
 .cat-pill {
-  font-size: 10px;
+  font-size: var(--font-size-3xs);
   padding: 1px 8px;
   border-radius: var(--radius-full);
   font-weight: 500;
@@ -1138,7 +1138,7 @@ const onDrop = (e) => {
   }
 
   .content-header h1 {
-    font-size: 24px;
+    font-size: var(--font-size-h2);
   }
 }
 
@@ -1153,7 +1153,7 @@ const onDrop = (e) => {
   }
 
   .content-header h1 {
-    font-size: 22px;
+    font-size: var(--font-size-2xl);
   }
 
   .header-row {
@@ -1179,7 +1179,7 @@ const onDrop = (e) => {
   }
 
   .cal-nav-title {
-    font-size: 16px;
+    font-size: var(--font-size-h4);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1191,17 +1191,17 @@ const onDrop = (e) => {
   .today-btn {
     min-height: 36px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .cal-weekday {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
     padding: 6px 0;
   }
 
   .cal-day {
     min-height: 40px;
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .cal-dot {
@@ -1211,7 +1211,7 @@ const onDrop = (e) => {
   }
 
   .section-title {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
     margin: 20px 0 12px 0;
   }
 
@@ -1255,14 +1255,14 @@ const onDrop = (e) => {
   }
 
   .timeline-date {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .timeline-weekday {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     flex-shrink: 0;
   }
 
@@ -1273,7 +1273,7 @@ const onDrop = (e) => {
   .all-day-label {
     width: 48px;
     min-width: 48px;
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
     flex-shrink: 0;
   }
 
@@ -1289,7 +1289,7 @@ const onDrop = (e) => {
   }
 
   .hour-marker {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .timeline-scroll {
@@ -1320,7 +1320,7 @@ const onDrop = (e) => {
   }
 
   .task-title {
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .task-meta-row {
@@ -1328,7 +1328,7 @@ const onDrop = (e) => {
   }
 
   .cat-pill {
-    font-size: 9px;
+    font-size: var(--font-size-3xs);
     padding: 1px 6px;
   }
 }

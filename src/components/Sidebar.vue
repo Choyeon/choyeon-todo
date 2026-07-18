@@ -541,7 +541,7 @@ onUnmounted(() => {
 }
 
 .brand-text {
-  font-size: 16px;
+  font-size: var(--font-size-h4);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-title);
@@ -615,7 +615,7 @@ onUnmounted(() => {
   border: none;
   background: transparent;
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-family: var(--font-body);
   font-weight: 400;
   outline: none;
@@ -694,7 +694,7 @@ onUnmounted(() => {
 }
 
 .nav-section-label {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 600;
   color: var(--color-text-tertiary);
   letter-spacing: 0.8px;
@@ -718,7 +718,7 @@ onUnmounted(() => {
   border: none;
   background: transparent;
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 400;
   font-family: var(--font-body);
   cursor: pointer;
@@ -782,7 +782,7 @@ onUnmounted(() => {
 }
 
 .nav-count {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--sidebar-count-color);
   background: var(--sidebar-count-bg);
@@ -869,7 +869,7 @@ onUnmounted(() => {
   color: var(--color-text-primary);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   white-space: nowrap;
   pointer-events: none;
@@ -940,7 +940,7 @@ onUnmounted(() => {
   border: none;
   background: transparent;
   color: var(--color-text-primary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-body);
   font-weight: 500;
   cursor: pointer;
@@ -1029,7 +1029,7 @@ onUnmounted(() => {
   }
 
   .sidebar-search input {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
   }
 
   .sidebar-nav {
@@ -1050,18 +1050,18 @@ onUnmounted(() => {
   }
 
   .nav-label {
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 
   .nav-count {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     padding: 2px 8px;
     min-width: 22px;
   }
 
   .nav-section-label {
     padding: 10px 12px 6px 12px;
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .nav-divider {

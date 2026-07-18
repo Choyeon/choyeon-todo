@@ -90,7 +90,7 @@ const navigateTo = (view) => {
   border: none;
   background: transparent;
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   font-weight: 500;
   transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;

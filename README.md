@@ -62,7 +62,7 @@ The web version is available here:
 
 ## Download
 
-### Latest release: v1.0.1
+### Latest release: v1.0.2
 
 | Platform | Download |
 |----------|----------|
@@ -162,6 +162,13 @@ Vue 3 · Vite · Pinia · Vue Router · Electron · electron-builder · Vitest �
 ---
 
 ## Changelog
+
+### v1.0.2 — 2026-07-18
+
+- Fixed: weekday names showing as single characters in stats and calendar views
+- Fixed: dark mode text contrast issue on stats primary card
+- Fixed: version number hardcoded in About page — now reads from package.json
+- Added: app version exposed via Electron IPC for runtime consistency
 
 ### v1.0.1 — 2026-07-18
 

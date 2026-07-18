@@ -172,7 +172,7 @@ onUnmounted(() => {
 }
 
 .content-header h1 {
-  font-size: 28px;
+  font-size: var(--font-size-4xl);
   font-weight: 600;
   margin: 0 0 4px 0;
   color: var(--color-text-primary);
@@ -185,7 +185,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0;
   font-weight: 400;
@@ -259,7 +259,7 @@ onUnmounted(() => {
 
 .settings-section-title {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
@@ -288,7 +288,7 @@ onUnmounted(() => {
   color: var(--state-error);
   border: none;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -399,7 +399,7 @@ onUnmounted(() => {
 }
 
 .setting-label {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   color: var(--color-text-primary);
   display: block;
@@ -411,7 +411,7 @@ onUnmounted(() => {
 }
 
 .setting-desc {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin: 2px 0 0 0;
   line-height: 1.4;
@@ -491,7 +491,7 @@ onUnmounted(() => {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-body);
   cursor: pointer;
   outline: none;
@@ -592,7 +592,7 @@ onUnmounted(() => {
   border: none;
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -635,7 +635,7 @@ onUnmounted(() => {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   font-family: var(--font-body);
   text-align: center;
@@ -695,7 +695,7 @@ onUnmounted(() => {
 }
 
 .shortcut-label {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   color: var(--color-text-primary);
   font-family: var(--font-body);
@@ -720,7 +720,7 @@ onUnmounted(() => {
   background: var(--color-bg-secondary);
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-mono, var(--font-body));
@@ -739,7 +739,7 @@ onUnmounted(() => {
 
 .kbd-plus,
 .kbd-slash {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-weight: 500;
 }
@@ -840,7 +840,7 @@ onUnmounted(() => {
 
 .category-name {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   color: var(--color-text-primary);
   min-width: 0;
@@ -850,7 +850,7 @@ onUnmounted(() => {
 }
 
 .category-count {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   font-weight: 600;
   padding: 2px 10px;
@@ -932,7 +932,7 @@ onUnmounted(() => {
   color: var(--color-primary);
   border: 1.5px dashed var(--color-border);
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -995,14 +995,14 @@ onUnmounted(() => {
 
 .version-title {
   font-family: var(--font-title);
-  font-size: 15px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-secondary);
   margin: 0;
 }
 
 .version-desc {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   margin: 0;
 }
@@ -1057,13 +1057,13 @@ onUnmounted(() => {
 }
 
 .link-label {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   color: var(--color-text-primary);
 }
 
 .link-desc {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1148,7 +1148,7 @@ onUnmounted(() => {
 }
 
 .delete-desc {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0 0 20px 0;
   line-height: 1.5;
@@ -1169,7 +1169,7 @@ onUnmounted(() => {
   gap: 8px;
   padding: 12px 16px;
   border-radius: var(--radius-full);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1207,7 +1207,7 @@ onUnmounted(() => {
 
 .modal-title {
   font-family: var(--font-title);
-  font-size: 20px;
+  font-size: var(--font-size-h3);
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0 0 20px 0;
@@ -1222,7 +1222,7 @@ onUnmounted(() => {
   background: var(--color-surface);
   color: var(--color-text-primary);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   outline: none;
   transition:
     border-color var(--transition-smooth),
@@ -1237,7 +1237,7 @@ onUnmounted(() => {
 }
 
 .modal-colors-label {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-text-secondary);
   margin-bottom: 8px;
@@ -1261,7 +1261,7 @@ onUnmounted(() => {
   padding: 0 24px;
   height: 40px;
   border-radius: var(--radius-full);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1312,7 +1312,7 @@ onUnmounted(() => {
   }
 
   .content-header h1 {
-    font-size: 24px;
+    font-size: var(--font-size-h2);
   }
 }
 
@@ -1331,7 +1331,7 @@ onUnmounted(() => {
 
   .batch-delete-btn {
     padding: 6px 12px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     min-height: 44px;
     min-width: 44px;
   }
@@ -1371,7 +1371,7 @@ onUnmounted(() => {
     margin-left: 16px;
     margin-right: 16px;
     min-height: 48px;
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 
   .segmented-control {
@@ -1380,17 +1380,17 @@ onUnmounted(() => {
 
   .segment-btn {
     min-height: 44px;
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .number-input {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     min-height: 44px;
     min-width: 64px;
   }
 
   .reminder-select {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     min-height: 44px;
     padding: 10px 40px 10px 16px;
     background-position: right 12px center;
@@ -1473,13 +1473,13 @@ onUnmounted(() => {
   }
 
   .form-input {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     min-height: 48px;
     padding: 14px 16px;
   }
 
   .modal-title {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
     margin-bottom: 16px;
   }
 
@@ -1496,22 +1496,22 @@ onUnmounted(() => {
   .cancel-btn {
     width: 100%;
     height: 48px;
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 
   .delete-desc {
-    font-size: 15px;
+    font-size: var(--font-size-base);
     line-height: 1.6;
   }
 
   .delete-option-btn {
     min-height: 48px;
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 
   .cancel-btn.full-width {
     min-height: 48px;
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 }
 

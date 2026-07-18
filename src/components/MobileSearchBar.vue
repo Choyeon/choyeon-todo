@@ -52,7 +52,7 @@ onUnmounted(() => {
   border: 1px solid transparent;
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-family: var(--font-body);
   outline: none;
   box-sizing: border-box;

@@ -26,7 +26,7 @@
       </div>
       <h2 class="about-app-name">Choyeon To Do</h2>
       <p class="about-tagline">{{ $t('about.tagline') }}</p>
-      <p class="about-version">{{ $t('settings.version') }} 1.0.1</p>
+      <p class="about-version">{{ $t('settings.version') }} {{ appVersion }}</p>
     </div>
 
     <div class="about-highlights">
@@ -155,6 +155,21 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+
+const appVersion = ref(__APP_VERSION__)
+
+onMounted(async () => {
+  if (window.electronAPI?.getAppVersion) {
+    try {
+      const ver = await window.electronAPI.getAppVersion()
+      if (ver) appVersion.value = ver
+    } catch (e) {
+      // ignore, fallback to build-time version
+    }
+  }
+})
+
 let versionClickCount = 0
 let versionClickTimer = null
 
@@ -210,7 +225,7 @@ const handleVersionClick = () => {
 }
 
 .about-app-name {
-  font-size: 22px;
+  font-size: var(--font-size-2xl);
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0 0 6px 0;
@@ -218,7 +233,7 @@ const handleVersionClick = () => {
 }
 
 .about-tagline {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin: 0 0 12px 0;
   text-align: center;
@@ -227,7 +242,7 @@ const handleVersionClick = () => {
 }
 
 .about-version {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   margin: 0;
 }
@@ -294,13 +309,13 @@ const handleVersionClick = () => {
 }
 
 .highlight-title {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .highlight-desc {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-tertiary);
   line-height: 1.4;
 }
@@ -310,14 +325,14 @@ const handleVersionClick = () => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   margin: 8px 0 0 0;
 }
 
 .about-footer .heart {
   color: #ef4444;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   animation: heartbeat 2s ease-in-out infinite;
 }
 

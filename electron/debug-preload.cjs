@@ -10,6 +10,7 @@ const safeVersions = {
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
   versions: safeVersions,
+  getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
   closeDebugWindow: () => ipcRenderer.send('debug:closeWindow'),
   minimizeDebugWindow: () => ipcRenderer.send('debug:minimizeWindow'),
   openDevTools: () => ipcRenderer.send('debug:openDevTools'),

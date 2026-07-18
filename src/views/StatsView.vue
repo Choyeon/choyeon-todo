@@ -429,7 +429,7 @@ import {
 } from '@lucide/vue'
 import { formatDateStr } from '../utils/date'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
 const taskStore = useTaskStore()
 const rangeDays = ref(30)
 const categoryStatType = ref('active')
@@ -491,7 +491,7 @@ const totalCompletionRate = computed(() => {
 })
 
 const bestDayLabel = computed(() => {
-  const weekdays = t('date.weekdays')
+  const weekdays = tm('date.weekdays')
   return weekdays[stats.value.bestDay.day] || weekdays[1]
 })
 
@@ -697,7 +697,7 @@ const weekHeatmap = computed(() => {
 
 const weekdayStats = computed(() => {
   const weekDayStats = stats.value.weekDayStats || {}
-  const labels = t('date.weekdays')
+  const labels = tm('date.weekdays')
   const order = [1, 2, 3, 4, 5, 6, 0]
 
   let maxCount = 0
@@ -740,7 +740,7 @@ const weekdayStats = computed(() => {
 }
 
 .content-header h1 {
-  font-size: 28px;
+  font-size: var(--font-size-4xl);
   font-weight: 400;
   margin: 0 0 4px 0;
   color: var(--color-text-primary);
@@ -756,7 +756,7 @@ const weekdayStats = computed(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   margin: 0;
   font-weight: 400;
@@ -821,6 +821,12 @@ const weekdayStats = computed(() => {
 
 .stat-card.primary-card .stat-value {
   color: var(--color-text-on-primary);
+}
+
+/* 暗色模式下 primary 背景为浅色，文字需改为深色保证对比度 */
+[data-theme='dark'] .stat-card.primary-card .stat-label,
+[data-theme='dark'] .stat-card.primary-card .stat-sub {
+  color: rgba(0, 0, 0, 0.65);
 }
 
 .stat-card.mini-card {
@@ -916,7 +922,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   font-weight: 500;
   letter-spacing: 0.1px;
@@ -927,7 +933,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: var(--font-size-4xl);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-title);
@@ -939,11 +945,11 @@ const weekdayStats = computed(() => {
 }
 
 .stat-value.mini {
-  font-size: 22px;
+  font-size: var(--font-size-2xl);
 }
 
 .stat-sub {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
@@ -961,7 +967,7 @@ const weekdayStats = computed(() => {
 }
 
 .focus-value {
-  font-size: 24px;
+  font-size: var(--font-size-3xl);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-title);
@@ -970,7 +976,7 @@ const weekdayStats = computed(() => {
 }
 
 .focus-unit {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-secondary);
   margin-right: 4px;
@@ -978,7 +984,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-value-unit {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 400;
   color: var(--color-text-secondary);
   margin-left: 2px;
@@ -986,7 +992,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-value.mini .stat-value-unit {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }
 
 .ring-chart {
@@ -1022,10 +1028,23 @@ const weekdayStats = computed(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: white;
   white-space: nowrap;
+}
+
+/* 暗色模式下 ring 图表颜色调整 */
+[data-theme='dark'] .ring-bg {
+  stroke: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .ring-progress {
+  stroke: var(--color-text-on-primary);
+}
+
+[data-theme='dark'] .ring-text {
+  color: var(--color-text-on-primary);
 }
 
 .chart-card {
@@ -1059,7 +1078,7 @@ const weekdayStats = computed(() => {
 }
 
 .chart-title {
-  font-size: 16px;
+  font-size: var(--font-size-h4);
   font-weight: 500;
   color: var(--color-text-primary);
   margin: 0;
@@ -1087,7 +1106,7 @@ const weekdayStats = computed(() => {
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   border-radius: var(--radius-full);
@@ -1133,7 +1152,7 @@ const weekdayStats = computed(() => {
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   font-family: var(--font-body);
   border-radius: var(--radius-full);
@@ -1182,14 +1201,14 @@ const weekdayStats = computed(() => {
 }
 
 .y-label {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   fill: var(--color-text-tertiary);
   text-anchor: end;
   font-family: var(--font-body);
 }
 
 .x-label {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   fill: var(--color-text-tertiary);
   text-anchor: middle;
   font-family: var(--font-body);
@@ -1276,7 +1295,7 @@ const weekdayStats = computed(() => {
 }
 
 .legend-text {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -1329,7 +1348,7 @@ const weekdayStats = computed(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   min-width: 0;
 }
 
@@ -1397,14 +1416,14 @@ const weekdayStats = computed(() => {
 }
 
 .heatmap-count {
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   font-weight: 600;
   font-family: var(--font-title);
   white-space: nowrap;
 }
 
 .heatmap-day {
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   opacity: 0.7;
   white-space: nowrap;
 }
@@ -1443,7 +1462,7 @@ const weekdayStats = computed(() => {
 }
 
 .heatmap-legend-label {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   white-space: nowrap;
 }
@@ -1528,13 +1547,13 @@ const weekdayStats = computed(() => {
 }
 
 .weekday-label {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
 .weekday-count {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-title);
@@ -1551,7 +1570,7 @@ const weekdayStats = computed(() => {
   }
 
   .content-header h1 {
-    font-size: 24px;
+    font-size: var(--font-size-h2);
   }
 
   .overview-cards {
@@ -1578,11 +1597,11 @@ const weekdayStats = computed(() => {
   }
 
   .content-header h1 {
-    font-size: 22px;
+    font-size: var(--font-size-2xl);
   }
 
   .header-subtitle {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .overview-cards {
@@ -1620,35 +1639,35 @@ const weekdayStats = computed(() => {
   }
 
   .stat-label {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .stat-value {
-    font-size: 22px;
+    font-size: var(--font-size-2xl);
   }
 
   .stat-value.mini {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
   }
 
   .stat-sub {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .focus-value {
-    font-size: 20px;
+    font-size: var(--font-size-2xl);
   }
 
   .focus-unit {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .stat-value-unit {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .stat-value.mini .stat-value-unit {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .ring-chart {
@@ -1658,7 +1677,7 @@ const weekdayStats = computed(() => {
   }
 
   .ring-text {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .chart-card {
@@ -1673,20 +1692,20 @@ const weekdayStats = computed(() => {
   }
 
   .chart-title {
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 
   .range-tab {
     padding: 6px 12px;
     min-height: 36px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .chart-tab {
     padding: 5px 10px;
     min-height: 34px;
     min-width: 44px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .chart-body {
@@ -1712,7 +1731,7 @@ const weekdayStats = computed(() => {
   }
 
   .pie-legend-item {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     gap: 8px;
   }
 
@@ -1733,11 +1752,11 @@ const weekdayStats = computed(() => {
   }
 
   .heatmap-count {
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .heatmap-day {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .weekday-chart {
@@ -1751,11 +1770,11 @@ const weekdayStats = computed(() => {
   }
 
   .weekday-label {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .weekday-count {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .weekday-bar-wrapper {
@@ -1773,11 +1792,11 @@ const weekdayStats = computed(() => {
   }
 
   .content-header h1 {
-    font-size: 20px;
+    font-size: var(--font-size-h3);
   }
 
   .header-subtitle {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .overview-cards {
@@ -1815,36 +1834,36 @@ const weekdayStats = computed(() => {
   }
 
   .stat-label {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .stat-value {
-    font-size: 20px;
+    font-size: var(--font-size-h3);
   }
 
   .stat-value.mini {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
   }
 
   .stat-sub {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .focus-value {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
   }
 
   .focus-unit {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
     margin-right: 2px;
   }
 
   .stat-value-unit {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .stat-value.mini .stat-value-unit {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .ring-chart {
@@ -1854,7 +1873,7 @@ const weekdayStats = computed(() => {
   }
 
   .ring-text {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .chart-card {
@@ -1867,7 +1886,7 @@ const weekdayStats = computed(() => {
   }
 
   .chart-title {
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .range-tabs {
@@ -1878,13 +1897,13 @@ const weekdayStats = computed(() => {
     flex: 1;
     padding: 6px 8px;
     min-height: 40px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .chart-tab {
     padding: 5px 8px;
     min-height: 36px;
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .chart-body {
@@ -1901,7 +1920,7 @@ const weekdayStats = computed(() => {
 
   .y-label,
   .x-label {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .chart-legend {
@@ -1910,7 +1929,7 @@ const weekdayStats = computed(() => {
   }
 
   .legend-text {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .pie-chart {
@@ -1924,7 +1943,7 @@ const weekdayStats = computed(() => {
   }
 
   .pie-legend-item {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
     gap: 6px;
   }
 
@@ -1946,11 +1965,11 @@ const weekdayStats = computed(() => {
   }
 
   .heatmap-count {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .heatmap-day {
-    font-size: 9px;
+    font-size: var(--font-size-3xs);
   }
 
   .heatmap-body {
@@ -1968,11 +1987,11 @@ const weekdayStats = computed(() => {
   }
 
   .weekday-label {
-    font-size: 10px;
+    font-size: var(--font-size-3xs);
   }
 
   .weekday-count {
-    font-size: 11px;
+    font-size: var(--font-size-2xs);
   }
 
   .weekday-bar-wrapper {

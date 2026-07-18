@@ -36,7 +36,7 @@ const { visible, message, actionLabel, hide, handleAction } = useSnackbar()
   gap: 12px;
   z-index: var(--z-toast);
   box-shadow: var(--shadow-lg);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-family: var(--font-body);
   min-width: 280px;
   max-width: 90vw;
@@ -52,7 +52,7 @@ const { visible, message, actionLabel, hide, handleAction } = useSnackbar()
   background: none;
   border: none;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: var(--radius-sm);

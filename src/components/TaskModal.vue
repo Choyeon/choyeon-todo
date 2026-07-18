@@ -812,7 +812,7 @@ const handleSave = () => {
 }
 
 .modal-header h2 {
-  font-size: 20px;
+  font-size: var(--font-size-h3);
   font-weight: 400;
   color: var(--color-text-primary);
   margin: 0;
@@ -931,7 +931,7 @@ const handleSave = () => {
   background: var(--color-surface);
   color: var(--color-text-primary);
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   font-weight: 400;
   outline: none;
   transition:
@@ -950,7 +950,7 @@ const handleSave = () => {
 }
 
 .form-section-label {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-text-secondary);
   margin: 16px 0 10px 0;
@@ -977,7 +977,7 @@ const handleSave = () => {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1042,7 +1042,7 @@ const handleSave = () => {
 
 .setting-label {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 400;
   color: var(--color-text-primary);
   font-family: var(--font-body);
@@ -1058,7 +1058,7 @@ const handleSave = () => {
 }
 
 .toggle-desc {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin: 2px 0 0 0;
   line-height: 1.4;
@@ -1077,7 +1077,7 @@ const handleSave = () => {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   border: 1px solid transparent;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1154,7 +1154,7 @@ const handleSave = () => {
   background: var(--color-surface);
   color: var(--color-text-primary);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   outline: none;
   transition:
     border-color var(--transition-smooth),
@@ -1188,7 +1188,7 @@ const handleSave = () => {
   border: none;
   background: var(--color-primary);
   color: var(--color-text-on-primary);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1219,7 +1219,7 @@ const handleSave = () => {
   border: none;
   background: transparent;
   color: var(--color-primary);
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1343,7 +1343,7 @@ const handleSave = () => {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1425,7 +1425,7 @@ const handleSave = () => {
 .tag-name-input {
   flex: 1;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 .add-tag-confirm-btn {
@@ -1462,7 +1462,7 @@ const handleSave = () => {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   border: 1px solid transparent;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1488,7 +1488,7 @@ const handleSave = () => {
 }
 
 .weekdays-label {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin-bottom: 8px;
 }
@@ -1505,7 +1505,7 @@ const handleSave = () => {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1540,7 +1540,7 @@ const handleSave = () => {
 }
 
 .sub-setting-label {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -1557,7 +1557,7 @@ const handleSave = () => {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   border: 1px solid transparent;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   outline: none;
@@ -1579,7 +1579,7 @@ const handleSave = () => {
 }
 
 .interval-unit {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   min-width: 16px;
 }
@@ -1590,7 +1590,7 @@ const handleSave = () => {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   border: 1px solid transparent;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1617,7 +1617,7 @@ const handleSave = () => {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   border: 1px solid transparent;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1644,7 +1644,7 @@ const handleSave = () => {
 }
 
 .progress-text {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-text-tertiary);
 }
@@ -1696,7 +1696,7 @@ const handleSave = () => {
 
 .subtask-title {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   font-family: var(--font-body);
   line-height: 1.4;
@@ -1745,7 +1745,7 @@ const handleSave = () => {
 .subtask-input {
   flex: 1;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 .add-subtask-btn {
@@ -1784,7 +1784,7 @@ const handleSave = () => {
   }
 
   .modal-header h2 {
-    font-size: 18px;
+    font-size: var(--font-size-xl);
   }
 
   .close-btn {
@@ -1803,7 +1803,7 @@ const handleSave = () => {
   }
 
   .form-title-input {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     min-height: 52px;
     padding: 14px 52px 14px 16px;
   }
@@ -1817,7 +1817,7 @@ const handleSave = () => {
   .category-pill {
     min-height: 40px;
     padding: 8px 14px;
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .setting-row {
@@ -1832,15 +1832,15 @@ const handleSave = () => {
   }
 
   .setting-label {
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 
   .toggle-desc {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 
   .date-input {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     min-height: 44px;
     padding: 10px 14px;
   }
@@ -1864,7 +1864,7 @@ const handleSave = () => {
   }
 
   .form-input {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     min-height: 48px;
     padding: 14px 16px;
   }
@@ -1872,7 +1872,7 @@ const handleSave = () => {
   .tag-pill {
     min-height: 36px;
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .add-tag-btn {
@@ -1887,7 +1887,7 @@ const handleSave = () => {
   }
 
   .tag-name-input {
-    font-size: 15px;
+    font-size: var(--font-size-base);
     min-height: 44px;
     padding: 10px 12px;
   }
@@ -1898,7 +1898,7 @@ const handleSave = () => {
   }
 
   .repeat-select {
-    font-size: 15px;
+    font-size: var(--font-size-base);
     min-height: 44px;
     padding: 10px 32px 10px 14px;
   }
@@ -1908,33 +1908,33 @@ const handleSave = () => {
   }
 
   .sub-setting-label {
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .weekday-btn {
     width: 40px;
     height: 40px;
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .interval-input {
-    font-size: 16px;
+    font-size: var(--font-size-lg);
     min-height: 40px;
     width: 64px;
   }
 
   .interval-unit {
-    font-size: 14px;
+    font-size: var(--font-size-body);
   }
 
   .repeat-end-select {
-    font-size: 15px;
+    font-size: var(--font-size-base);
     min-height: 40px;
     padding: 8px 28px 8px 12px;
   }
 
   .repeat-end-date-input {
-    font-size: 15px;
+    font-size: var(--font-size-base);
     min-height: 40px;
     padding: 8px 10px;
   }
@@ -1952,7 +1952,7 @@ const handleSave = () => {
   }
 
   .subtask-title {
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
 
   .subtask-delete {
@@ -1962,7 +1962,7 @@ const handleSave = () => {
   }
 
   .subtask-input {
-    font-size: 15px;
+    font-size: var(--font-size-base);
     min-height: 44px;
     padding: 10px 12px;
   }
@@ -1982,16 +1982,16 @@ const handleSave = () => {
   .cancel-btn {
     width: 100%;
     height: 48px;
-    font-size: 15px;
+    font-size: var(--font-size-base);
     border-radius: var(--radius-lg);
   }
 
   .progress-text {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .form-section-label {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     margin: 14px 0 8px 0;
   }
 
