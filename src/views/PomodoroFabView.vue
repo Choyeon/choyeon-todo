@@ -120,7 +120,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  -webkit-app-region: drag;
 }
 
 .pomodoro-fab {
@@ -129,7 +128,7 @@ onMounted(async () => {
   height: 140px;
   border-radius: 50%;
   cursor: pointer;
-  -webkit-app-region: no-drag;
+  -webkit-app-region: drag;
 }
 
 .fab-bg {
@@ -186,6 +185,7 @@ onMounted(async () => {
   justify-content: center;
   gap: 4px;
   z-index: 2;
+  -webkit-app-region: no-drag;
 }
 
 .time-text {
@@ -231,6 +231,7 @@ onMounted(async () => {
   color: #fff;
   backdrop-filter: blur(10px);
   transition: all 0.15s ease;
+  -webkit-app-region: no-drag;
 }
 
 .fab-btn:hover {
@@ -261,6 +262,7 @@ onMounted(async () => {
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   z-index: 100;
+  -webkit-app-region: no-drag;
 }
 
 .menu-item {

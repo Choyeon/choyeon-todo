@@ -129,7 +129,7 @@ onUnmounted(() => {
 .mini-window {
   width: 280px;
   height: 400px;
-  background: var(--color-bg-primary);
+  background: var(--color-surface);
   border-radius: 12px;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.2),
@@ -137,7 +137,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--color-border-secondary);
+  border: 1px solid var(--color-border);
   user-select: none;
 }
 
@@ -146,7 +146,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--color-border-secondary);
+  border-bottom: 1px solid var(--color-border);
   -webkit-app-region: drag;
 }
 
@@ -191,7 +191,7 @@ onUnmounted(() => {
 }
 
 .mini-btn:hover {
-  background: var(--color-bg-tertiary);
+  background: var(--color-bg-secondary);
   color: var(--color-text-primary);
 }
 
@@ -199,7 +199,7 @@ onUnmounted(() => {
   position: absolute;
   top: 44px;
   right: 10px;
-  background: var(--color-bg-primary);
+  background: var(--color-surface);
   border-radius: 8px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.15),
@@ -207,7 +207,7 @@ onUnmounted(() => {
   padding: 6px;
   min-width: 140px;
   z-index: 100;
-  border: 1px solid var(--color-border-secondary);
+  border: 1px solid var(--color-border);
 }
 
 .menu-item {
@@ -223,7 +223,7 @@ onUnmounted(() => {
 }
 
 .menu-item:hover {
-  background: var(--color-bg-tertiary);
+  background: var(--color-bg-secondary);
 }
 
 .mini-list {
@@ -262,7 +262,7 @@ onUnmounted(() => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid var(--color-border-primary);
+  border: 2px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -310,7 +310,7 @@ onUnmounted(() => {
 }
 
 .mini-list::-webkit-scrollbar-thumb {
-  background: var(--color-border-primary);
+  background: var(--color-border);
   border-radius: 2px;
 }
 

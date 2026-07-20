@@ -487,6 +487,10 @@ onUnmounted(() => {
   flex: 1;
   height: 100%;
   overflow: auto;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .shortcuts-overlay {

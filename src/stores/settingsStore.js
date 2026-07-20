@@ -488,6 +488,7 @@ export const useSettingsStore = defineStore('settings', () => {
     doNotDisturb,
     autoStart,
     closeToQuit,
+    miniWindowEnabled,
     pomodoroWorkMinutes,
     pomodoroBreakMinutes,
     pomodoroLongBreakMinutes,

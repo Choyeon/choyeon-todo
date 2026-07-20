@@ -1203,7 +1203,7 @@ ipcMain.on('mini:open', (event) => {
 })
 
 ipcMain.on('mini:close', (event) => {
-  if (!isFromMini(event)) return
+  if (!isFromMain(event) && !isFromMini(event)) return
   if (miniWindow && !miniWindow.isDestroyed()) {
     miniWindow.close()
   }
