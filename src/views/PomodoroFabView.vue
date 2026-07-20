@@ -122,6 +122,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .pomodoro-fab {
@@ -353,12 +354,14 @@ onMounted(async () => {
   -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
   padding: 6px;
-  min-width: 120px;
+  min-width: 150px;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   z-index: 100;
   -webkit-app-region: no-drag;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .menu-item {

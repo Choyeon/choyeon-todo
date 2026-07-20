@@ -1,7 +1,7 @@
 {
   "name": "todolist-app",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "electron/main.cjs",
   "type": "module",
   "description": "Choyeon To Do - A  task management application",

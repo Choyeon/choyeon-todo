@@ -53,11 +53,25 @@
         <div class="glow-effect-inner" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}10 0%, transparent 70%)` }"></div>
       </div>
       <div class="timer-display">
-        <Transition name="time-fade" mode="out-in">
-          <span :key="pomodoroStore.currentMode + pomodoroStore.formattedTime" class="time-text">{{
-            pomodoroStore.formattedTime
-          }}</span>
-        </Transition>
+        <div class="time-container">
+          <div class="time-unit">
+            <div class="flip-card">
+              <div class="flip-card-inner">
+                <div class="flip-card-top">{{ formattedMinutes }}</div>
+                <div class="flip-card-bottom">{{ formattedMinutes }}</div>
+              </div>
+            </div>
+          </div>
+          <span class="time-separator">:</span>
+          <div class="time-unit">
+            <div class="flip-card">
+              <div class="flip-card-inner">
+                <div class="flip-card-top">{{ formattedSeconds }}</div>
+                <div class="flip-card-bottom">{{ formattedSeconds }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
         <Transition name="mode-fade" mode="out-in">
           <span :key="pomodoroStore.currentMode" class="mode-label">{{
             $t('pomodoro.' + pomodoroStore.currentMode)
@@ -261,6 +275,16 @@ const circumference = 2 * Math.PI * 88
 const progressOffset = computed(() => {
   const progress = pomodoroStore.timeLeft / pomodoroStore.totalTime
   return circumference * (1 - progress)
+})
+
+const formattedMinutes = computed(() => {
+  const minutes = Math.floor(pomodoroStore.timeLeft / 60)
+  return String(minutes).padStart(2, '0')
+})
+
+const formattedSeconds = computed(() => {
+  const seconds = pomodoroStore.timeLeft % 60
+  return String(seconds).padStart(2, '0')
 })
 
 const isDotFilled = (i) => {
@@ -536,37 +560,82 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   text-align: center;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.time-text {
-  display: block;
-  font-size: 52px;
+.time-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.flip-card {
+  position: relative;
+  width: 60px;
+  height: 80px;
+  perspective: 300px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.flip-card-top,
+.flip-card-bottom {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
   font-weight: 300;
   color: var(--color-text-primary);
   font-family: var(--font-mono, var(--font-body));
-  letter-spacing: 2px;
-  line-height: 1.1;
-  margin-bottom: 8px;
   font-variant-numeric: tabular-nums;
-  transition:
-    color var(--transition-fluid),
-    opacity var(--transition-smooth);
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  background: var(--color-surface);
 }
 
-.pomodoro-timer.is-paused .time-text {
-  animation: pausedPulse 2.4s var(--ease-in-out-quart) infinite;
+.flip-card-top {
+  top: 0;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid var(--color-border-light);
+  align-items: flex-end;
 }
 
-@keyframes pausedPulse {
-  0%,
-  100% {
-    opacity: 0.78;
+.flip-card-bottom {
+  bottom: 0;
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid var(--color-border-light);
+  align-items: flex-start;
+}
+
+.time-separator {
+  font-size: 48px;
+  font-weight: 200;
+  color: var(--color-text-primary);
+  margin-top: -8px;
+  animation: separatorPulse 1s ease-in-out infinite;
+}
+
+@keyframes separatorPulse {
+  0%, 100% {
+    opacity: 1;
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.4;
   }
 }
 

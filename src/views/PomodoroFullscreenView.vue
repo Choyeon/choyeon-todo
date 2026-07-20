@@ -277,11 +277,23 @@ onMounted(async () => {
 }
 
 @keyframes gradientFloat {
-  0%, 100% {
+  0% {
     transform: translate(0, 0) scale(1);
   }
-  50% {
-    transform: translate(30px, -20px) scale(1.1);
+  20% {
+    transform: translate(30px, -20px) scale(1.08);
+  }
+  40% {
+    transform: translate(15px, -10px) scale(1);
+  }
+  60% {
+    transform: translate(-20px, 15px) scale(0.95);
+  }
+  80% {
+    transform: translate(10px, -5px) scale(1.03);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
   }
 }
 
@@ -360,18 +372,30 @@ onMounted(async () => {
   inset: -30px;
   border-radius: 50%;
   opacity: 0.4;
-  animation: ringGlowPulse 4s ease-in-out infinite;
+  animation: ringGlowPulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
 }
 
 @keyframes ringGlowPulse {
-  0%, 100% {
-    opacity: 0.3;
+  0% {
+    opacity: 0.35;
     transform: scale(1);
   }
-  50% {
-    opacity: 0.5;
+  25% {
+    opacity: 0.55;
     transform: scale(1.02);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  75% {
+    opacity: 0.25;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
   }
 }
 
@@ -379,20 +403,21 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.3));
 }
 
 .ring-bg {
-  stroke: rgba(255, 255, 255, 0.08);
-  stroke-width: 2;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 4;
 }
 .ring-fill {
-  transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 0 8px currentColor);
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 12px currentColor);
+  stroke-linecap: round;
 }
 
 .ring-inner {
-  opacity: 0.4;
+  opacity: 0.3;
 }
 
 .timer-glow {
@@ -404,19 +429,35 @@ onMounted(async () => {
   height: 80%;
   border-radius: 50%;
   filter: blur(40px);
-  opacity: 0.6;
+  opacity: 0.5;
   pointer-events: none;
-  animation: timerGlow 5s ease-in-out infinite;
+  animation: timerGlow 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes timerGlow {
-  0%, 100% {
-    opacity: 0.4;
+  0% {
+    opacity: 0.45;
     transform: translate(-50%, -50%) scale(1);
   }
-  50% {
+  20% {
     opacity: 0.7;
     transform: translate(-50%, -50%) scale(1.05);
+  }
+  40% {
+    opacity: 0.45;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  60% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(0.97);
+  }
+  80% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+  100% {
+    opacity: 0.45;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
