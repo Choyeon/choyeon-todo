@@ -473,7 +473,9 @@ export default {
     downloading: 'Downloading...',
     releaseNotes: 'Release Notes',
     currentVersion: 'Current Version',
-    latestVersion: 'Latest Version'
+    latestVersion: 'Latest Version',
+    installLater: 'Install Later',
+    installNow: 'Install and Restart'
   },
   calendar: {
     title: 'Calendar',

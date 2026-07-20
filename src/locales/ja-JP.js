@@ -473,7 +473,9 @@ export default {
     downloading: 'ダウンロード中...',
     releaseNotes: 'リリースノート',
     currentVersion: '現在のバージョン',
-    latestVersion: '最新バージョン'
+    latestVersion: '最新バージョン',
+    installLater: '後でインストール',
+    installNow: 'インストールして再起動'
   },
   calendar: {
     title: 'カレンダー',

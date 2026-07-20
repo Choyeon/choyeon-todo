@@ -27,22 +27,35 @@
               <span class="latest-version">{{ $t('update.latestVersion') }} {{ latestVersion }}</span>
             </div>
             <div class="update-actions">
-              <button class="update-btn later-btn" @click="handleLater">
-                {{ $t('update.later') }}
-              </button>
-              <button
-                class="update-btn update-btn-primary"
-                :disabled="isDownloading"
-                @click="handleUpdate"
-              >
-                <template v-if="isDownloading">
-                  <span class="spinner"></span>
-                  {{ $t('update.downloading') }}
-                </template>
-                <template v-else>{{ $t('update.updateNow') }}</template>
-              </button>
+              <template v-if="isDownloaded">
+                <button class="update-btn later-btn" @click="handleLater">
+                  {{ $t('update.installLater') }}
+                </button>
+                <button
+                  class="update-btn update-btn-primary"
+                  @click="handleInstall"
+                >
+                  {{ $t('update.installNow') }}
+                </button>
+              </template>
+              <template v-else>
+                <button class="update-btn later-btn" @click="handleLater">
+                  {{ $t('update.later') }}
+                </button>
+                <button
+                  class="update-btn update-btn-primary"
+                  :disabled="isDownloading"
+                  @click="handleUpdate"
+                >
+                  <template v-if="isDownloading">
+                    <span class="spinner"></span>
+                    {{ $t('update.downloading') }}
+                  </template>
+                  <template v-else>{{ $t('update.updateNow') }}</template>
+                </button>
+              </template>
             </div>
-            <div v-if="isDownloading && downloadPercent >= 0" class="update-progress">
+            <div v-if="(isDownloading || isDownloaded) && downloadPercent >= 0" class="update-progress">
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: downloadPercent + '%' }"></div>
               </div>
@@ -67,6 +80,7 @@ const currentVersion = ref('')
 const latestVersion = ref('')
 const releaseNotes = ref('')
 const isDownloading = ref(false)
+const isDownloaded = ref(false)
 const downloadPercent = ref(-1)
 const dialogRef = ref(null)
 
@@ -101,8 +115,13 @@ const handleLater = () => {
 const handleUpdate = () => {
   if (isDownloading.value) return
   isDownloading.value = true
+  isDownloaded.value = false
   downloadPercent.value = 0
   window.electronAPI?.downloadUpdate?.()
+}
+
+const handleInstall = () => {
+  window.electronAPI?.quitAndInstallUpdate?.()
 }
 
 const setDownloadProgress = (progress) => {
@@ -111,11 +130,13 @@ const setDownloadProgress = (progress) => {
 
 const onDownloadComplete = () => {
   isDownloading.value = false
+  isDownloaded.value = true
   downloadPercent.value = 100
 }
 
 const onDownloadError = () => {
   isDownloading.value = false
+  isDownloaded.value = false
   downloadPercent.value = -1
 }
 

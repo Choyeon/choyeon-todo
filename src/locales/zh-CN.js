@@ -464,7 +464,9 @@ export default {
     downloading: '下载中...',
     releaseNotes: '更新日志',
     currentVersion: '当前版本',
-    latestVersion: '最新版本'
+    latestVersion: '最新版本',
+    installLater: '稍后安装',
+    installNow: '立即安装并重启'
   },
   "stats": {
     title: '统计',
