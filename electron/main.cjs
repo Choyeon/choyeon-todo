@@ -1364,9 +1364,24 @@ ipcMain.handle('app:getVersion', () => {
   return app.getVersion()
 })
 
-ipcMain.handle('updater:checkForUpdates', () => {
-  autoUpdater.checkForUpdates()
-  return true
+ipcMain.handle('updater:checkForUpdates', async () => {
+  try {
+    console.log('[Updater] Checking for updates...')
+    console.log('[Updater] Current app version:', app.getVersion())
+    
+    const result = await autoUpdater.checkForUpdates()
+    console.log('[Updater] Check result:', result ? result.updateInfo : 'no info')
+    
+    if (result && result.updateInfo) {
+      console.log('[Updater] Update found:', result.updateInfo.version)
+    }
+    
+    return { success: true, version: app.getVersion() }
+  } catch (err) {
+    console.error('[Updater] Check failed:', err)
+    sendToMainWindow('updater:error', { message: err.message })
+    return { success: false, error: err.message }
+  }
 })
 
 ipcMain.handle('updater:downloadUpdate', () => {
@@ -1386,11 +1401,72 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = true
 
+  console.log('[Updater] Auto updater setup started, isPackaged:', app.isPackaged)
+  console.log('[Updater] App version:', app.getVersion())
+  console.log('[Updater] AppId:', app.getAppUserModelId())
+
+  if (!app.isPackaged) {
+    console.log('[Updater] Not in packaged mode, simulating auto-updater for testing')
+    
+    const simulateUpdate = () => {
+      setTimeout(() => {
+        console.log('[Updater] Simulating update available for testing')
+        sendToMainWindow('updater:update-available', {
+          version: '99.99.99',
+          releaseNotes: 'This is a test update notification',
+          releaseDate: new Date().toISOString()
+        })
+      }, 5000)
+    }
+    
+    simulateUpdate()
+    
+    autoUpdater.on('checking-for-update', () => {
+      console.log('[Updater] Checking for update (simulated)...')
+      sendToMainWindow('updater:checking')
+    })
+
+    autoUpdater.on('update-not-available', (info) => {
+      console.log('[Updater] No update available (simulated)')
+      sendToMainWindow('updater:update-not-available', {
+        version: info.version
+      })
+    })
+
+    autoUpdater.on('download-progress', (progressObj) => {
+      console.log('[Updater] Download progress:', progressObj.percent, '%')
+      sendToMainWindow('updater:download-progress', {
+        percent: progressObj.percent,
+        speed: progressObj.bytesPerSecond,
+        transferred: progressObj.transferred,
+        total: progressObj.total
+      })
+    })
+
+    autoUpdater.on('update-downloaded', () => {
+      console.log('[Updater] Update downloaded')
+      updateDownloaded = true
+      sendToMainWindow('updater:update-downloaded')
+    })
+
+    autoUpdater.on('error', (err) => {
+      console.error('[Updater] Error:', err)
+      sendToMainWindow('updater:error', {
+        message: err.message
+      })
+    })
+
+    console.log('[Updater] Simulated auto updater setup complete')
+    return
+  }
+
   autoUpdater.on('checking-for-update', () => {
+    console.log('[Updater] Checking for update...')
     sendToMainWindow('updater:checking')
   })
 
   autoUpdater.on('update-available', (info) => {
+    console.log('[Updater] Update available:', info)
     sendToMainWindow('updater:update-available', {
       version: info.version,
       releaseNotes: info.releaseNotes,
@@ -1399,12 +1475,14 @@ function setupAutoUpdater() {
   })
 
   autoUpdater.on('update-not-available', (info) => {
+    console.log('[Updater] No update available, current version:', info.version)
     sendToMainWindow('updater:update-not-available', {
       version: info.version
     })
   })
 
   autoUpdater.on('download-progress', (progressObj) => {
+    console.log('[Updater] Download progress:', progressObj.percent, '%')
     sendToMainWindow('updater:download-progress', {
       percent: progressObj.percent,
       speed: progressObj.bytesPerSecond,
@@ -1414,15 +1492,19 @@ function setupAutoUpdater() {
   })
 
   autoUpdater.on('update-downloaded', () => {
+    console.log('[Updater] Update downloaded')
     updateDownloaded = true
     sendToMainWindow('updater:update-downloaded')
   })
 
   autoUpdater.on('error', (err) => {
+    console.error('[Updater] Error:', err)
     sendToMainWindow('updater:error', {
       message: err.message
     })
   })
+
+  console.log('[Updater] Auto updater setup complete')
 }
 
 function sendToMainWindow(channel, data) {
