@@ -8,7 +8,9 @@
       class="pomodoro-fab"
       :class="[`mode-${pomodoroStore.currentMode}`, { running: pomodoroStore.isRunning }]"
     >
+      <div class="fab-outer-glow"></div>
       <div class="fab-bg"></div>
+      <div class="fab-inner-glow"></div>
       <svg class="progress-ring" viewBox="0 0 120 120">
         <circle class="progress-bg" cx="60" cy="60" r="52" />
         <circle
@@ -124,36 +126,125 @@ onMounted(async () => {
 
 .pomodoro-fab {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   cursor: pointer;
   -webkit-app-region: drag;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pomodoro-fab:hover {
+  transform: scale(1.05);
+}
+
+.pomodoro-fab:active {
+  transform: scale(0.98);
+}
+
+.fab-outer-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.pomodoro-fab.running .fab-outer-glow {
+  opacity: 0.5;
+  animation: outerGlowPulse 3s ease-in-out infinite;
+}
+
+.pomodoro-fab.mode-work.running .fab-outer-glow {
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+}
+
+.pomodoro-fab.mode-shortBreak.running .fab-outer-glow {
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+}
+
+.pomodoro-fab.mode-longBreak.running .fab-outer-glow {
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+}
+
+@keyframes outerGlowPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
 }
 
 .fab-bg {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgba(20, 20, 28, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(20, 20, 28, 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.fab-inner-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  opacity: 0.3;
+  filter: blur(20px);
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.pomodoro-fab.mode-work .fab-inner-glow {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.3) 0%, transparent 70%);
+}
+
+.pomodoro-fab.mode-shortBreak .fab-inner-glow {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%);
+}
+
+.pomodoro-fab.mode-longBreak .fab-inner-glow {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
+}
+
+.pomodoro-fab.running .fab-inner-glow {
+  opacity: 0.5;
+  animation: innerGlowPulse 4s ease-in-out infinite;
+}
+
+@keyframes innerGlowPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
 }
 
 .progress-ring {
   position: absolute;
-  inset: 8px;
-  width: calc(100% - 16px);
-  height: calc(100% - 16px);
+  inset: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
   transform: rotate(-90deg);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .progress-bg {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.12);
   stroke-width: 4;
 }
 
@@ -161,7 +252,8 @@ onMounted(async () => {
   fill: none;
   stroke-width: 4;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.5s ease;
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 4px currentColor);
 }
 
 .mode-work .progress-fill {
@@ -183,23 +275,27 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   z-index: 2;
   -webkit-app-region: no-drag;
 }
 
 .time-text {
-  font-size: var(--font-size-3xl);
+  font-size: 28px;
   font-weight: 600;
   color: #fff;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
 }
 
 .mode-label {
-  font-size: var(--font-size-3xs);
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
 .fab-actions {

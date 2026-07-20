@@ -1,5 +1,11 @@
 <template>
   <div class="pomodoro-fullscreen" :class="`mode-${pomodoroStore.currentMode}`">
+    <div class="bg-particles">
+      <div v-for="i in 20" :key="i" class="particle" :style="getParticleStyle(i)"></div>
+    </div>
+    <div class="bg-gradient-1"></div>
+    <div class="bg-gradient-2"></div>
+    
     <div class="fullscreen-content">
       <div class="mode-tabs">
         <button
@@ -14,21 +20,32 @@
       </div>
 
       <div class="timer-container">
+        <div class="ring-glow" :style="{ boxShadow: `0 0 100px ${pomodoroStore.currentColor}30` }"></div>
         <svg class="progress-ring" viewBox="0 0 400 400">
-          <circle cx="200" cy="200" r="180" fill="none" stroke-width="10" class="ring-bg" />
+          <circle cx="200" cy="200" r="180" fill="none" stroke-width="12" class="ring-bg" />
           <circle
             cx="200"
             cy="200"
             r="180"
             fill="none"
-            stroke-width="10"
+            stroke-width="12"
             stroke-linecap="round"
             :stroke-dasharray="circumference"
             :stroke-dashoffset="progressOffset"
             :style="{ stroke: pomodoroStore.currentColor }"
             class="ring-fill"
           />
+          <circle
+            cx="200"
+            cy="200"
+            r="160"
+            fill="none"
+            stroke-width="1"
+            :style="{ stroke: `${pomodoroStore.currentColor}20` }"
+            class="ring-inner"
+          />
         </svg>
+        <div class="timer-glow" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}15 0%, transparent 70%)` }"></div>
         <div class="timer-display">
           <span class="time-text">{{ pomodoroStore.formattedTime }}</span>
           <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
@@ -115,6 +132,22 @@ const progressOffset = computed(
   () => circumference * (1 - pomodoroStore.timeLeft / pomodoroStore.totalTime)
 )
 
+const getParticleStyle = (i) => {
+  const size = 2 + Math.random() * 4
+  const left = Math.random() * 100
+  const delay = Math.random() * 15
+  const duration = 15 + Math.random() * 20
+  const opacity = 0.2 + Math.random() * 0.4
+  return {
+    width: size + 'px',
+    height: size + 'px',
+    left: left + '%',
+    animationDelay: delay + 's',
+    animationDuration: duration + 's',
+    opacity: opacity
+  }
+}
+
 const isDotFilled = (i) => {
   const total = settingsStore.pomodoroSessionsBeforeLongBreak
   const inCycle = pomodoroStore.completedPomodoros % total
@@ -146,6 +179,110 @@ onMounted(async () => {
   justify-content: center;
   overflow: hidden;
   user-select: none;
+  position: relative;
+}
+
+.bg-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  bottom: -20px;
+  border-radius: 50%;
+  animation: floatUp linear infinite;
+}
+
+.pomodoro-fullscreen.mode-work .particle {
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+}
+
+.pomodoro-fullscreen.mode-shortBreak .particle {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.pomodoro-fullscreen.mode-longBreak .particle {
+  background: #06b6d4;
+  box-shadow: 0 0 6px #06b6d4;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(50px);
+    opacity: 0;
+  }
+}
+
+.bg-gradient-1 {
+  position: absolute;
+  top: -30%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.3;
+  z-index: 0;
+  animation: gradientFloat 20s ease-in-out infinite;
+}
+
+.bg-gradient-2 {
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.2;
+  z-index: 0;
+  animation: gradientFloat 25s ease-in-out infinite reverse;
+}
+
+.pomodoro-fullscreen.mode-work .bg-gradient-1 {
+  background: #ef4444;
+}
+.pomodoro-fullscreen.mode-work .bg-gradient-2 {
+  background: #dc2626;
+}
+
+.pomodoro-fullscreen.mode-shortBreak .bg-gradient-1 {
+  background: #22c55e;
+}
+.pomodoro-fullscreen.mode-shortBreak .bg-gradient-2 {
+  background: #16a34a;
+}
+
+.pomodoro-fullscreen.mode-longBreak .bg-gradient-1 {
+  background: #06b6d4;
+}
+.pomodoro-fullscreen.mode-longBreak .bg-gradient-2 {
+  background: #0891b2;
+}
+
+@keyframes gradientFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.1);
+  }
 }
 
 .pomodoro-fullscreen.mode-work {
@@ -163,19 +300,23 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .mode-tabs {
   display: flex;
   gap: 4px;
-  padding: 4px;
+  padding: 6px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
 }
 
 .mode-tab {
-  padding: 8px 24px;
+  padding: 10px 28px;
   border: none;
   background: transparent;
   color: rgba(255, 255, 255, 0.4);
@@ -183,17 +324,19 @@ onMounted(async () => {
   font-weight: 500;
   border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-body);
 }
 
 .mode-tab:hover {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .mode-tab.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .mode-work .mode-tab.active {
@@ -208,21 +351,73 @@ onMounted(async () => {
 
 .timer-container {
   position: relative;
-  width: 360px;
-  height: 360px;
+  width: 400px;
+  height: 400px;
+}
+
+.ring-glow {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: ringGlowPulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ringGlowPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
 }
 
 .progress-ring {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }
 
 .ring-bg {
-  stroke: rgba(255, 255, 255, 0.06);
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 2;
 }
 .ring-fill {
   transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.ring-inner {
+  opacity: 0.4;
+}
+
+.timer-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: timerGlow 5s ease-in-out infinite;
+}
+
+@keyframes timerGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
 }
 
 .timer-display {
@@ -235,21 +430,23 @@ onMounted(async () => {
 
 .time-text {
   display: block;
-  font-size: 80px;
+  font-size: 88px;
   font-weight: 200;
   color: rgba(255, 255, 255, 0.95);
   font-family: var(--font-mono, var(--font-body));
-  letter-spacing: 4px;
+  letter-spacing: 6px;
   line-height: 1;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .mode-label {
   display: block;
   font-size: var(--font-size-base);
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.4);
   font-weight: 500;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
 
 .current-task {

@@ -6,6 +6,9 @@
       { 'is-running': pomodoroStore.isRunning, 'is-paused': !pomodoroStore.isRunning }
     ]"
   >
+    <div class="timer-decoration decoration-top"></div>
+    <div class="timer-decoration decoration-bottom"></div>
+    
     <div class="mode-tabs">
       <button
         v-for="mode in pomodoroStore.modes"
@@ -21,6 +24,7 @@
 
     <div class="timer-container">
       <div class="progress-ring-wrapper">
+        <div class="ring-glow-outer" :style="{ boxShadow: `0 0 60px ${pomodoroStore.currentColor}20` }"></div>
         <svg class="progress-ring" viewBox="0 0 200 200">
           <circle class="progress-ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="8" />
           <circle
@@ -35,12 +39,22 @@
             :stroke-dashoffset="progressOffset"
             :style="{ stroke: pomodoroStore.currentColor }"
           />
+          <circle
+            class="progress-ring-inner"
+            cx="100"
+            cy="100"
+            r="78"
+            fill="none"
+            stroke-width="1"
+            :style="{ stroke: `${pomodoroStore.currentColor}30` }"
+          />
         </svg>
         <div class="glow-effect" :style="{ background: `${pomodoroStore.currentColor}20` }"></div>
+        <div class="glow-effect-inner" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}10 0%, transparent 70%)` }"></div>
       </div>
       <div class="timer-display">
         <Transition name="time-fade" mode="out-in">
-          <span :key="pomodoroStore.currentMode" class="time-text">{{
+          <span :key="pomodoroStore.currentMode + pomodoroStore.formattedTime" class="time-text">{{
             pomodoroStore.formattedTime
           }}</span>
         </Transition>
@@ -273,6 +287,7 @@ onMounted(() => {
 
 <style scoped>
 .pomodoro-timer {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -280,14 +295,37 @@ onMounted(() => {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 8px 32px rgba(0, 0, 0, 0.04);
   transition:
     background var(--transition-fluid),
-    border-color var(--transition-smooth);
+    border-color var(--transition-smooth),
+    box-shadow var(--transition-smooth);
   min-width: 0;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   box-sizing: border-box;
+  overflow: hidden;
+}
+
+.timer-decoration {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.decoration-top {
+  top: -60px;
+  background: radial-gradient(ellipse at top center, var(--color-primary-light) 0%, transparent 70%);
+}
+
+.decoration-bottom {
+  bottom: -60px;
+  background: radial-gradient(ellipse at bottom center, var(--color-primary-light) 0%, transparent 70%);
 }
 
 .mode-tabs {
@@ -302,6 +340,7 @@ onMounted(() => {
   max-width: 320px;
   min-width: 0;
   flex-wrap: nowrap;
+  z-index: 1;
 }
 
 .mode-tab {
@@ -342,7 +381,8 @@ onMounted(() => {
   background: var(--color-surface);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.06);
   transform: scale(1.03);
 }
 
@@ -360,10 +400,11 @@ onMounted(() => {
 
 .timer-container {
   position: relative;
-  width: 240px;
-  height: 240px;
+  width: 260px;
+  height: 260px;
   margin-bottom: 28px;
   flex-shrink: 0;
+  z-index: 1;
 }
 
 .progress-ring-wrapper {
@@ -373,10 +414,34 @@ onMounted(() => {
   min-width: 0;
 }
 
+.ring-glow-outer {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out-quart);
+  pointer-events: none;
+}
+
+.pomodoro-timer.is-running .ring-glow-outer {
+  opacity: 0.6;
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .progress-ring {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .progress-ring-bg {
@@ -391,6 +456,11 @@ onMounted(() => {
     stroke 0.4s var(--ease-out-quart);
   stroke-width: 4;
   stroke-linecap: round;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.progress-ring-inner {
+  opacity: 0.5;
 }
 
 .glow-effect {
@@ -406,6 +476,19 @@ onMounted(() => {
     opacity var(--duration-slow) var(--ease-out-quart),
     filter var(--transition-smooth);
   filter: blur(24px);
+  pointer-events: none;
+}
+
+.glow-effect-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: 0.5;
+  transition: opacity var(--duration-slow) var(--ease-out-quart);
   pointer-events: none;
 }
 
