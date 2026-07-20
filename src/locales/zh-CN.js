@@ -456,7 +456,17 @@ export default {
     hasTasks: '有任务',
     todayAriaLabel: '今天'
   },
-  stats: {
+  "update": {
+    title: '发现新版本',
+    message: '发现新版本可用，是否立即更新？',
+    later: '下次更新',
+    updateNow: '立即更新',
+    downloading: '下载中...',
+    releaseNotes: '更新日志',
+    currentVersion: '当前版本',
+    latestVersion: '最新版本'
+  },
+  "stats": {
     title: '统计',
     dataTitle: '数据统计',
     subtitle: '查看你的任务完成情况',

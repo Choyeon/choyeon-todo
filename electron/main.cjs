@@ -1506,6 +1506,18 @@ if (!gotLock) {
 
     // 注入 CSP 响应头
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      let connectSrc = "connect-src 'self'; "
+      if (process.env.VITE_DEV_SERVER_URL) {
+        try {
+          const url = new URL(process.env.VITE_DEV_SERVER_URL)
+          const wsUrl = `ws://${url.host}`
+          const httpUrl = `http://${url.host}`
+          connectSrc = `connect-src 'self' ${wsUrl} ${httpUrl}; `
+        } catch (e) {
+          connectSrc = "connect-src 'self' ws://localhost:5173 http://localhost:5173; "
+        }
+      }
+
       callback({
         responseHeaders: {
           ...details.responseHeaders,
@@ -1514,9 +1526,7 @@ if (!gotLock) {
               "script-src 'self'; " +
               "style-src 'self' 'unsafe-inline'; " +
               "img-src 'self' data:; " +
-              (process.env.VITE_DEV_SERVER_URL
-                ? "connect-src 'self' ws://localhost:5173 http://localhost:5173; "
-                : "connect-src 'self'; ") +
+              connectSrc +
               "font-src 'self'; " +
               "object-src 'none'; " +
               "base-uri 'self'"

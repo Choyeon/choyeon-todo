@@ -465,6 +465,16 @@ export default {
     notificationClosed: 'Notification closed',
     notificationSent: 'Notification sent'
   },
+  update: {
+    title: 'New Version Available',
+    message: 'A new version is available. Would you like to update now?',
+    later: 'Update Later',
+    updateNow: 'Update Now',
+    downloading: 'Downloading...',
+    releaseNotes: 'Release Notes',
+    currentVersion: 'Current Version',
+    latestVersion: 'Latest Version'
+  },
   calendar: {
     title: 'Calendar',
     viewTitle: 'Calendar View',

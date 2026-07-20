@@ -115,6 +115,7 @@
       :targetTheme="themeTransitionTarget"
       @complete="onThemeTransitionComplete"
     />
+    <UpdateModal ref="updateModalRef" />
   </div>
 </template>
 
@@ -136,6 +137,7 @@ import TaskModal from './components/TaskModal.vue'
 import Snackbar from './components/Snackbar.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
 import ThemeTransition from './components/ThemeTransition.vue'
+import UpdateModal from './components/UpdateModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -154,6 +156,10 @@ const themeTransitionTrigger = ref(0)
 const themeTransitionX = ref(0)
 const themeTransitionY = ref(0)
 const themeTransitionTarget = ref('dark')
+const updateModalRef = ref(null)
+const currentAppVersion = ref(__APP_VERSION__)
+let updateCheckTimer = null
+let updateCleanupListeners = []
 
 const isStandaloneRoute = computed(
   () =>
@@ -406,6 +412,55 @@ const setupElectronListeners = () => {
       settingsStore.doNotDisturb = enabled
     })
   )
+
+  setupAutoUpdateListeners()
+}
+
+const setupAutoUpdateListeners = () => {
+  if (!window.electronAPI) return
+
+  updateCleanupListeners.push(window.electronAPI.onUpdateAvailable?.((info) => {
+    if (updateModalRef.value) {
+      updateModalRef.value.show({
+        currentVersion: currentAppVersion.value,
+        version: info.version,
+        releaseNotes: info.releaseNotes
+      })
+    }
+  }))
+
+  updateCleanupListeners.push(window.electronAPI.onUpdateDownloadProgress?.((progress) => {
+    if (updateModalRef.value) {
+      updateModalRef.value.setDownloadProgress(progress)
+    }
+  }))
+
+  updateCleanupListeners.push(window.electronAPI.onUpdateDownloaded?.(() => {
+    if (updateModalRef.value) {
+      updateModalRef.value.onDownloadComplete()
+    }
+  }))
+
+  updateCleanupListeners.push(window.electronAPI.onUpdateError?.((err) => {
+    if (updateModalRef.value) {
+      updateModalRef.value.onDownloadError()
+    }
+  }))
+}
+
+const checkForUpdatesOnStartup = async () => {
+  if (!window.electronAPI?.checkForUpdates || !window.electronAPI?.getAppVersion) return
+
+  try {
+    const ver = await window.electronAPI.getAppVersion()
+    if (ver) {
+      currentAppVersion.value = ver
+    }
+  } catch (e) {}
+
+  updateCheckTimer = setTimeout(() => {
+    window.electronAPI.checkForUpdates()
+  }, 3000)
 }
 
 const syncTasksToTray = () => {
@@ -424,6 +479,7 @@ onMounted(() => {
 
   setupElectronListeners()
   syncTasksToTray()
+  checkForUpdatesOnStartup()
 
   watch(() => [taskStore.tasks, taskStore.categories], syncTasksToTray, { deep: true })
 
@@ -439,8 +495,11 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
   window.removeEventListener('keydown', handleKeyDown)
   if (highlightTimeout) clearTimeout(highlightTimeout)
+  if (updateCheckTimer) clearTimeout(updateCheckTimer)
   cleanupFns.forEach((fn) => fn?.())
   cleanupFns = []
+  updateCleanupListeners.forEach((fn) => fn?.())
+  updateCleanupListeners = []
 })
 </script>
 

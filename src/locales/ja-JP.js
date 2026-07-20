@@ -465,6 +465,16 @@ export default {
     notificationClosed: '通知が閉じられました',
     notificationSent: '通知が送信されました'
   },
+  update: {
+    title: '新しいバージョンが利用可能',
+    message: '新しいバージョンが利用可能です。今すぐ更新しますか？',
+    later: '後で更新',
+    updateNow: '今すぐ更新',
+    downloading: 'ダウンロード中...',
+    releaseNotes: 'リリースノート',
+    currentVersion: '現在のバージョン',
+    latestVersion: '最新バージョン'
+  },
   calendar: {
     title: 'カレンダー',
     viewTitle: 'カレンダービュー',
