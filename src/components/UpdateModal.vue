@@ -19,9 +19,9 @@
             <h3 class="update-title">{{ title }}</h3>
             <p class="update-message">{{ message }}</p>
             <div v-if="releaseNotes" class="update-release-notes">
-              <p class="release-notes-label">{{ $t('update.releaseNotes') }}</p>
-              <div class="release-notes-content">{{ releaseNotes }}</div>
-            </div>
+            <p class="release-notes-label">{{ $t('update.releaseNotes') }}</p>
+            <div class="release-notes-content" v-html="sanitizedReleaseNotes"></div>
+          </div>
             <div class="update-version-info">
               <span class="current-version">{{ $t('update.currentVersion') }} {{ currentVersion }}</span>
               <span class="latest-version">{{ $t('update.latestVersion') }} {{ latestVersion }}</span>
@@ -72,6 +72,14 @@ const dialogRef = ref(null)
 
 const title = computed(() => t('update.title'))
 const message = computed(() => t('update.message'))
+
+const sanitizedReleaseNotes = computed(() => {
+  let notes = releaseNotes.value || ''
+  notes = notes.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+  notes = notes.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+  notes = notes.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+  return notes
+})
 
 const show = (info) => {
   if (info) {
