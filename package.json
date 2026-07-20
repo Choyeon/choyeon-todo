@@ -1,7 +1,7 @@
 {
   "name": "todolist-app",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "electron/main.cjs",
   "type": "module",
   "description": "Choyeon To Do - A  task management application",
@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@lucide/vue": "^1.23.0",
+    "electron-updater": "^6.8.9",
     "idb": "^8.0.3",
     "pinia": "^3.0.4",
     "vue": "^3.5.39",
@@ -40,7 +41,6 @@
     "cross-env": "^7.0.3",
     "electron": "^43.0.0",
     "electron-builder": "^26.15.3",
-    "electron-updater": "^6.8.9",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
