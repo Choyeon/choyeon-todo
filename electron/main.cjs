@@ -13,13 +13,16 @@ const {
 } = require('electron')
 const path = require('path')
 const fs = require('fs')
+const { autoUpdater } = require('electron-updater')
 
 let mainWindow = null
 let debugWindow = null
 let pomodoroWindow = null
 let pomodoroFabWindow = null
+let miniWindow = null
 let tray = null
 let isQuitting = false
+let updateDownloaded = false
 
 // 应用设置（主进程维护一份，用于窗口关闭行为等）
 let appSettings = {
@@ -660,6 +663,69 @@ function togglePomodoroFab() {
   }
 }
 
+function createMiniWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { workArea } = primaryDisplay
+  const windowWidth = 280
+  const windowHeight = 400
+
+  const options = {
+    width: windowWidth,
+    height: windowHeight,
+    x: workArea.x + workArea.width - windowWidth - 20,
+    y: workArea.y + workArea.height - windowHeight - 20,
+    frame: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    show: false,
+    transparent: true,
+    hasShadow: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  }
+
+  miniWindow = new BrowserWindow(options)
+
+  miniWindow.setAlwaysOnTop(true, 'floating')
+  miniWindow.setVisibleOnAllWorkspaces(true)
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    miniWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/mini-window?slave=1')
+  } else {
+    miniWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+      hash: 'mini-window',
+      query: { slave: '1' }
+    })
+  }
+
+  miniWindow.once('ready-to-show', () => {
+    miniWindow.show()
+  })
+
+  miniWindow.on('closed', () => {
+    miniWindow = null
+  })
+}
+
+function toggleMiniWindow() {
+  if (miniWindow) {
+    if (miniWindow.isVisible()) {
+      miniWindow.hide()
+    } else {
+      miniWindow.show()
+    }
+  } else {
+    createMiniWindow()
+  }
+}
+
 function getTodayStr() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -958,6 +1024,21 @@ const isFromDebug = (event) => {
   return debugWindow && !debugWindow.isDestroyed() && event.sender === debugWindow.webContents
 }
 
+// 发送方校验：确保 IPC 来自迷你窗口
+const isFromMini = (event) => {
+  return miniWindow && !miniWindow.isDestroyed() && event.sender === miniWindow.webContents
+}
+
+// 发送方校验：确保 IPC 来自番茄钟全屏窗口
+const isFromPomodoroFullscreen = (event) => {
+  return pomodoroWindow && !pomodoroWindow.isDestroyed() && event.sender === pomodoroWindow.webContents
+}
+
+// 发送方校验：确保 IPC 来自番茄钟悬浮球窗口
+const isFromPomodoroFab = (event) => {
+  return pomodoroFabWindow && !pomodoroFabWindow.isDestroyed() && event.sender === pomodoroFabWindow.webContents
+}
+
 ipcMain.on('window:minimize', (event) => {
   if (!isFromMain(event)) return
   mainWindow.minimize()
@@ -1088,7 +1169,7 @@ ipcMain.on('pomodoro:openFullscreen', (event) => {
 })
 
 ipcMain.on('pomodoro:closeFullscreen', (event) => {
-  if (!isFromMain(event)) return
+  if (!isFromPomodoroFullscreen(event)) return
   if (pomodoroWindow && !pomodoroWindow.isDestroyed()) {
     pomodoroWindow.setFullScreen(false)
     pomodoroWindow.close()
@@ -1101,7 +1182,7 @@ ipcMain.on('pomodoro:openFab', (event) => {
 })
 
 ipcMain.on('pomodoro:closeFab', (event) => {
-  if (!isFromMain(event)) return
+  if (!isFromPomodoroFab(event)) return
   if (pomodoroFabWindow && !pomodoroFabWindow.isDestroyed()) {
     pomodoroFabWindow.close()
   }
@@ -1110,6 +1191,45 @@ ipcMain.on('pomodoro:closeFab', (event) => {
 ipcMain.on('pomodoro:toggleFab', (event) => {
   if (!isFromMain(event)) return
   togglePomodoroFab()
+})
+
+ipcMain.on('mini:open', (event) => {
+  if (!isFromMain(event)) return
+  if (!miniWindow) {
+    createMiniWindow()
+  } else {
+    miniWindow.show()
+  }
+})
+
+ipcMain.on('mini:close', (event) => {
+  if (!isFromMini(event)) return
+  if (miniWindow && !miniWindow.isDestroyed()) {
+    miniWindow.close()
+  }
+})
+
+ipcMain.on('mini:toggle', (event) => {
+  if (!isFromMain(event)) return
+  toggleMiniWindow()
+})
+
+ipcMain.on('mini:showMain', (event) => {
+  if (!isFromMini(event)) return
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show()
+    mainWindow.focus()
+  }
+})
+
+ipcMain.handle('mini:toggleAlwaysOnTop', (event) => {
+  if (!isFromMini(event)) return false
+  if (miniWindow && !miniWindow.isDestroyed()) {
+    const isOnTop = miniWindow.isAlwaysOnTop()
+    miniWindow.setAlwaysOnTop(!isOnTop, 'floating')
+    return !isOnTop
+  }
+  return false
 })
 
 // 允许同步的字段白名单
@@ -1160,7 +1280,7 @@ ipcMain.handle('pomodoro:getState', () => {
 })
 
 ipcMain.on('pomodoro:action', (event, action) => {
-  if (!isFromMain(event)) return
+  if (!isFromMain(event) && !isFromPomodoroFullscreen(event) && !isFromPomodoroFab(event)) return
   switch (action) {
     case 'toggle':
       if (pomodoroState.isRunning) {
@@ -1194,7 +1314,7 @@ ipcMain.on('pomodoro:action', (event, action) => {
 })
 
 ipcMain.on('pomodoro:setDuration', (event, { mode, minutes }) => {
-  if (!isFromMain(event)) return
+  if (!isFromMain(event) && !isFromPomodoroFullscreen(event) && !isFromPomodoroFab(event)) return
   // 更新模式对应的时长（仅在未运行时生效）
   if (!pomodoroState.isRunning && pomodoroState.currentMode === mode) {
     pomodoroPauseTimeLeft = Math.max(1, Math.min(180, minutes)) * 60
@@ -1243,6 +1363,73 @@ ipcMain.on('tasks:sync', (event, { tasks, categories }) => {
 ipcMain.handle('app:getVersion', () => {
   return app.getVersion()
 })
+
+ipcMain.handle('updater:checkForUpdates', () => {
+  autoUpdater.checkForUpdates()
+  return true
+})
+
+ipcMain.handle('updater:downloadUpdate', () => {
+  autoUpdater.downloadUpdate()
+  return true
+})
+
+ipcMain.handle('updater:quitAndInstall', () => {
+  if (updateDownloaded) {
+    isQuitting = true
+    autoUpdater.quitAndInstall()
+  }
+  return updateDownloaded
+})
+
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('checking-for-update', () => {
+    sendToMainWindow('updater:checking')
+  })
+
+  autoUpdater.on('update-available', (info) => {
+    sendToMainWindow('updater:update-available', {
+      version: info.version,
+      releaseNotes: info.releaseNotes,
+      releaseDate: info.releaseDate
+    })
+  })
+
+  autoUpdater.on('update-not-available', (info) => {
+    sendToMainWindow('updater:update-not-available', {
+      version: info.version
+    })
+  })
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    sendToMainWindow('updater:download-progress', {
+      percent: progressObj.percent,
+      speed: progressObj.bytesPerSecond,
+      transferred: progressObj.transferred,
+      total: progressObj.total
+    })
+  })
+
+  autoUpdater.on('update-downloaded', () => {
+    updateDownloaded = true
+    sendToMainWindow('updater:update-downloaded')
+  })
+
+  autoUpdater.on('error', (err) => {
+    sendToMainWindow('updater:error', {
+      message: err.message
+    })
+  })
+}
+
+function sendToMainWindow(channel, data) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, data)
+  }
+}
 
 ipcMain.on('notification:send', (event, { title, body, taskId }) => {
   // 允许主窗口和调试窗口发送通知
@@ -1340,6 +1527,8 @@ if (!gotLock) {
 
     createWindow()
 
+    setupAutoUpdater()
+
     // 注册全局快捷键
     registerGlobalShortcuts()
 
@@ -1378,6 +1567,9 @@ app.on('will-quit', () => {
 app.on('before-quit', () => {
   isQuitting = true
   saveWindowState()
+  if (miniWindow && !miniWindow.isDestroyed()) {
+    miniWindow.close()
+  }
   if (tray) {
     tray.destroy()
     tray = null

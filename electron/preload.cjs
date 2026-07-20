@@ -103,6 +103,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openPomodoroFab: () => ipcRenderer.send('pomodoro:openFab'),
   closePomodoroFab: () => ipcRenderer.send('pomodoro:closeFab'),
   togglePomodoroFab: () => ipcRenderer.send('pomodoro:toggleFab'),
+
+  openMiniWindow: () => ipcRenderer.send('mini:open'),
+  closeMiniWindow: () => ipcRenderer.send('mini:close'),
+  toggleMiniWindow: () => ipcRenderer.send('mini:toggle'),
+  showMainWindow: () => ipcRenderer.send('mini:showMain'),
+  toggleMiniAlwaysOnTop: () => ipcRenderer.invoke('mini:toggleAlwaysOnTop'),
   syncPomodoroState: (state) => ipcRenderer.send('pomodoro:stateSync', state),
   sendPomodoroAction: (action) => ipcRenderer.send('pomodoro:action', action),
   getPomodoroState: () => ipcRenderer.invoke('pomodoro:getState'),
@@ -128,5 +134,39 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('pomodoro:timerEnded', listener)
   },
   setPomodoroDuration: (mode, minutes) =>
-    ipcRenderer.send('pomodoro:setDuration', { mode, minutes })
+    ipcRenderer.send('pomodoro:setDuration', { mode, minutes }),
+
+  checkForUpdates: () => ipcRenderer.invoke('updater:checkForUpdates'),
+  downloadUpdate: () => ipcRenderer.invoke('updater:downloadUpdate'),
+  quitAndInstallUpdate: () => ipcRenderer.invoke('updater:quitAndInstall'),
+  onUpdateChecking: (callback) => {
+    const listener = () => callback()
+    ipcRenderer.on('updater:checking', listener)
+    return () => ipcRenderer.removeListener('updater:checking', listener)
+  },
+  onUpdateAvailable: (callback) => {
+    const listener = (_, info) => callback(info)
+    ipcRenderer.on('updater:update-available', listener)
+    return () => ipcRenderer.removeListener('updater:update-available', listener)
+  },
+  onUpdateNotAvailable: (callback) => {
+    const listener = (_, info) => callback(info)
+    ipcRenderer.on('updater:update-not-available', listener)
+    return () => ipcRenderer.removeListener('updater:update-not-available', listener)
+  },
+  onUpdateDownloadProgress: (callback) => {
+    const listener = (_, progress) => callback(progress)
+    ipcRenderer.on('updater:download-progress', listener)
+    return () => ipcRenderer.removeListener('updater:download-progress', listener)
+  },
+  onUpdateDownloaded: (callback) => {
+    const listener = () => callback()
+    ipcRenderer.on('updater:update-downloaded', listener)
+    return () => ipcRenderer.removeListener('updater:update-downloaded', listener)
+  },
+  onUpdateError: (callback) => {
+    const listener = (_, err) => callback(err)
+    ipcRenderer.on('updater:error', listener)
+    return () => ipcRenderer.removeListener('updater:error', listener)
+  }
 })

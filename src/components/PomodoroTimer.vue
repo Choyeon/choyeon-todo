@@ -129,13 +129,13 @@
         <Pause v-else :size="26" />
       </button>
       <button
-        class="control-btn reset-btn-secondary"
+        class="control-btn skip-btn"
         :class="{ disabled: !pomodoroStore.canSkip }"
         @click="handleSkip"
         :disabled="!pomodoroStore.canSkip"
-        :title="$t('pomodoro.resetCurrent')"
+        :title="$t('pomodoro.skip')"
       >
-        <RotateCcw :size="18" />
+        <SkipForward :size="18" />
       </button>
     </div>
 
@@ -148,6 +148,44 @@
       <Monitor :size="16" />
       <span>{{ $t('pomodoro.desktopFab') }}</span>
     </button>
+
+    <div class="noise-section">
+      <button class="noise-toggle-btn" @click="showNoisePanel = !showNoisePanel">
+        <Volume2 :size="16" />
+        <span>{{ $t('pomodoro.whiteNoise') }}</span>
+        <ChevronDown :size="14" class="chevron" :class="{ open: showNoisePanel }" />
+      </button>
+
+      <Transition name="collapse">
+        <div v-if="showNoisePanel" class="noise-panel">
+          <div class="noise-list">
+            <button
+              v-for="noise in pomodoroStore.whiteNoiseTypes"
+              :key="noise.id"
+              class="noise-item"
+              :class="{ active: pomodoroStore.currentNoise === noise.id }"
+              @click="pomodoroStore.toggleWhiteNoise(noise.id)"
+            >
+              <component :is="noiseIcons[noise.id]" :size="16" />
+              <span>{{ $t('pomodoro.noise_' + noise.id) }}</span>
+            </button>
+          </div>
+          <div class="noise-volume" v-if="pomodoroStore.isNoisePlaying">
+            <VolumeX :size="14" />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              :value="pomodoroStore.noiseVolume"
+              @input="pomodoroStore.setNoiseVolume(parseFloat($event.target.value))"
+              class="volume-slider"
+            />
+            <Volume2 :size="14" />
+          </div>
+        </div>
+      </Transition>
+    </div>
   </div>
 </template>
 
@@ -161,12 +199,21 @@ import {
   Play,
   Pause,
   RotateCcw,
+  SkipForward,
   Edit3,
   Maximize2,
   Monitor,
   Target,
   Coffee,
-  Moon
+  Moon,
+  Volume2,
+  VolumeX,
+  ChevronDown,
+  Waves,
+  Wind,
+  Mountain,
+  CloudRain,
+  Coffee as CoffeeIcon
 } from '@lucide/vue'
 
 const taskStore = useTaskStore()
@@ -174,6 +221,7 @@ const settingsStore = useSettingsStore()
 const pomodoroStore = usePomodoroStore()
 
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI
+const showNoisePanel = ref(false)
 
 const handleSkip = () => {
   if (!pomodoroStore.canSkip) return
@@ -184,6 +232,14 @@ const modeIcons = {
   work: Target,
   shortBreak: Coffee,
   longBreak: Moon
+}
+
+const noiseIcons = {
+  white: Waves,
+  pink: Wind,
+  brown: Mountain,
+  rain: CloudRain,
+  cafe: CoffeeIcon
 }
 
 const circumference = 2 * Math.PI * 88
@@ -1112,5 +1168,147 @@ onMounted(() => {
   .control-btn.primary-btn.running {
     animation: none !important;
   }
+}
+
+.noise-section {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 16px;
+}
+
+.noise-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth);
+}
+
+.noise-toggle-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.noise-toggle-btn .chevron {
+  transition: transform var(--transition-smooth);
+}
+
+.noise-toggle-btn .chevron.open {
+  transform: rotate(180deg);
+}
+
+.noise-panel {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.noise-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.noise-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth),
+    transform var(--transition-smooth);
+}
+
+.noise-item:hover {
+  background: var(--color-bg-tertiary);
+  transform: translateY(-1px);
+}
+
+.noise-item.active {
+  background: var(--color-primary-surface);
+  color: var(--color-primary);
+}
+
+.noise-volume {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.volume-slider {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--color-bg-tertiary);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--transition-smooth);
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all var(--transition-smooth);
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  max-height: 300px;
 }
 </style>

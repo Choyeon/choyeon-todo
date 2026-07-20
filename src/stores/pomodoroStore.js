@@ -641,6 +641,147 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     }
   }
 
+  const whiteNoiseTypes = [
+    { id: 'white', label: '白噪音' },
+    { id: 'pink', label: '粉噪音' },
+    { id: 'brown', label: '棕噪音' },
+    { id: 'rain', label: '雨声' },
+    { id: 'cafe', label: '咖啡厅' }
+  ]
+
+  const currentNoise = ref(null)
+  const noiseVolume = ref(0.5)
+  const isNoisePlaying = ref(false)
+
+  let noiseNode = null
+  let noiseGainNode = null
+  let noiseFilterNode = null
+
+  const createNoiseBuffer = (type) => {
+    if (typeof window === 'undefined') return null
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    }
+    const bufferSize = 2 * audioContext.sampleRate
+    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate)
+    const output = buffer.getChannelData(0)
+
+    if (type === 'white') {
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1
+      }
+    } else if (type === 'pink') {
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1
+        b0 = 0.99886 * b0 + white * 0.0555179
+        b1 = 0.99332 * b1 + white * 0.0750759
+        b2 = 0.96900 * b2 + white * 0.1538520
+        b3 = 0.86650 * b3 + white * 0.3104856
+        b4 = 0.55000 * b4 + white * 0.5329522
+        b5 = -0.7616 * b5 - white * 0.0168980
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11
+        b6 = white * 0.115926
+      }
+    } else if (type === 'brown') {
+      let lastOut = 0
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1
+        output[i] = (lastOut + 0.02 * white) / 1.02
+        lastOut = output[i]
+        output[i] *= 3.5
+      }
+    } else if (type === 'rain') {
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = (Math.random() * 2 - 1) * 0.5
+        if (Math.random() < 0.001) {
+          output[i] = (Math.random() * 2 - 1) * 0.8
+        }
+      }
+    } else if (type === 'cafe') {
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = (Math.random() * 2 - 1) * 0.3
+        if (Math.random() < 0.0005) {
+          output[i] = (Math.random() * 2 - 1) * 0.6
+        }
+      }
+    }
+    return buffer
+  }
+
+  const playWhiteNoise = (type) => {
+    if (typeof window === 'undefined') return
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    }
+    if (audioContext.state === 'suspended') {
+      audioContext.resume()
+    }
+
+    stopWhiteNoise()
+
+    const buffer = createNoiseBuffer(type)
+    if (!buffer) return
+
+    noiseNode = audioContext.createBufferSource()
+    noiseNode.buffer = buffer
+    noiseNode.loop = true
+
+    noiseGainNode = audioContext.createGain()
+    noiseGainNode.gain.value = noiseVolume.value * 0.5
+
+    if (type === 'rain' || type === 'cafe') {
+      noiseFilterNode = audioContext.createBiquadFilter()
+      noiseFilterNode.type = 'lowpass'
+      noiseFilterNode.frequency.value = type === 'rain' ? 2000 : 1500
+      noiseNode.connect(noiseFilterNode)
+      noiseFilterNode.connect(noiseGainNode)
+    } else {
+      noiseNode.connect(noiseGainNode)
+    }
+
+    noiseGainNode.connect(audioContext.destination)
+    noiseNode.start()
+
+    currentNoise.value = type
+    isNoisePlaying.value = true
+  }
+
+  const stopWhiteNoise = () => {
+    if (noiseNode) {
+      try {
+        noiseNode.stop()
+        noiseNode.disconnect()
+      } catch (e) {}
+      noiseNode = null
+    }
+    if (noiseGainNode) {
+      noiseGainNode.disconnect()
+      noiseGainNode = null
+    }
+    if (noiseFilterNode) {
+      noiseFilterNode.disconnect()
+      noiseFilterNode = null
+    }
+    isNoisePlaying.value = false
+    currentNoise.value = null
+  }
+
+  const toggleWhiteNoise = (type) => {
+    if (isNoisePlaying.value && currentNoise.value === type) {
+      stopWhiteNoise()
+    } else {
+      playWhiteNoise(type)
+    }
+  }
+
+  const setNoiseVolume = (vol) => {
+    noiseVolume.value = Math.max(0, Math.min(1, vol))
+    if (noiseGainNode) {
+      noiseGainNode.gain.value = noiseVolume.value * 0.5
+    }
+  }
+
   const cleanup = () => {
     if (timerInterval) {
       clearInterval(timerInterval)
@@ -658,6 +799,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       timerEndedUnsubscribe()
       timerEndedUnsubscribe = null
     }
+    stopWhiteNoise()
     if (audioContext && audioContext.state !== 'closed') {
       audioContext.close().catch(() => {})
       audioContext = null
@@ -679,6 +821,10 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     customMinutes,
     canSkip,
     isSlaveWindow,
+    whiteNoiseTypes,
+    currentNoise,
+    noiseVolume,
+    isNoisePlaying,
     toggleTimer,
     resetTimer,
     skipTimer,
@@ -687,6 +833,9 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     requestNotificationPermission,
     setupWatchers,
     toggleFab,
+    toggleWhiteNoise,
+    setNoiseVolume,
+    stopWhiteNoise,
     initElectronMode,
     initWebMode,
     cleanup

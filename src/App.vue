@@ -157,7 +157,10 @@ const themeTransitionTarget = ref('dark')
 
 const isStandaloneRoute = computed(
   () =>
-    route.name === 'Debug' || route.name === 'PomodoroFullscreen' || route.name === 'PomodoroFab'
+    route.name === 'Debug' ||
+    route.name === 'PomodoroFullscreen' ||
+    route.name === 'PomodoroFab' ||
+    route.name === 'MiniWindow'
 )
 
 const isWebMode = computed(() => !window.electronAPI)

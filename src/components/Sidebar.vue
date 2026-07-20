@@ -19,16 +19,30 @@
       <div class="nav-section">
         <button
           class="nav-btn"
-          :class="{ active: isActive('today') }"
-          @click="navigateTo('today')"
-          :aria-label="isActive('today') ? `${$t('nav.myDay')}，${$t('common.currentlySelected')}` : $t('nav.myDay')"
+          :class="{ active: isActive('myday') }"
+          @click="navigateTo('myday')"
+          :aria-label="isActive('myday') ? `${$t('nav.myDay')}，${$t('common.currentlySelected')}` : $t('nav.myDay')"
         >
           <Sun :size="20" />
           <span class="nav-label">{{ $t('nav.myDay') }}</span>
+          <span class="nav-count" :key="'myday-' + taskStore.getCount('myday')">{{
+            taskStore.getCount('myday')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.myDay') }}</span>
+        </button>
+
+        <button
+          class="nav-btn"
+          :class="{ active: isActive('today') }"
+          @click="navigateTo('today')"
+          :aria-label="isActive('today') ? `${$t('nav.today')}，${$t('common.currentlySelected')}` : $t('nav.today')"
+        >
+          <Calendar :size="20" />
+          <span class="nav-label">{{ $t('nav.today') }}</span>
           <span class="nav-count" :key="'today-' + taskStore.getCount('today')">{{
             taskStore.getCount('today')
           }}</span>
-          <span class="nav-tooltip">{{ $t('nav.myDay') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.today') }}</span>
         </button>
 
         <button
@@ -159,9 +173,12 @@
           v-for="cat in taskStore.categories"
           :key="cat.id"
           class="nav-btn cat-btn"
-          :class="{ active: isCategoryActive(cat.id) }"
+          :class="{ active: isCategoryActive(cat.id), 'drag-over': dragOverCategoryId === cat.id }"
           @click="navigateToCategory(cat.id)"
           @contextmenu.prevent="onCategoryContextMenu($event, cat)"
+          @dragover.prevent="onCategoryDragOver($event, cat.id)"
+          @dragleave="onCategoryDragLeave"
+          @drop="onCategoryDrop($event, cat.id)"
           :aria-label="isCategoryActive(cat.id) ? `${cat.name}，${$t('common.currentlySelected')}` : cat.name"
         >
           <component :is="getIcon(cat.icon)" :size="20" />
@@ -272,7 +289,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
@@ -322,6 +339,26 @@ const contextMenu = reactive({
   category: null,
   tag: null
 })
+
+const dragOverCategoryId = ref(null)
+
+const onCategoryDragOver = (event, catId) => {
+  event.dataTransfer.dropEffect = 'move'
+  dragOverCategoryId.value = catId
+}
+
+const onCategoryDragLeave = () => {
+  dragOverCategoryId.value = null
+}
+
+const onCategoryDrop = (event, catId) => {
+  event.preventDefault()
+  const taskId = event.dataTransfer.getData('text/plain')
+  if (taskId) {
+    taskStore.updateTask(taskId, { category: catId })
+  }
+  dragOverCategoryId.value = null
+}
 
 const iconMap = {
   briefcase: Briefcase,
@@ -851,6 +888,12 @@ onUnmounted(() => {
 .tag-btn:hover .tag-dot {
   transform: scale(1.4);
   box-shadow: 0 0 0 3px var(--color-primary-surface);
+}
+
+.cat-btn.drag-over {
+  background: var(--color-primary-surface);
+  color: var(--color-primary);
+  transform: scale(1.02);
 }
 
 .sidebar.collapsed .cat-dot,

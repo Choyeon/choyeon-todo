@@ -7,7 +7,7 @@
         </div>
         <span class="debug-title">{{ $t('debug.title') }}</span>
       </div>
-      <button class="debug-close" @click="handleClose">
+      <button class="debug-close" @click="handleClose" :title="$t('common.close')" :aria-label="$t('common.close')">
         <X :size="14" />
       </button>
     </div>

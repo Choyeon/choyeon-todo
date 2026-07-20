@@ -14,7 +14,8 @@ import {
 const STORAGE_KEYS = {
   tasks: 'choyeon_tasks_v2',
   categories: 'choyeon_categories_v2',
-  tags: 'choyeon_tags_v2'
+  tags: 'choyeon_tags_v2',
+  myDay: 'choyeon_myday_v1'
 }
 
 const DEFAULT_CATEGORIES = [
@@ -141,10 +142,12 @@ export const useTaskStore = defineStore('task', () => {
   const categories = ref([...DEFAULT_CATEGORIES])
   const tags = ref([...DEFAULT_TAGS])
   const searchQuery = ref('')
-  const currentView = ref('today')
+  const currentView = ref('myday')
   const currentCategory = ref(null)
   const currentTag = ref(null)
   const focusedTaskId = ref(null)
+  const myDayDate = ref(null)
+  const myDayTaskIds = ref([])
 
   const taskIndexMap = computed(() => {
     const map = new Map()
@@ -198,6 +201,59 @@ export const useTaskStore = defineStore('task', () => {
     task.totalFocusTime = (task.totalFocusTime || 0) + Math.max(0, Math.floor(seconds))
     return true
   }
+
+  const checkMyDayDate = () => {
+    const today = getTodayStr()
+    if (myDayDate.value !== today) {
+      myDayDate.value = today
+      myDayTaskIds.value = []
+      return true
+    }
+    return false
+  }
+
+  const isInMyDay = (taskId) => {
+    checkMyDayDate()
+    return myDayTaskIds.value.includes(taskId)
+  }
+
+  const addToMyDay = (taskId) => {
+    if (!taskId) return false
+    checkMyDayDate()
+    if (!myDayTaskIds.value.includes(taskId)) {
+      myDayTaskIds.value.push(taskId)
+    }
+    return true
+  }
+
+  const removeFromMyDay = (taskId) => {
+    if (!taskId) return false
+    checkMyDayDate()
+    const idx = myDayTaskIds.value.indexOf(taskId)
+    if (idx >= 0) {
+      myDayTaskIds.value.splice(idx, 1)
+    }
+    return true
+  }
+
+  const toggleMyDay = (taskId) => {
+    if (isInMyDay(taskId)) {
+      removeFromMyDay(taskId)
+      return false
+    } else {
+      addToMyDay(taskId)
+      return true
+    }
+  }
+
+  const myDayTasks = computed(() => {
+    checkMyDayDate()
+    return tasks.value.filter((t) => !t.completed && myDayTaskIds.value.includes(t.id))
+  })
+
+  const myDayCount = computed(() => {
+    return myDayTasks.value.length
+  })
 
   const initSampleData = () => {
     if (tasks.value.length > 0) return
@@ -382,6 +438,19 @@ export const useTaskStore = defineStore('task', () => {
           tags.value = parsed.filter((t) => t && t.id && t.name)
         }
       }
+      const savedMyDay = localStorage.getItem(STORAGE_KEYS.myDay)
+      if (savedMyDay) {
+        try {
+          const parsed = JSON.parse(savedMyDay)
+          const today = getTodayStr()
+          if (parsed.date === today && Array.isArray(parsed.taskIds)) {
+            myDayDate.value = parsed.date
+            myDayTaskIds.value = parsed.taskIds.filter((id) => typeof id === 'string')
+          }
+        } catch (e) {
+          console.warn('[TaskStore] Failed to parse myDay:', e)
+        }
+      }
     } catch (e) {
       console.error('[TaskStore] Failed to load from storage:', e)
       tasks.value = []
@@ -407,6 +476,10 @@ export const useTaskStore = defineStore('task', () => {
       localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(data.tasks))
       localStorage.setItem(STORAGE_KEYS.categories, JSON.stringify(data.categories))
       localStorage.setItem(STORAGE_KEYS.tags, JSON.stringify(data.tags))
+      localStorage.setItem(STORAGE_KEYS.myDay, JSON.stringify({
+        date: myDayDate.value,
+        taskIds: myDayTaskIds.value
+      }))
     } catch (e) {
       console.error('[TaskStore] Failed to save to storage:', e)
       if (e && e.name === 'QuotaExceededError') {
@@ -577,6 +650,7 @@ export const useTaskStore = defineStore('task', () => {
     const index = getTaskIndexById(id)
     if (index === -1) return false
     tasks.value.splice(index, 1)
+    removeFromMyDay(id)
     return true
   }
 
@@ -594,6 +668,7 @@ export const useTaskStore = defineStore('task', () => {
         }
       }
       task.completedOrder = maxOrder + 1
+      removeFromMyDay(id)
       if (task.repeat) {
         generateNextRepeatTask(id)
       }
@@ -903,7 +978,7 @@ export const useTaskStore = defineStore('task', () => {
 
     if (currentCategory.value === id) {
       currentCategory.value = null
-      currentView.value = 'today'
+      currentView.value = 'myday'
     }
 
     return true
@@ -986,6 +1061,9 @@ export const useTaskStore = defineStore('task', () => {
 
     let result
     switch (currentView.value) {
+      case 'myday':
+        result = myDayTasks.value
+        break
       case 'today':
         result = tasks.value.filter((t) => t.date === today && !t.completed)
         break
@@ -1082,6 +1160,8 @@ export const useTaskStore = defineStore('task', () => {
   const getCount = (view) => {
     const c = counts.value
     switch (view) {
+      case 'myday':
+        return myDayCount.value
       case 'today':
         return c.todayCount
       case 'tomorrow':
@@ -1337,7 +1417,7 @@ export const useTaskStore = defineStore('task', () => {
     categories.value = [...DEFAULT_CATEGORIES]
     tags.value = [...DEFAULT_TAGS]
     searchQuery.value = ''
-    currentView.value = 'today'
+    currentView.value = 'myday'
     currentCategory.value = null
     currentTag.value = null
   }
@@ -1466,6 +1546,12 @@ export const useTaskStore = defineStore('task', () => {
     currentTag,
     focusedTaskId,
     focusedTask,
+    myDayTasks,
+    myDayCount,
+    isInMyDay,
+    addToMyDay,
+    removeFromMyDay,
+    toggleMyDay,
     filteredTasks,
     getOverdueCount,
     counts,

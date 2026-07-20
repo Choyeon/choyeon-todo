@@ -17,7 +17,14 @@ export default {
     voiceInput: '语音输入',
     stopRecording: '停止录音',
     selectColor: '选择颜色',
-    currentlySelected: '当前选中'
+    currentlySelected: '当前选中',
+    more: '更多'
+  },
+  mini: {
+    openMain: '打开主窗口',
+    pinTop: '置顶显示',
+    cancelPin: '取消置顶',
+    close: '关闭悬浮窗'
   },
   nav: {
     home: '待办',
@@ -27,6 +34,7 @@ export default {
     pomodoro: '番茄钟',
     settings: '设置',
     myDay: '我的一天',
+    today: '今天',
     tomorrow: '明天',
     nextWeek: '下周',
     important: '重要',
@@ -137,6 +145,8 @@ export default {
     markIncomplete: '标记为未完成',
     editTaskAria: '编辑任务: {title}',
     startFocus: '开始专注',
+    addToMyDay: '添加到我的一天',
+    removeFromMyDay: '从我的一天移除',
     deleteTask: '删除任务',
     deletedMessage: '已删除 "{title}"',
     undo: '撤销'
@@ -224,6 +234,20 @@ export default {
     autoStartDesc: '系统启动时自动打开应用',
     closeToQuit: '关闭窗口即退出',
     closeToQuitDesc: '关闭窗口时直接退出应用',
+    miniWindow: '迷你悬浮窗',
+    miniWindowDesc: '显示今日任务的悬浮小窗口',
+    checkUpdates: '检查更新',
+    checkUpdatesDesc: '当前版本',
+    checkNow: '立即检查',
+    checking: '检查中...',
+    checkingUpdates: '正在检查更新...',
+    updateAvailable: '有新版本',
+    downloadUpdate: '下载更新',
+    downloading: '正在下载...',
+    updateReady: '更新已准备好，点击重启安装',
+    restartAndUpdate: '重启并更新',
+    upToDate: '已是最新版本',
+    updateError: '更新失败',
     shortcuts: '快捷键',
     data: '数据',
     exportData: '导出数据',
@@ -320,13 +344,20 @@ export default {
     tomatoUnit: '个番茄',
     completedTomatoes: '已完成 {count} 个番茄',
     resetCurrent: '重置当前计时',
+    skip: '跳过',
     fullscreen: '全屏专注',
     desktopFab: '桌面悬浮球',
     closeFab: '关闭悬浮球',
     resume: '继续',
     minutes: '分钟',
     exitFullscreen: '退出专注模式',
-    viewSubtitle: '专注工作，高效休息'
+    viewSubtitle: '专注工作，高效休息',
+    whiteNoise: '白噪音',
+    noise_white: '白噪音',
+    noise_pink: '粉噪音',
+    noise_brown: '棕噪音',
+    noise_rain: '雨声',
+    noise_cafe: '咖啡厅'
   },
   stats: {
     title: '统计',
@@ -354,7 +385,8 @@ export default {
     categoryTitle: '此分类暂无任务',
     categorySubtitle: '在此分类下添加你的第一个任务',
     defaultTitle: '暂无任务',
-    defaultSubtitle: '点击下方按钮添加新任务'
+    defaultSubtitle: '点击下方按钮添加新任务',
+    noTasksToday: '今天没有任务'
   },
   about: {
     title: '关于',

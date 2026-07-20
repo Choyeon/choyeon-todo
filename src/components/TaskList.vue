@@ -133,6 +133,17 @@
 
           <button
             v-if="!task.completed"
+            class="task-myday"
+            :class="{ active: taskStore.isInMyDay(task.id) }"
+            :aria-label="taskStore.isInMyDay(task.id) ? $t('task.removeFromMyDay') : $t('task.addToMyDay')"
+            :title="taskStore.isInMyDay(task.id) ? $t('task.removeFromMyDay') : $t('task.addToMyDay')"
+            @click.stop="onToggleMyDay(task.id)"
+          >
+            <Sun :size="16" />
+          </button>
+
+          <button
+            v-if="!task.completed"
             class="task-focus"
             :class="{ active: taskStore.focusedTaskId === task.id }"
             :aria-label="$t('task.startFocus')"
@@ -179,7 +190,7 @@ import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useSnackbar } from '../composables/useSnackbar'
 import { getTodayStr, getTomorrowStr, parseDateStr, isTaskOverdue } from '../utils/date'
-import { Check, Star, Bell, Trash2, GripVertical, ChevronDown, RotateCw, Timer } from '@lucide/vue'
+import { Check, Star, Bell, Trash2, GripVertical, ChevronDown, RotateCw, Timer, Sun } from '@lucide/vue'
 import EmptyState from './EmptyState.vue'
 
 const pendingTimers = []
@@ -507,6 +518,10 @@ const onFocusTask = (taskId) => {
   } else {
     taskStore.focusTask(taskId)
   }
+}
+
+const onToggleMyDay = (taskId) => {
+  taskStore.toggleMyDay(taskId)
 }
 
 const getConfettiStyle = (n) => {
@@ -1181,6 +1196,7 @@ const getConfettiStyle = (n) => {
   color: var(--color-text-tertiary);
 }
 
+.task-myday,
 .task-focus,
 .task-delete {
   width: 44px;
@@ -1204,14 +1220,32 @@ const getConfettiStyle = (n) => {
   justify-content: center;
 }
 
+.task-myday:hover,
 .task-focus:hover,
 .task-delete:hover {
   transform: scale(1.08);
 }
 
+.task-myday:active,
 .task-focus:active,
 .task-delete:active {
   transform: scale(0.94);
+}
+
+.task-myday:hover {
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.task-myday.active {
+  color: #F59E0B;
+  opacity: 1;
+}
+
+.task-myday:focus-visible {
+  outline: 2px solid #F59E0B;
+  outline-offset: 2px;
+  opacity: 1;
 }
 
 .task-focus:hover {
@@ -1241,6 +1275,7 @@ const getConfettiStyle = (n) => {
   opacity: 1;
 }
 
+.task-row:hover .task-myday,
 .task-row:hover .task-focus,
 .task-row:hover .task-delete {
   opacity: 1;

@@ -82,8 +82,10 @@ const headerTitle = computed(() => {
     return t('nav.searchResults')
   }
   switch (taskStore.currentView) {
-    case 'today':
+    case 'myday':
       return t('nav.myDay')
+    case 'today':
+      return t('nav.today')
     case 'tomorrow':
       return t('nav.tomorrow')
     case 'week':
@@ -109,7 +111,7 @@ const headerSubtitle = computed(() => {
   const now = new Date()
   const weekdays = tm('date.weekdays')
 
-  if (taskStore.currentView === 'today') {
+  if (taskStore.currentView === 'myday' || taskStore.currentView === 'today') {
     return `${now.getMonth() + 1}月${now.getDate()}日 ${weekdays[now.getDay()]}`
   }
 
@@ -125,6 +127,8 @@ const headerSubtitle = computed(() => {
 const emptyType = computed(() => {
   if (taskStore.searchQuery) return 'search'
   switch (taskStore.currentView) {
+    case 'myday':
+      return 'myday'
     case 'today':
       return 'today'
     case 'tomorrow':

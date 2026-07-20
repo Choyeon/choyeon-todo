@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS = {
   doNotDisturb: false,
   autoStart: false,
   closeToQuit: true,
+  miniWindowEnabled: false,
   pomodoroWorkMinutes: 25,
   pomodoroBreakMinutes: 5,
   pomodoroLongBreakMinutes: 15,
@@ -131,6 +132,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const doNotDisturb = ref(DEFAULT_SETTINGS.doNotDisturb)
   const autoStart = ref(DEFAULT_SETTINGS.autoStart)
   const closeToQuit = ref(DEFAULT_SETTINGS.closeToQuit)
+  const miniWindowEnabled = ref(DEFAULT_SETTINGS.miniWindowEnabled)
   const pomodoroWorkMinutes = ref(DEFAULT_SETTINGS.pomodoroWorkMinutes)
   const pomodoroBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroBreakMinutes)
   const pomodoroLongBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroLongBreakMinutes)
@@ -218,6 +220,7 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof data.doNotDisturb === 'boolean') doNotDisturb.value = data.doNotDisturb
         if (typeof data.autoStart === 'boolean') autoStart.value = data.autoStart
         if (typeof data.closeToQuit === 'boolean') closeToQuit.value = data.closeToQuit
+        if (typeof data.miniWindowEnabled === 'boolean') miniWindowEnabled.value = data.miniWindowEnabled
         if (
           typeof data.pomodoroWorkMinutes === 'number' &&
           data.pomodoroWorkMinutes > 0 &&
@@ -275,6 +278,7 @@ export const useSettingsStore = defineStore('settings', () => {
           doNotDisturb: doNotDisturb.value,
           autoStart: autoStart.value,
           closeToQuit: closeToQuit.value,
+          miniWindowEnabled: miniWindowEnabled.value,
           pomodoroWorkMinutes: pomodoroWorkMinutes.value,
           pomodoroBreakMinutes: pomodoroBreakMinutes.value,
           pomodoroLongBreakMinutes: pomodoroLongBreakMinutes.value,
@@ -308,6 +312,7 @@ export const useSettingsStore = defineStore('settings', () => {
       doNotDisturb,
       autoStart,
       closeToQuit,
+      miniWindowEnabled,
       pomodoroWorkMinutes,
       pomodoroBreakMinutes,
       pomodoroLongBreakMinutes,
@@ -356,6 +361,59 @@ export const useSettingsStore = defineStore('settings', () => {
         console.error('[SettingsStore] Failed to sync doNotDisturb to main:', e)
       }
     }
+  }
+
+  const toggleDoNotDisturb = () => {
+    setDoNotDisturb(!doNotDisturb.value)
+  }
+
+  const setAutoStart = async (enabled) => {
+    autoStart.value = !!enabled
+    if (typeof window !== 'undefined' && window.electronAPI?.setAutoStart) {
+      try {
+        await window.electronAPI.setAutoStart(!!enabled)
+      } catch (e) {
+        console.error('[SettingsStore] Failed to sync autoStart to main:', e)
+      }
+    }
+  }
+
+  const toggleAutoStart = () => {
+    setAutoStart(!autoStart.value)
+  }
+
+  const setCloseToQuit = async (enabled) => {
+    closeToQuit.value = !!enabled
+    if (typeof window !== 'undefined' && window.electronAPI?.setCloseToQuit) {
+      try {
+        await window.electronAPI.setCloseToQuit(!!enabled)
+      } catch (e) {
+        console.error('[SettingsStore] Failed to sync closeToQuit to main:', e)
+      }
+    }
+  }
+
+  const toggleCloseToQuit = () => {
+    setCloseToQuit(!closeToQuit.value)
+  }
+
+  const setMiniWindowEnabled = async (enabled) => {
+    miniWindowEnabled.value = !!enabled
+    if (typeof window !== 'undefined' && window.electronAPI?.toggleMiniWindow) {
+      try {
+        if (enabled) {
+          window.electronAPI.openMiniWindow()
+        } else {
+          window.electronAPI.closeMiniWindow()
+        }
+      } catch (e) {
+        console.error('[SettingsStore] Failed to toggle mini window:', e)
+      }
+    }
+  }
+
+  const toggleMiniWindow = () => {
+    setMiniWindowEnabled(!miniWindowEnabled.value)
   }
 
   const toggleTheme = () => {
@@ -448,6 +506,13 @@ export const useSettingsStore = defineStore('settings', () => {
     toggleTheme,
     toggleSounds,
     toggleGlassEffect,
+    toggleDoNotDisturb,
+    setAutoStart,
+    toggleAutoStart,
+    setCloseToQuit,
+    toggleCloseToQuit,
+    setMiniWindowEnabled,
+    toggleMiniWindow,
     resetSettings
   }
 })

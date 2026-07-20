@@ -43,6 +43,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "pomodoro-fab" */ '../views/PomodoroFabView.vue')
   },
   {
+    path: '/mini-window',
+    name: 'MiniWindow',
+    component: () => import(/* webpackChunkName: "mini-window" */ '../views/MiniWindowView.vue')
+  },
+  {
     path: '/debug',
     name: 'Debug',
     component: () => import(/* webpackChunkName: "debug" */ '../views/DebugView.vue')
