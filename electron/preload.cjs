@@ -68,6 +68,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setDoNotDisturb: (enabled) => ipcRenderer.invoke('settings:setDoNotDisturb', enabled),
   // 获取免打扰模式
   getDoNotDisturb: () => ipcRenderer.invoke('settings:getDoNotDisturb'),
+  // 获取Bing每日壁纸
+  getBingWallpaper: () => ipcRenderer.invoke('bing:getWallpaper'),
   // 设置全局快捷键开关
   setGlobalShortcutEnabled: (enabled) =>
     ipcRenderer.invoke('settings:setGlobalShortcutEnabled', enabled),

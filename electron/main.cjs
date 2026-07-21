@@ -1131,6 +1131,40 @@ ipcMain.handle('settings:getDoNotDisturb', (event) => {
   return appSettings.doNotDisturb
 })
 
+// 获取Bing每日壁纸
+ipcMain.handle('bing:getWallpaper', async (event) => {
+  if (!isFromMain(event)) return null
+  try {
+    const https = require('https')
+    const url = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN'
+    
+    return new Promise((resolve, reject) => {
+      https.get(url, (res) => {
+        let data = ''
+        res.on('data', (chunk) => { data += chunk })
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data)
+            if (json.images && json.images.length > 0) {
+              const imageUrl = `https://www.bing.com${json.images[0].url}`
+              resolve({ url: imageUrl, copyright: json.images[0].copyright })
+            } else {
+              resolve(null)
+            }
+          } catch (e) {
+            reject(e)
+          }
+        })
+      }).on('error', (e) => {
+        reject(e)
+      })
+    })
+  } catch (e) {
+    console.error('[Main] Failed to get Bing wallpaper:', e)
+    return null
+  }
+})
+
 // 设置全局快捷键开关
 ipcMain.handle('settings:setGlobalShortcutEnabled', (event, enabled) => {
   if (!isFromMain(event)) return false

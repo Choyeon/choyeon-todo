@@ -445,6 +445,47 @@ html.platform-win32 #app {
   background: transparent;
 }
 
+/* Bing 每日壁纸模式 */
+html.bing-wallpaper body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+html.bing-wallpaper[data-theme='dark'] body {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+html.bing-wallpaper #app {
+  background: transparent;
+}
+
+html.bing-wallpaper {
+  --content-bg: rgba(255, 255, 255, 0.4);
+  --sidebar-bg: rgba(248, 249, 250, 0.5);
+  --titlebar-bg: rgba(255, 255, 255, 0.45);
+  --card-bg: rgba(255, 255, 255, 0.6);
+}
+
+html.bing-wallpaper[data-theme='dark'] {
+  --content-bg: rgba(18, 18, 26, 0.5);
+  --sidebar-bg: rgba(26, 27, 37, 0.55);
+  --titlebar-bg: rgba(18, 18, 26, 0.5);
+  --card-bg: rgba(34, 35, 46, 0.65);
+}
+
+html.bing-wallpaper[data-glass='false'] {
+  --content-bg: rgba(255, 255, 255, 0.85);
+  --sidebar-bg: rgba(248, 249, 250, 0.9);
+  --titlebar-bg: rgba(255, 255, 255, 0.9);
+  --card-bg: rgba(255, 255, 255, 0.95);
+}
+
+html.bing-wallpaper[data-glass='false'][data-theme='dark'] {
+  --content-bg: rgba(18, 18, 26, 0.9);
+  --sidebar-bg: rgba(26, 27, 37, 0.92);
+  --titlebar-bg: rgba(18, 18, 26, 0.92);
+  --card-bg: rgba(34, 35, 46, 0.95);
+}
+
 ::selection {
   background: var(--color-primary-lighter);
   color: var(--color-primary-dark);

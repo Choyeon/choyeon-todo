@@ -176,6 +176,16 @@ const { start: startReminderScheduler } = useReminderScheduler()
 const bingWallpaperUrl = ref('')
 const BING_WALLPAPER_STORAGE_KEY = 'choyeon_bing_wallpaper'
 
+const setBingWallpaperClass = (enabled) => {
+  if (typeof document === 'undefined') return
+  const html = document.documentElement
+  if (enabled) {
+    html.classList.add('bing-wallpaper')
+  } else {
+    html.classList.remove('bing-wallpaper')
+  }
+}
+
 const fetchBingWallpaper = async () => {
   try {
     const today = new Date().toDateString()
@@ -188,14 +198,28 @@ const fetchBingWallpaper = async () => {
       }
     }
 
-    const response = await fetch(
-      'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN'
-    )
-    if (!response.ok) throw new Error('Failed to fetch Bing wallpaper')
+    let imageUrl = null
 
-    const data = await response.json()
-    if (data.images && data.images.length > 0) {
-      const imageUrl = `https://www.bing.com${data.images[0].url}`
+    if (window.electronAPI?.getBingWallpaper) {
+      const result = await window.electronAPI.getBingWallpaper()
+      if (result?.url) {
+        imageUrl = result.url
+      }
+    }
+
+    if (!imageUrl) {
+      const response = await fetch(
+        'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN'
+      )
+      if (!response.ok) throw new Error('Failed to fetch Bing wallpaper')
+
+      const data = await response.json()
+      if (data.images && data.images.length > 0) {
+        imageUrl = `https://www.bing.com${data.images[0].url}`
+      }
+    }
+
+    if (imageUrl) {
       bingWallpaperUrl.value = imageUrl
       localStorage.setItem(
         BING_WALLPAPER_STORAGE_KEY,
@@ -590,11 +614,14 @@ onMounted(() => {
     () => settingsStore.bingWallpaperEnabled,
     (newVal) => {
       if (newVal) {
+        setBingWallpaperClass(true)
         fetchBingWallpaper()
       } else {
         bingWallpaperUrl.value = ''
+        setBingWallpaperClass(false)
       }
-    }
+    },
+    { immediate: true }
   )
 })
 
