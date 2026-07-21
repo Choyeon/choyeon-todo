@@ -242,7 +242,6 @@ export default {
     doNotDisturbDesc: '开启后暂停所有通知提醒',
     defaultReminderTime: '默认提醒时间',
     defaultReminderTimeDesc: '任务到期前多少分钟提醒',
-    system: '系统',
     autoStart: '开机自启',
     autoStartDesc: '系统启动时自动打开应用',
     closeToQuit: '关闭窗口即退出',
@@ -268,7 +267,6 @@ export default {
     importData: '导入数据',
     importDataDesc: '从JSON文件导入任务数据',
     resetData: '恢复默认数据',
-    resetDataDesc: '清除当前数据并恢复默认示例数据',
     clearData: '清除所有数据',
     clearDataDesc: '删除所有任务和设置数据',
     testNotification: '测试通知',
@@ -373,15 +371,6 @@ export default {
     noise_brown: '棕噪音',
     noise_rain: '雨声',
     noise_cafe: '咖啡厅'
-  },
-  stats: {
-    title: '统计',
-    totalTasks: '总任务数',
-    completedTasks: '已完成',
-    overdueTasks: '已逾期',
-    completionRate: '完成率',
-    thisWeek: '本周',
-    thisMonth: '本月'
   },
   empty: {
     title: '还没有任务',

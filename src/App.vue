@@ -478,7 +478,9 @@ const checkForUpdatesOnStartup = async () => {
     if (ver) {
       currentAppVersion.value = ver
     }
-  } catch (e) {}
+  } catch (_) {
+    // ignore errors when getting app version
+  }
 
   updateCheckTimer = setTimeout(() => {
     window.electronAPI.checkForUpdates()

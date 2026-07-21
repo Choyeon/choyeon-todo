@@ -256,7 +256,9 @@ export const useSettingsStore = defineStore('settings', () => {
       console.error('[SettingsStore] Failed to load settings:', e)
       try {
         localStorage.removeItem(STORAGE_KEY)
-      } catch (_) {}
+      } catch (_) {
+        // ignore errors when removing corrupted settings
+      }
       applyTheme()
     }
   }

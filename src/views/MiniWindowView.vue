@@ -61,7 +61,6 @@ import { Sun, MoreHorizontal, X, Check, Inbox, Maximize2, Pin } from '@lucide/vu
 import { useTaskStore } from '../stores/taskStore'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
 const taskStore = useTaskStore()
 const showMenu = ref(false)
 const alwaysOnTop = ref(true)

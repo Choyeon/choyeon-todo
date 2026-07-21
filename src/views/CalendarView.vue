@@ -454,9 +454,6 @@ const onDragEnd = () => {
 
 const onDragOver = (e) => {
   e.preventDefault()
-  const rect = e.currentTarget.getBoundingClientRect()
-  const y = e.clientY - rect.top
-  const hour = Math.floor(y / 50)
 }
 
 const onDrop = (e) => {

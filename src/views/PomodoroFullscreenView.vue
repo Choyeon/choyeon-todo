@@ -146,7 +146,7 @@ const progressOffset = computed(
   () => circumference * (1 - pomodoroStore.timeLeft / pomodoroStore.totalTime)
 )
 
-const getParticleStyle = (i) => {
+const getParticleStyle = (_) => {
   const size = 2 + Math.random() * 4
   const left = Math.random() * 100
   const delay = Math.random() * 15

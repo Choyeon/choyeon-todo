@@ -91,7 +91,7 @@
 
             <div v-if="task.tags && task.tags.length > 0" class="task-tags">
               <span
-                v-for="(tagId, index) in getDisplayTags(task.tags)"
+                v-for="(tagId, _) in getDisplayTags(task.tags)"
                 :key="tagId"
                 class="tag-pill"
                 :style="getTagStyle(tagId)"

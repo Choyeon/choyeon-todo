@@ -263,7 +263,6 @@ const parseImportant = (text) => {
 export const smartParseTask = (inputText, options = {}) => {
   const { categories = [], tags = [] } = options
   let text = inputText.trim()
-  let title = text
   const parsed = {
     title: text,
     date: null,

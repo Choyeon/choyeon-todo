@@ -96,9 +96,10 @@ const headerTitle = computed(() => {
       return t('nav.planned')
     case 'all':
       return t('nav.allTasks')
-    case 'category':
+    case 'category': {
       const cat = taskStore.getCategoryById(taskStore.currentCategory)
       return cat ? cat.name : t('nav.categoryTasks')
+    }
     default:
       return t('nav.tasks')
   }

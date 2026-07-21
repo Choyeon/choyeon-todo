@@ -182,7 +182,9 @@ onMounted(async () => {
     try {
       const ver = await window.electronAPI.getAppVersion()
       if (ver) currentVersion.value = ver
-    } catch (e) {}
+    } catch (_) {
+      // ignore errors when getting app version
+    }
   }
 
   if (window.electronAPI) {
