@@ -108,14 +108,22 @@
 
     <Snackbar />
     <ConfirmModal />
+    <ReminderModal />
     <ThemeTransition
       :trigger="themeTransitionTrigger"
-      :startX="themeTransitionX"
-      :startY="themeTransitionY"
-      :targetTheme="themeTransitionTarget"
+      :start-x="themeTransitionX"
+      :start-y="themeTransitionY"
+      :target-theme="themeTransitionTarget"
       @complete="onThemeTransitionComplete"
     />
     <UpdateModal ref="updateModalRef" />
+
+    <div
+      v-if="bingWallpaperUrl"
+      class="bing-wallpaper"
+      :style="{ backgroundImage: `url(${bingWallpaperUrl})` }"
+    ></div>
+    <div v-if="bingWallpaperUrl" class="bing-wallpaper-overlay"></div>
   </div>
 </template>
 
@@ -125,6 +133,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTaskStore } from './stores/taskStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { usePomodoroStore } from './stores/pomodoroStore'
+import { useReminderScheduler } from './composables/useReminderScheduler'
 import { getTodayStr } from './utils/date'
 import { X } from '@lucide/vue'
 import TitleBar from './components/TitleBar.vue'
@@ -136,6 +145,7 @@ import MobileFab from './components/MobileFab.vue'
 import TaskModal from './components/TaskModal.vue'
 import Snackbar from './components/Snackbar.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
+import ReminderModal from './components/ReminderModal.vue'
 import ThemeTransition from './components/ThemeTransition.vue'
 import UpdateModal from './components/UpdateModal.vue'
 
@@ -160,6 +170,42 @@ const updateModalRef = ref(null)
 const currentAppVersion = ref(__APP_VERSION__)
 let updateCheckTimer = null
 let updateCleanupListeners = []
+
+const { start: startReminderScheduler } = useReminderScheduler()
+
+const bingWallpaperUrl = ref('')
+const BING_WALLPAPER_STORAGE_KEY = 'choyeon_bing_wallpaper'
+
+const fetchBingWallpaper = async () => {
+  try {
+    const today = new Date().toDateString()
+    const cached = localStorage.getItem(BING_WALLPAPER_STORAGE_KEY)
+    if (cached) {
+      const parsed = JSON.parse(cached)
+      if (parsed.date === today && parsed.url) {
+        bingWallpaperUrl.value = parsed.url
+        return
+      }
+    }
+
+    const response = await fetch(
+      'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN'
+    )
+    if (!response.ok) throw new Error('Failed to fetch Bing wallpaper')
+
+    const data = await response.json()
+    if (data.images && data.images.length > 0) {
+      const imageUrl = `https://www.bing.com${data.images[0].url}`
+      bingWallpaperUrl.value = imageUrl
+      localStorage.setItem(
+        BING_WALLPAPER_STORAGE_KEY,
+        JSON.stringify({ date: today, url: imageUrl })
+      )
+    }
+  } catch (e) {
+    console.warn('[App] Failed to fetch Bing wallpaper:', e)
+  }
+}
 
 const isStandaloneRoute = computed(
   () =>
@@ -525,6 +571,11 @@ onMounted(() => {
   setupElectronListeners()
   syncTasksToTray()
   checkForUpdatesOnStartup()
+  startReminderScheduler()
+
+  if (settingsStore.bingWallpaperEnabled) {
+    fetchBingWallpaper()
+  }
 
   watch(() => [taskStore.tasks, taskStore.categories], syncTasksToTray, { deep: true })
 
@@ -532,6 +583,17 @@ onMounted(() => {
     () => settingsStore.doNotDisturb,
     (newVal) => {
       window.electronAPI?.setDoNotDisturb?.(newVal)
+    }
+  )
+
+  watch(
+    () => settingsStore.bingWallpaperEnabled,
+    (newVal) => {
+      if (newVal) {
+        fetchBingWallpaper()
+      } else {
+        bingWallpaperUrl.value = ''
+      }
     }
   )
 })
@@ -752,6 +814,34 @@ onUnmounted(() => {
 .route-leave-to {
   opacity: 0;
   transform: translateY(-4px);
+}
+
+.bing-wallpaper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+  transition: opacity 0.5s ease;
+}
+
+.bing-wallpaper-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bing-wallpaper-overlay, rgba(255, 255, 255, 0.7));
+  z-index: -1;
+  transition: background 0.3s ease;
+}
+
+html[data-theme='dark'] .bing-wallpaper-overlay {
+  --bing-wallpaper-overlay: rgba(18, 18, 26, 0.85);
 }
 
 @media (max-width: 767px) {

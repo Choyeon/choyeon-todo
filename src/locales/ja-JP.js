@@ -149,7 +149,11 @@ export default {
     removeFromMyDay: 'マイデイから削除',
     deleteTask: 'タスクを削除',
     deletedMessage: '"{title}" を削除しました',
-    undo: '元に戻す'
+    undo: '元に戻す',
+    taskDueReminder: 'タスク期限リマインダー',
+    snooze: 'スヌーズ（5分）',
+    viewTask: 'タスクを表示',
+    reminderModalTitle: 'リマインダー'
   },
   date: {
     weekdays: ['日', '月', '火', '水', '木', '金', '土'],
@@ -235,6 +239,8 @@ export default {
     closeToQuitDesc: 'ウィンドウを閉じたらアプリを終了',
     miniWindow: 'ミニフローティングウィンドウ',
     miniWindowDesc: '今日のタスクを表示するフローティングウィンドウ',
+    bingWallpaper: 'Bingデイリー壁紙',
+    bingWallpaperDesc: 'Bingデイリー壁紙をアプリの背景として使用',
     checkUpdates: 'アップデートを確認',
     checkUpdatesDesc: '現在のバージョン',
     checkNow: '今すぐ確認',

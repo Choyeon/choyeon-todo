@@ -149,7 +149,11 @@ export default {
     removeFromMyDay: '从我的一天移除',
     deleteTask: '删除任务',
     deletedMessage: '已删除 "{title}"',
-    undo: '撤销'
+    undo: '撤销',
+    taskDueReminder: '任务到期提醒',
+    snooze: '稍后提醒（5分钟）',
+    viewTask: '查看任务',
+    reminderModalTitle: '任务提醒'
   },
   date: {
     weekdays: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
@@ -248,6 +252,8 @@ export default {
     closeToQuitDesc: '关闭窗口时直接退出应用',
     miniWindow: '迷你悬浮窗',
     miniWindowDesc: '显示今日任务的悬浮小窗口',
+    bingWallpaper: 'Bing每日壁纸',
+    bingWallpaperDesc: '使用Bing每日壁纸作为应用背景',
     checkUpdates: '检查更新',
     checkUpdatesDesc: '当前版本',
     checkNow: '立即检查',

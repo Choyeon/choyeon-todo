@@ -121,6 +121,25 @@
       </button>
     </div>
 
+    <div class="setting-row">
+      <div class="setting-icon-wrap icon-purple">
+        <Image :size="20" />
+      </div>
+      <div class="setting-label-wrap">
+        <span class="setting-label">{{ $t('settings.bingWallpaper') }}</span>
+        <p class="setting-desc">{{ $t('settings.bingWallpaperDesc') }}</p>
+      </div>
+      <button
+        class="toggle-switch"
+        role="switch"
+        :aria-checked="settingsStore.bingWallpaperEnabled"
+        :aria-label="$t('settings.bingWallpaper')"
+        @click.stop="toggleBingWallpaper"
+      >
+        <span class="toggle-knob"></span>
+      </button>
+    </div>
+
     <div class="color-picker-row">
       <div class="setting-icon-wrap icon-primary-tint">
         <Palette :size="20" />
@@ -176,7 +195,18 @@ import { inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSnackbar } from '../../composables/useSnackbar'
-import { Sun, Moon, Palette, Check, Monitor, Type, PanelLeft, Layers, Globe } from '@lucide/vue'
+import {
+  Sun,
+  Moon,
+  Palette,
+  Check,
+  Monitor,
+  Type,
+  PanelLeft,
+  Layers,
+  Globe,
+  Image
+} from '@lucide/vue'
 import { setLocale, SUPPORTED_LOCALES } from '../../i18n'
 
 const { locale, t } = useI18n()
@@ -229,6 +259,10 @@ const toggleGlassEffect = () => {
       ? t('settings.glassEffectEnabled')
       : t('settings.glassEffectDisabled')
   )
+}
+
+const toggleBingWallpaper = () => {
+  settingsStore.toggleBingWallpaper()
 }
 
 const setThemeColor = (color) => {

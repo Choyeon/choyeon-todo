@@ -107,12 +107,16 @@
 
       <div class="timer-display">
         <div class="time-container">
-          <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedMinutes }}</span>
+          <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{
+            formattedMinutes
+          }}</span>
           <span class="time-separator">
             <span class="dot"></span>
             <span class="dot"></span>
           </span>
-          <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedSeconds }}</span>
+          <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{
+            formattedSeconds
+          }}</span>
         </div>
         <Transition name="mode-fade" mode="out-in">
           <span :key="pomodoroStore.currentMode" class="mode-label">{{
@@ -154,7 +158,11 @@
       <span>{{ $t('pomodoro.customDuration') }}</span>
     </button>
 
-    <div v-if="taskStore.focusedTask" class="current-task" @click="showTaskPicker = !showTaskPicker">
+    <div
+      v-if="taskStore.focusedTask"
+      class="current-task"
+      @click="showTaskPicker = !showTaskPicker"
+    >
       <Timer :size="14" class="task-icon" />
       <span class="task-title">{{ taskStore.focusedTask.title }}</span>
       <X :size="14" class="task-clear" @click.stop="taskStore.unfocusTask()" />
@@ -335,9 +343,7 @@ const showTaskPicker = ref(false)
 // 粒子爆发显示控制
 const showParticles = ref(false)
 
-const incompleteTasks = computed(() =>
-  taskStore.tasks.filter((t) => !t.completed).slice(0, 20)
-)
+const incompleteTasks = computed(() => taskStore.tasks.filter((t) => !t.completed).slice(0, 20))
 
 const selectTask = (taskId) => {
   taskStore.focusTask(taskId)
@@ -640,11 +646,7 @@ onMounted(() => {
   width: 60%;
   height: 60%;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--glow-color, transparent) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, var(--glow-color, transparent) 0%, transparent 70%);
   transform: translate(-50%, -50%) scale(0.4);
   opacity: 0;
   pointer-events: none;
@@ -841,7 +843,8 @@ onMounted(() => {
 }
 
 @keyframes timeGlow {
-  0%, 100% {
+  0%,
+  100% {
     text-shadow: 0 0 6px currentColor;
   }
   50% {

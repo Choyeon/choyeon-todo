@@ -150,7 +150,11 @@ export default {
     removeFromMyDay: 'Remove from My Day',
     deleteTask: 'Delete task',
     deletedMessage: 'Deleted "{title}"',
-    undo: 'Undo'
+    undo: 'Undo',
+    taskDueReminder: 'Task Due Reminder',
+    snooze: 'Snooze (5 min)',
+    viewTask: 'View Task',
+    reminderModalTitle: 'Reminder'
   },
   date: {
     weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -249,6 +253,8 @@ export default {
     closeToQuitDesc: 'Quit app when window is closed',
     miniWindow: 'Mini Floating Window',
     miniWindowDesc: 'Floating window showing today tasks',
+    bingWallpaper: 'Bing Daily Wallpaper',
+    bingWallpaperDesc: 'Use Bing daily wallpaper as app background',
     checkUpdates: 'Check for Updates',
     checkUpdatesDesc: 'Current version',
     checkNow: 'Check Now',

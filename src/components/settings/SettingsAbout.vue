@@ -155,6 +155,45 @@
         </svg>
       </a>
       <a
+        href="https://github.com/Choyeon/choyeon-todo/issues/new/choose"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="link-row"
+        @click.stop
+      >
+        <div class="link-icon link-icon-feedback">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <div class="link-text">
+          <span class="link-label">{{ $t('about.feedback') }}</span>
+          <span class="link-desc">GitHub Issues</span>
+        </div>
+        <svg
+          class="link-arrow"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+      <a
         href="https://chuyuchoyeon.github.io/choyeon-todo/"
         target="_blank"
         rel="noopener noreferrer"
@@ -401,6 +440,11 @@ const handleVersionClick = () => {
 
 .links-card {
   margin-top: 4px;
+}
+
+.link-icon-feedback {
+  background: rgba(249, 115, 22, 0.12);
+  color: #f97316;
 }
 
 @media (max-width: 480px) {

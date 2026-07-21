@@ -15,17 +15,21 @@ dist-ssr
 
 # 打包输出
 release/
+release-v*/
 app-build/
 build-output/
 build-output-new/
 dist-electron/
 pack-out/
+out/
+output/
 
 # 调试文件
 debug_tasklist.py
 
 # 测试覆盖率
 coverage/
+.nyc_output/
 
 # 代码签名证书（敏感文件，切勿提交）
 *.pfx
@@ -34,6 +38,14 @@ coverage/
 *.key
 build/*.pfx
 build/*.p12
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
 
 # Editor directories and files
 .vscode/*
@@ -49,3 +61,72 @@ release-assets/
 
 # GitHub Pages 部署临时目录
 pages-deploy-temp/
+
+# 缓存
+.cache/
+.parcel-cache/
+.vite/
+.temp/
+.tmp/
+
+# 操作系统文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 包管理器缓存
+.npm
+.eslintcache
+.stylelintcache
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# Electron 打包缓存
+.electron/
+electron-builder/
+builder-effective-config.yaml
+
+# PWA 相关
+sw.js
+workbox-*.js
+
+# 类型声明生成
+*.tsbuildinfo
+
+# 测试相关
+.nyc_output/
+test-results/
+playwright-report/
+
+# Yarn / pnpm
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+pnpm-lock.yaml
+
+# 本地开发配置
+.locals
+.wepack
+.history/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/fixtures/
+
+# 日志和错误报告
+*.log.*
+crashreports/
+
+# 系统隐藏文件
+*.orig
+*.rej
+*.patch

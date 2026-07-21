@@ -1,5 +1,9 @@
 <template>
-  <div class="pomodoro-fullscreen" :class="`mode-${pomodoroStore.currentMode}`" :style="{ '--glow-color': pomodoroStore.currentColor }">
+  <div
+    class="pomodoro-fullscreen"
+    :class="`mode-${pomodoroStore.currentMode}`"
+    :style="{ '--glow-color': pomodoroStore.currentColor }"
+  >
     <div class="bg-particles">
       <div v-for="i in 20" :key="i" class="particle" :style="getParticleStyle(i)"></div>
     </div>
@@ -73,18 +77,26 @@
         ></div>
         <div class="timer-display">
           <div class="time-container">
-            <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedMinutes }}</span>
+            <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{
+              formattedMinutes
+            }}</span>
             <span class="time-separator">
               <span class="dot"></span>
               <span class="dot"></span>
             </span>
-            <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedSeconds }}</span>
+            <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{
+              formattedSeconds
+            }}</span>
           </div>
           <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
         </div>
       </div>
 
-      <div class="current-task" v-if="taskStore.focusedTask" @click="showTaskPicker = !showTaskPicker">
+      <div
+        class="current-task"
+        v-if="taskStore.focusedTask"
+        @click="showTaskPicker = !showTaskPicker"
+      >
         <Timer :size="18" class="task-icon" />
         <span class="task-title">{{ taskStore.focusedTask.title }}</span>
         <X :size="16" class="task-clear" @click.stop="taskStore.unfocusTask()" />
@@ -195,9 +207,7 @@ const circumference = 2 * Math.PI * 180
 
 const showTaskPicker = ref(false)
 
-const incompleteTasks = computed(() =>
-  taskStore.tasks.filter((t) => !t.completed).slice(0, 20)
-)
+const incompleteTasks = computed(() => taskStore.tasks.filter((t) => !t.completed).slice(0, 20))
 
 const selectTask = (taskId) => {
   taskStore.focusTask(taskId)
@@ -581,11 +591,7 @@ onMounted(async () => {
   width: 60%;
   height: 60%;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--glow-color, transparent) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, var(--glow-color, transparent) 0%, transparent 70%);
   transform: translate(-50%, -50%) scale(0.4);
   opacity: 0;
   pointer-events: none;

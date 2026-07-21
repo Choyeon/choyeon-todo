@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
   autoStart: false,
   closeToQuit: true,
   miniWindowEnabled: false,
+  bingWallpaperEnabled: false,
   pomodoroWorkMinutes: 25,
   pomodoroBreakMinutes: 5,
   pomodoroLongBreakMinutes: 15,
@@ -133,6 +134,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const autoStart = ref(DEFAULT_SETTINGS.autoStart)
   const closeToQuit = ref(DEFAULT_SETTINGS.closeToQuit)
   const miniWindowEnabled = ref(DEFAULT_SETTINGS.miniWindowEnabled)
+  const bingWallpaperEnabled = ref(DEFAULT_SETTINGS.bingWallpaperEnabled)
   const pomodoroWorkMinutes = ref(DEFAULT_SETTINGS.pomodoroWorkMinutes)
   const pomodoroBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroBreakMinutes)
   const pomodoroLongBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroLongBreakMinutes)
@@ -222,6 +224,8 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof data.closeToQuit === 'boolean') closeToQuit.value = data.closeToQuit
         if (typeof data.miniWindowEnabled === 'boolean')
           miniWindowEnabled.value = data.miniWindowEnabled
+        if (typeof data.bingWallpaperEnabled === 'boolean')
+          bingWallpaperEnabled.value = data.bingWallpaperEnabled
         if (
           typeof data.pomodoroWorkMinutes === 'number' &&
           data.pomodoroWorkMinutes > 0 &&
@@ -282,6 +286,7 @@ export const useSettingsStore = defineStore('settings', () => {
           autoStart: autoStart.value,
           closeToQuit: closeToQuit.value,
           miniWindowEnabled: miniWindowEnabled.value,
+          bingWallpaperEnabled: bingWallpaperEnabled.value,
           pomodoroWorkMinutes: pomodoroWorkMinutes.value,
           pomodoroBreakMinutes: pomodoroBreakMinutes.value,
           pomodoroLongBreakMinutes: pomodoroLongBreakMinutes.value,
@@ -316,6 +321,7 @@ export const useSettingsStore = defineStore('settings', () => {
       autoStart,
       closeToQuit,
       miniWindowEnabled,
+      bingWallpaperEnabled,
       pomodoroWorkMinutes,
       pomodoroBreakMinutes,
       pomodoroLongBreakMinutes,
@@ -419,6 +425,10 @@ export const useSettingsStore = defineStore('settings', () => {
     setMiniWindowEnabled(!miniWindowEnabled.value)
   }
 
+  const toggleBingWallpaper = () => {
+    bingWallpaperEnabled.value = !bingWallpaperEnabled.value
+  }
+
   const toggleTheme = () => {
     if (themeMode.value === 'system') {
       themeMode.value = 'light'
@@ -442,6 +452,7 @@ export const useSettingsStore = defineStore('settings', () => {
     doNotDisturb.value = DEFAULT_SETTINGS.doNotDisturb
     autoStart.value = DEFAULT_SETTINGS.autoStart
     closeToQuit.value = DEFAULT_SETTINGS.closeToQuit
+    bingWallpaperEnabled.value = DEFAULT_SETTINGS.bingWallpaperEnabled
     pomodoroWorkMinutes.value = DEFAULT_SETTINGS.pomodoroWorkMinutes
     pomodoroBreakMinutes.value = DEFAULT_SETTINGS.pomodoroBreakMinutes
     pomodoroLongBreakMinutes.value = DEFAULT_SETTINGS.pomodoroLongBreakMinutes
@@ -492,6 +503,7 @@ export const useSettingsStore = defineStore('settings', () => {
     autoStart,
     closeToQuit,
     miniWindowEnabled,
+    bingWallpaperEnabled,
     pomodoroWorkMinutes,
     pomodoroBreakMinutes,
     pomodoroLongBreakMinutes,
@@ -517,6 +529,7 @@ export const useSettingsStore = defineStore('settings', () => {
     toggleCloseToQuit,
     setMiniWindowEnabled,
     toggleMiniWindow,
+    toggleBingWallpaper,
     resetSettings
   }
 })
