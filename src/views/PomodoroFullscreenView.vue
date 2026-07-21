@@ -67,13 +67,38 @@
         </div>
       </div>
 
-      <div class="current-task" v-if="taskStore.focusedTask">
+      <div class="current-task" v-if="taskStore.focusedTask" @click="showTaskPicker = !showTaskPicker">
         <Timer :size="18" class="task-icon" />
         <span class="task-title">{{ taskStore.focusedTask.title }}</span>
+        <X :size="16" class="task-clear" @click.stop="taskStore.unfocusTask()" />
       </div>
-      <div class="current-task empty" v-else>
+      <div class="current-task empty clickable" v-else @click="showTaskPicker = !showTaskPicker">
+        <Plus :size="18" />
         <span>{{ $t('pomodoro.selectTaskShort') }}</span>
       </div>
+
+      <Transition name="collapse">
+        <div v-if="showTaskPicker" class="task-picker">
+          <div class="task-picker-header">
+            <span>{{ $t('pomodoro.selectTask') }}</span>
+            <X :size="18" class="task-picker-close" @click="showTaskPicker = false" />
+          </div>
+          <div class="task-picker-list">
+            <div v-if="incompleteTasks.length === 0" class="task-picker-empty">
+              {{ $t('task.empty') }}
+            </div>
+            <button
+              v-for="task in incompleteTasks"
+              :key="task.id"
+              class="task-picker-item"
+              :class="{ active: taskStore.focusedTaskId === task.id }"
+              @click="selectTask(task.id)"
+            >
+              <span class="task-picker-title">{{ task.title }}</span>
+            </button>
+          </div>
+        </div>
+      </Transition>
 
       <div class="pomodoro-count">
         <span
@@ -142,7 +167,7 @@ import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
-import { Timer, Play, Pause, RotateCcw, Edit3 } from '@lucide/vue'
+import { Timer, Play, Pause, RotateCcw, Edit3, Plus, X } from '@lucide/vue'
 
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
@@ -150,6 +175,17 @@ const pomodoroStore = usePomodoroStore()
 const router = useRouter()
 
 const circumference = 2 * Math.PI * 180
+
+const showTaskPicker = ref(false)
+
+const incompleteTasks = computed(() =>
+  taskStore.tasks.filter((t) => !t.completed).slice(0, 20)
+)
+
+const selectTask = (taskId) => {
+  taskStore.focusTask(taskId)
+  showTaskPicker.value = false
+}
 
 const progressOffset = computed(
   () => circumference * (1 - pomodoroStore.timeLeft / pomodoroStore.totalTime)
@@ -591,11 +627,121 @@ onMounted(async () => {
   border-radius: 999px;
   max-width: 400px;
   backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.current-task:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .current-task.empty {
   color: rgba(255, 255, 255, 0.25);
   font-size: var(--font-size-body);
+}
+
+.current-task.clickable {
+  cursor: pointer;
+}
+
+.task-clear {
+  color: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.task-clear:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 任务选择面板 */
+.task-picker {
+  width: 90%;
+  max-width: 440px;
+  max-height: 320px;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.task-picker-close {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color 0.2s ease;
+}
+
+.task-picker-close:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.task-picker-list {
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.task-picker-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: var(--font-size-sm);
+}
+
+.task-picker-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.task-picker-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.task-picker-item.active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.task-picker-title {
+  font-size: var(--font-size-body);
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    opacity 0.2s ease,
+    max-height 0.3s ease;
+  overflow: hidden;
+  max-height: 320px;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
 }
 
 .task-icon {
