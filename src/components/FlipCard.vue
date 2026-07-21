@@ -109,7 +109,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  height: 200%;
   font-size: 68px;
   font-weight: 200;
   color: var(--color-text-primary);
@@ -118,13 +118,11 @@ onMounted(() => {
 }
 
 .flip-card-top-inner {
-  align-items: flex-end;
-  padding-bottom: 6px;
+  transform: translateY(0);
 }
 
 .flip-card-bottom-inner {
-  align-items: flex-start;
-  padding-top: 6px;
+  transform: translateY(-50%);
 }
 
 .flip-card-back {
@@ -172,7 +170,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  height: 200%;
   font-size: 68px;
   font-weight: 200;
   color: var(--color-text-primary);
@@ -181,13 +179,11 @@ onMounted(() => {
 }
 
 .flip-card-back-top span {
-  align-items: flex-end;
-  padding-bottom: 6px;
+  transform: translateY(0);
 }
 
 .flip-card-back-bottom span {
-  align-items: flex-start;
-  padding-top: 6px;
+  transform: translateY(-50%);
 }
 
 .flip-card.flipping .flip-card-back-top {
