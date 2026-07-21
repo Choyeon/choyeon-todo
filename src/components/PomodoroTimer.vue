@@ -945,6 +945,36 @@ onMounted(() => {
   transform: none;
 }
 
+.control-btn.skip-btn {
+  width: 56px;
+  height: 56px;
+  min-width: 44px;
+  min-height: 44px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.control-btn.skip-btn:hover {
+  background: var(--color-border-light);
+  color: var(--color-text-primary);
+  transform: translateY(-2px);
+}
+
+.control-btn.skip-btn:active {
+  transform: translateY(0) scale(0.92);
+}
+
+.control-btn.skip-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.control-btn.skip-btn.disabled:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  transform: none;
+}
+
 .control-btn.primary-btn {
   width: 80px;
   height: 80px;

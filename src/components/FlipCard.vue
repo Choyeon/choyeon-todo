@@ -2,17 +2,17 @@
   <div class="flip-card" :class="{ flipping: isFlipping }">
     <div class="flip-card-inner">
       <div class="flip-card-top">
-        <span class="flip-card-top-inner">{{ displayValue }}</span>
+        <span>{{ isFlipping ? previousValue : displayValue }}</span>
       </div>
       <div class="flip-card-bottom">
-        <span class="flip-card-bottom-inner">{{ displayValue }}</span>
+        <span>{{ displayValue }}</span>
       </div>
       <div class="flip-card-back">
         <div class="flip-card-back-top">
-          <span>{{ previousValue }}</span>
+          <span>{{ displayValue }}</span>
         </div>
         <div class="flip-card-back-bottom">
-          <span>{{ displayValue }}</span>
+          <span>{{ isFlipping ? previousValue : displayValue }}</span>
         </div>
       </div>
     </div>
@@ -44,7 +44,7 @@ watch(
 
       setTimeout(() => {
         displayValue.value = newVal
-      }, 180)
+      }, 300)
 
       setTimeout(() => {
         isFlipping.value = false
@@ -89,22 +89,25 @@ onMounted(() => {
   );
   border: 1px solid rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(4px);
+  backface-visibility: hidden;
 }
 
 .flip-card-top {
   top: 0;
   border-radius: 16px 16px 0 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  transform-origin: bottom center;
 }
 
 .flip-card-bottom {
   bottom: 0;
   border-radius: 0 0 16px 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  transform-origin: top center;
 }
 
-.flip-card-top-inner,
-.flip-card-bottom-inner {
+.flip-card-top span,
+.flip-card-bottom span {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,11 +120,11 @@ onMounted(() => {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.flip-card-top-inner {
+.flip-card-top span {
   transform: translateY(0);
 }
 
-.flip-card-bottom-inner {
+.flip-card-bottom span {
   transform: translateY(-50%);
 }
 
@@ -155,6 +158,7 @@ onMounted(() => {
   border-radius: 16px 16px 0 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   transform-origin: bottom center;
+  transform: rotateX(90deg);
 }
 
 .flip-card-back-bottom {
@@ -162,6 +166,7 @@ onMounted(() => {
   border-radius: 0 0 16px 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   transform-origin: top center;
+  transform: rotateX(-90deg);
 }
 
 .flip-card-back-top span,
@@ -186,48 +191,57 @@ onMounted(() => {
   transform: translateY(-50%);
 }
 
-.flip-card.flipping .flip-card-back-top {
-  animation: flipTop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+.flip-card.flipping .flip-card-top {
+  animation: flipTopFront 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
-.flip-card.flipping .flip-card-back-bottom {
-  animation: flipBottom 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+.flip-card.flipping .flip-card-bottom {
+  animation: flipBottomFront 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
   animation-delay: 0.15s;
 }
 
-@keyframes flipTop {
+.flip-card.flipping .flip-card-back-top {
+  animation: flipTopBack 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation-delay: 0.15s;
+}
+
+.flip-card.flipping .flip-card-back-bottom {
+  animation: flipBottomBack 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes flipTopFront {
   0% {
     transform: rotateX(0deg);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-  25% {
-    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.15);
-  }
-  50% {
-    transform: rotateX(-90deg);
-    box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.2);
   }
   100% {
     transform: rotateX(-90deg);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 
-@keyframes flipBottom {
+@keyframes flipBottomFront {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(90deg);
+  }
+}
+
+@keyframes flipTopBack {
   0% {
     transform: rotateX(90deg);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-  50% {
-    transform: rotateX(90deg);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-  }
-  75% {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   }
   100% {
     transform: rotateX(0deg);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes flipBottomBack {
+  0% {
+    transform: rotateX(-90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
   }
 }
 
@@ -294,21 +308,11 @@ onMounted(() => {
     height: 80px;
   }
 
-  .flip-card-top-inner,
-  .flip-card-bottom-inner,
+  .flip-card-top span,
+  .flip-card-bottom span,
   .flip-card-back-top span,
   .flip-card-back-bottom span {
     font-size: 52px;
-  }
-
-  .flip-card-top-inner,
-  .flip-card-back-top span {
-    padding-bottom: 4px;
-  }
-
-  .flip-card-bottom-inner,
-  .flip-card-back-bottom span {
-    padding-top: 4px;
   }
 }
 
@@ -318,21 +322,11 @@ onMounted(() => {
     height: 68px;
   }
 
-  .flip-card-top-inner,
-  .flip-card-bottom-inner,
+  .flip-card-top span,
+  .flip-card-bottom span,
   .flip-card-back-top span,
   .flip-card-back-bottom span {
     font-size: 44px;
-  }
-
-  .flip-card-top-inner,
-  .flip-card-back-top span {
-    padding-bottom: 3px;
-  }
-
-  .flip-card-bottom-inner,
-  .flip-card-back-bottom span {
-    padding-top: 3px;
   }
 }
 
@@ -342,8 +336,8 @@ onMounted(() => {
     height: 60px;
   }
 
-  .flip-card-top-inner,
-  .flip-card-bottom-inner,
+  .flip-card-top span,
+  .flip-card-bottom span,
   .flip-card-back-top span,
   .flip-card-back-bottom span {
     font-size: 38px;
@@ -351,6 +345,8 @@ onMounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .flip-card.flipping .flip-card-top,
+  .flip-card.flipping .flip-card-bottom,
   .flip-card.flipping .flip-card-back-top,
   .flip-card.flipping .flip-card-back-bottom {
     animation: none !important;
