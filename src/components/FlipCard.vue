@@ -1,21 +1,20 @@
 <template>
-  <div class="flip-card" :class="{ flip: isFlipping }" :data-value="displayValue">
+  <div class="flip-card" :class="{ flip: isFlipping }">
     <div class="flip-card-inner">
-      <div class="flip-card-card1">
-        <span>{{ nextValue }}</span>
+      <div class="flip-card-card flip-card-bottom-top">
+        <span class="digit-top">{{ nextValue }}</span>
       </div>
-      <div class="flip-card-card2">
-        <span>{{ nextValue }}</span>
+      <div class="flip-card-card flip-card-bottom-bottom">
+        <span class="digit-bottom">{{ nextValue }}</span>
       </div>
-      <div class="flip-card-card3">
-        <span>{{ displayValue }}</span>
+      <div class="flip-card-card flip-card-top-top">
+        <span class="digit-top">{{ displayValue }}</span>
       </div>
-      <div class="flip-card-card4">
-        <span>{{ displayValue }}</span>
+      <div class="flip-card-card flip-card-top-bottom">
+        <span class="digit-bottom">{{ displayValue }}</span>
       </div>
     </div>
     <div class="flip-card-shadow"></div>
-    <div class="flip-card-gloss"></div>
   </div>
 </template>
 
@@ -43,7 +42,7 @@ watch(
       setTimeout(() => {
         displayValue.value = newVal
         isFlipping.value = false
-      }, 400)
+      }, 600)
     }
   }
 )
@@ -68,6 +67,8 @@ onMounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .flip-card-inner::before {
@@ -76,17 +77,14 @@ onMounted(() => {
   top: 50%;
   left: 0;
   right: 0;
-  height: 3px;
-  background: rgba(0, 0, 0, 0.25);
+  height: 2px;
+  background: rgba(0, 0, 0, 0.3);
   transform: translateY(-50%);
-  z-index: 10;
+  z-index: 20;
   pointer-events: none;
 }
 
-.flip-card-card1,
-.flip-card-card2,
-.flip-card-card3,
-.flip-card-card4 {
+.flip-card-card {
   position: absolute;
   width: 100%;
   height: 50%;
@@ -99,91 +97,105 @@ onMounted(() => {
   );
   border: 1px solid rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(4px);
-  backface-visibility: hidden;
 }
 
-.flip-card-card1 {
+.digit-top,
+.digit-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 200%;
+  font-size: 68px;
+  font-weight: 200;
+  color: var(--color-text-primary);
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.digit-top {
+  transform: translateY(0);
+}
+
+.digit-bottom {
+  transform: translateY(-50%);
+}
+
+.flip-card-bottom-top {
   top: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: none;
   z-index: 1;
 }
 
-.flip-card-card2 {
-  top: 50%;
+.flip-card-bottom-bottom {
+  bottom: 0;
   border-radius: 0 0 16px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  transform-origin: center top;
+  border-top: none;
+  transform-origin: top center;
   transform: rotateX(180deg);
   z-index: 2;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  opacity: 0;
 }
 
-.flip-card-card3 {
+.flip-card-top-top {
   top: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  transform-origin: center bottom;
+  border-bottom: none;
+  transform-origin: bottom center;
   z-index: 3;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-.flip-card-card4 {
-  top: 50%;
+.flip-card-top-bottom {
+  bottom: 0;
   border-radius: 0 0 16px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
   z-index: 1;
 }
 
-.flip-card-card1 span,
-.flip-card-card3 span {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  font-size: 68px;
-  font-weight: 200;
-  color: var(--color-text-primary);
-  line-height: 100px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.flip-card.flip .flip-card-top-top {
+  animation: flipTopDown 0.6s ease-in-out forwards;
 }
 
-.flip-card-card2 span,
-.flip-card-card4 span {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  font-size: 68px;
-  font-weight: 200;
-  color: var(--color-text-primary);
-  line-height: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.flip-card.flip .flip-card-bottom-bottom {
+  animation: flipBottomUp 0.6s ease-in-out forwards;
 }
 
-.flip-card.flip .flip-card-card2 {
-  animation: flipCard2 0.4s ease-in-out forwards;
-}
-
-.flip-card.flip .flip-card-card3 {
-  animation: flipCard3 0.4s ease-in-out forwards;
-}
-
-@keyframes flipCard2 {
-  0% {
-    transform: rotateX(180deg);
-  }
-  100% {
-    transform: rotateX(0deg);
-  }
-}
-
-@keyframes flipCard3 {
+@keyframes flipTopDown {
   0% {
     transform: rotateX(0deg);
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0;
   }
   100% {
     transform: rotateX(-180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flipBottomUp {
+  0% {
+    transform: rotateX(180deg);
+    opacity: 0;
+  }
+  45% {
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotateX(0deg);
+    opacity: 1;
   }
 }
 
@@ -202,34 +214,15 @@ onMounted(() => {
   z-index: -1;
 }
 
-.flip-card-gloss {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 50%;
-  border-radius: 16px 16px 0 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 10;
-}
-
 @media (max-width: 768px) {
   .flip-card {
     width: 56px;
     height: 80px;
   }
 
-  .flip-card-card1 span,
-  .flip-card-card2 span,
-  .flip-card-card3 span,
-  .flip-card-card4 span {
+  .digit-top,
+  .digit-bottom {
     font-size: 52px;
-  }
-
-  .flip-card-card1 span,
-  .flip-card-card3 span {
-    line-height: 80px;
   }
 }
 
@@ -239,16 +232,9 @@ onMounted(() => {
     height: 68px;
   }
 
-  .flip-card-card1 span,
-  .flip-card-card2 span,
-  .flip-card-card3 span,
-  .flip-card-card4 span {
+  .digit-top,
+  .digit-bottom {
     font-size: 44px;
-  }
-
-  .flip-card-card1 span,
-  .flip-card-card3 span {
-    line-height: 68px;
   }
 }
 
@@ -258,23 +244,30 @@ onMounted(() => {
     height: 60px;
   }
 
-  .flip-card-card1 span,
-  .flip-card-card2 span,
-  .flip-card-card3 span,
-  .flip-card-card4 span {
+  .digit-top,
+  .digit-bottom {
     font-size: 38px;
-  }
-
-  .flip-card-card1 span,
-  .flip-card-card3 span {
-    line-height: 60px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flip-card.flip .flip-card-card2,
-  .flip-card.flip .flip-card-card3 {
+  .flip-card.flip .flip-card-top-top,
+  .flip-card.flip .flip-card-bottom-bottom {
     animation: none !important;
+  }
+
+  .flip-card-bottom-bottom {
+    opacity: 0;
+  }
+
+  .flip-card.flip .flip-card-bottom-bottom {
+    opacity: 1;
+    transform: rotateX(0deg);
+  }
+
+  .flip-card.flip .flip-card-top-top {
+    opacity: 0;
+    transform: rotateX(-180deg);
   }
 }
 </style>
