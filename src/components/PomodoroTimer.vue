@@ -29,9 +29,14 @@
           class="ring-glow-outer"
           :style="{ boxShadow: `0 0 80px ${pomodoroStore.currentColor}30` }"
         ></div>
-        <!-- 脉冲环：运行时从内向外扩散，形成交错脉冲效果 -->
-        <div class="pulse-ring"></div>
-        <div class="pulse-ring-2"></div>
+        <!-- 涟漪扩散环：运行时多层连续向外扩散，形成水波纹效果 -->
+        <div class="ripple-ring ripple-1"></div>
+        <div class="ripple-ring ripple-2"></div>
+        <div class="ripple-ring ripple-3"></div>
+        <div class="ripple-ring ripple-4"></div>
+        <!-- 圆环内部脉冲：从中心向外扩散的光晕，呼应外圈涟漪 -->
+        <div class="inner-pulse"></div>
+        <div class="inner-pulse inner-pulse-2"></div>
         <svg class="progress-ring" viewBox="0 0 200 200">
           <defs>
             <linearGradient
@@ -585,33 +590,86 @@ onMounted(() => {
   }
 }
 
-/* 脉冲环：运行时从内向外扩散，形成交错脉冲效果 */
-.pulse-ring,
-.pulse-ring-2 {
+/* 涟漪扩散环：运行时多层连续向外扩散，形成水波纹效果 */
+.ripple-ring {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid var(--glow-color, transparent);
+  border: 1px solid var(--glow-color, transparent);
   opacity: 0;
   pointer-events: none;
 }
 
-.pomodoro-timer.is-running .pulse-ring {
-  animation: pulseExpand 3s ease-out infinite;
+.pomodoro-timer.is-running .ripple-1 {
+  animation: rippleExpand 3s ease-out infinite;
 }
-
-.pomodoro-timer.is-running .pulse-ring-2 {
-  animation: pulseExpand 3s ease-out infinite;
+.pomodoro-timer.is-running .ripple-2 {
+  animation: rippleExpand 3s ease-out infinite;
+  animation-delay: 0.75s;
+}
+.pomodoro-timer.is-running .ripple-3 {
+  animation: rippleExpand 3s ease-out infinite;
   animation-delay: 1.5s;
 }
+.pomodoro-timer.is-running .ripple-4 {
+  animation: rippleExpand 3s ease-out infinite;
+  animation-delay: 2.25s;
+}
 
-@keyframes pulseExpand {
+@keyframes rippleExpand {
   0% {
-    transform: scale(1);
+    transform: scale(0.95);
+    opacity: 0;
+    border-width: 2px;
+  }
+  15% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+    border-width: 0.5px;
+  }
+}
+
+/* 圆环内部脉冲：从中心向外扩散的光晕，呼应外圈涟漪 */
+.inner-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--glow-color, transparent) 0%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(8px);
+}
+
+.pomodoro-timer.is-running .inner-pulse {
+  animation: innerPulse 2.4s ease-out infinite;
+}
+
+.pomodoro-timer.is-running .inner-pulse-2 {
+  animation: innerPulse 2.4s ease-out infinite;
+  animation-delay: 1.2s;
+}
+
+@keyframes innerPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+  }
+  30% {
     opacity: 0.5;
   }
   100% {
-    transform: scale(1.18);
+    transform: translate(-50%, -50%) scale(1.1);
     opacity: 0;
   }
 }
@@ -1752,8 +1810,8 @@ onMounted(() => {
   }
 
   .pomodoro-timer.is-running .glow-effect,
-  .pomodoro-timer.is-running .pulse-ring,
-  .pomodoro-timer.is-running .pulse-ring-2,
+  .pomodoro-timer.is-running .ripple-ring,
+  .pomodoro-timer.is-running .inner-pulse,
   .control-btn.primary-btn.running,
   .time-separator .dot,
   .burst-particle {
