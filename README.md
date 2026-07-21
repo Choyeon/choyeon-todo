@@ -30,7 +30,7 @@
 
 - **Quick add** — Just type and press enter. Dates, times, and priorities are detected automatically as you type.
 - **Calendar view** — See your tasks on a month view or timeline. Drag tasks around to reschedule.
-- **Pomodoro timer** — Focus sessions with short and long breaks. Attach a timer to any task.
+- **Pomodoro timer** — Focus sessions with short and long breaks. Fullscreen focus mode. Attach a timer to any task.
 - **Stats** — Track how many tasks you've finished, how long you've focused, and your streak.
 - **Light & dark themes** — Follows your system preference, or pick manually.
 - **Cross-platform** — Same experience on Windows, macOS, and web.
@@ -62,7 +62,7 @@ The web version is available here:
 
 ## Download
 
-### Latest release: v1.0.2
+### Latest release: v1.3.0
 
 | Platform | Download |
 |----------|----------|
@@ -162,6 +162,17 @@ Vue 3 · Vite · Pinia · Vue Router · Electron · electron-builder · Vitest �
 ---
 
 ## Changelog
+
+### v1.3.0 — 2026-07-22
+
+- Redesigned pomodoro timer with glowing text and ring effects
+- Added task picker directly in pomodoro view — select tasks without leaving the timer
+- Web fullscreen focus mode with browser native Fullscreen API
+- Removed flip card animation for a cleaner, more stable display
+- Enhanced progress ring with glow effects and smoother transitions
+- Fixed pomodoro timer countdown accuracy
+- Optimized code quality: ESLint, Prettier, 94 unit tests passing
+- Multiple UI refinements for better visual consistency
 
 ### v1.0.2 — 2026-07-18
 
