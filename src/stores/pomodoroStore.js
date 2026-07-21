@@ -323,9 +323,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       const elapsed = Math.floor((now - lastTickTimestamp.value) / 1000)
       if (elapsed > 0) {
         timeLeft.value = Math.max(0, timeLeft.value - elapsed)
+        lastTickTimestamp.value = now
       }
+    } else {
+      lastTickTimestamp.value = now
     }
-    lastTickTimestamp.value = now
 
     if (timeLeft.value <= 0) {
       completeSessionInternal()
