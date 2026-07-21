@@ -24,6 +24,18 @@
           class="ring-glow"
           :style="{ boxShadow: `0 0 100px ${pomodoroStore.currentColor}30` }"
         ></div>
+        <!-- 脉冲扩散环 -->
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring-2"></div>
+        <!-- 粒子爆发容器 -->
+        <div class="particle-burst" v-if="showParticles">
+          <div
+            class="burst-particle"
+            v-for="i in 16"
+            :key="i"
+            :style="getBurstParticleStyle(i)"
+          ></div>
+        </div>
         <svg class="progress-ring" viewBox="0 0 400 400">
           <circle cx="200" cy="200" r="180" fill="none" stroke-width="12" class="ring-bg" />
           <circle
@@ -149,7 +161,7 @@
         >
           <RotateCcw :size="22" />
         </button>
-        <button class="ctrl-btn primary" @click="pomodoroStore.toggleTimer()">
+        <button class="ctrl-btn primary" @click="handleToggleTimer">
           <Play v-if="!pomodoroStore.isRunning" :size="32" />
           <Pause v-else :size="32" />
         </button>
@@ -162,7 +174,7 @@
 </template>
 
 <script setup>
-import { computed, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
@@ -185,6 +197,34 @@ const incompleteTasks = computed(() =>
 const selectTask = (taskId) => {
   taskStore.focusTask(taskId)
   showTaskPicker.value = false
+}
+
+// 粒子爆发效果
+const showParticles = ref(false)
+
+const handleToggleTimer = () => {
+  // 从暂停切换为运行时触发粒子爆发
+  if (!pomodoroStore.isRunning) {
+    showParticles.value = true
+    setTimeout(() => {
+      showParticles.value = false
+    }, 1000)
+  }
+  pomodoroStore.toggleTimer()
+}
+
+const getBurstParticleStyle = (i) => {
+  // 16个粒子均匀向四周发散
+  const angle = (i - 1) * 22.5
+  const distance = 120 + Math.random() * 60
+  const rad = (angle * Math.PI) / 180
+  const x = Math.cos(rad) * distance
+  const y = Math.sin(rad) * distance
+  return {
+    '--tx': x + 'px',
+    '--ty': y + 'px',
+    animationDelay: i * 0.02 + 's'
+  }
 }
 
 const progressOffset = computed(
@@ -483,6 +523,68 @@ onMounted(async () => {
   100% {
     opacity: 0.4;
     transform: scale(1);
+  }
+}
+
+/* 脉冲扩散环 */
+.pulse-ring,
+.pulse-ring-2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--glow-color, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pulse-ring {
+  animation: pulseExpand 3s ease-out infinite;
+}
+
+.pulse-ring-2 {
+  animation: pulseExpand 3s ease-out infinite;
+  animation-delay: 1.5s;
+}
+
+@keyframes pulseExpand {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+/* 粒子爆发 */
+.particle-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.burst-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--glow-color, #ef4444);
+  box-shadow: 0 0 12px var(--glow-color, #ef4444);
+  animation: burstFly 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes burstFly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0);
+    opacity: 0;
   }
 }
 
