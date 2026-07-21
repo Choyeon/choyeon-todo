@@ -14,7 +14,6 @@
         <span class="digit-bottom">{{ displayValue }}</span>
       </div>
     </div>
-    <div class="flip-card-shadow"></div>
   </div>
 </template>
 
@@ -31,17 +30,25 @@ const props = defineProps({
 const displayValue = ref(props.value)
 const nextValue = ref(props.value)
 const isFlipping = ref(false)
+let flipTimer = null
 
 watch(
   () => props.value,
   (newVal, oldVal) => {
     if (newVal !== oldVal) {
+      if (flipTimer) clearTimeout(flipTimer)
       nextValue.value = newVal
-      isFlipping.value = true
+      // Use double rAF to ensure DOM updates before animation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          isFlipping.value = true
+        })
+      })
 
-      setTimeout(() => {
+      flipTimer = setTimeout(() => {
         displayValue.value = newVal
         isFlipping.value = false
+        flipTimer = null
       }, 600)
     }
   }
@@ -58,7 +65,7 @@ onMounted(() => {
   position: relative;
   width: 72px;
   height: 100px;
-  perspective: 600px;
+  perspective: 400px;
   font-family: var(--font-mono, 'SF Mono', 'Monaco', 'Courier New', monospace);
   font-variant-numeric: tabular-nums;
 }
@@ -68,9 +75,9 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  -webkit-transform-style: preserve-3d;
 }
 
+/* Center divider line */
 .flip-card-inner::before {
   content: '';
   position: absolute;
@@ -78,7 +85,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 2px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   transform: translateY(-50%);
   z-index: 20;
   pointer-events: none;
@@ -89,12 +96,11 @@ onMounted(() => {
   width: 100%;
   height: 50%;
   overflow: hidden;
-  background: linear-gradient(
-    180deg,
-    var(--color-bg-tertiary) 0%,
-    var(--color-bg-secondary) 100%
-  );
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--color-bg-tertiary);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .digit-top,
@@ -105,10 +111,9 @@ onMounted(() => {
   width: 100%;
   height: 200%;
   font-size: 68px;
-  font-weight: 200;
+  font-weight: 300;
   color: var(--color-text-primary);
   line-height: 1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .digit-top {
@@ -119,17 +124,37 @@ onMounted(() => {
   transform: translateY(-50%);
 }
 
+/* Static layers - always visible */
 .flip-card-bottom-top {
   top: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: none;
   z-index: 1;
 }
 
+.flip-card-top-bottom {
+  bottom: 0;
+  border-radius: 0 0 16px 16px;
+  border-top: none;
+  z-index: 1;
+}
+
+/* Animated top half - flips away */
+.flip-card-top-top {
+  top: 0;
+  border-radius: 16px 16px 0 0;
+  border-bottom: none;
+  transform-origin: bottom center;
+  z-index: 3;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Animated bottom half - flips in from back */
 .flip-card-bottom-bottom {
   bottom: 0;
   border-radius: 0 0 16px 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  border-top: none;
   transform-origin: top center;
   transform: rotateX(180deg);
   z-index: 2;
@@ -138,29 +163,13 @@ onMounted(() => {
   opacity: 0;
 }
 
-.flip-card-top-top {
-  top: 0;
-  border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  transform-origin: bottom center;
-  z-index: 3;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.flip-card-top-bottom {
-  bottom: 0;
-  border-radius: 0 0 16px 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  z-index: 1;
-}
-
+/* Animation trigger */
 .flip-card.flip .flip-card-top-top {
-  animation: flipTopDown 0.6s ease-in-out forwards;
+  animation: flipTopDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .flip-card.flip .flip-card-bottom-bottom {
-  animation: flipBottomUp 0.6s ease-in-out forwards;
+  animation: flipBottomUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes flipTopDown {
@@ -168,10 +177,11 @@ onMounted(() => {
     transform: rotateX(0deg);
     opacity: 1;
   }
-  45% {
+  50% {
+    transform: rotateX(-90deg);
     opacity: 1;
   }
-  55% {
+  50.01% {
     opacity: 0;
   }
   100% {
@@ -185,31 +195,17 @@ onMounted(() => {
     transform: rotateX(180deg);
     opacity: 0;
   }
-  45% {
+  49.99% {
     opacity: 0;
   }
-  55% {
+  50% {
+    transform: rotateX(90deg);
     opacity: 1;
   }
   100% {
     transform: rotateX(0deg);
     opacity: 1;
   }
-}
-
-.flip-card-shadow {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  right: 4px;
-  bottom: 4px;
-  border-radius: 16px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  pointer-events: none;
-  z-index: -1;
 }
 
 @media (max-width: 768px) {

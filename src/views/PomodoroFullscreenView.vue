@@ -55,7 +55,18 @@
           }"
         ></div>
         <div class="timer-display">
-          <span class="time-text">{{ pomodoroStore.formattedTime }}</span>
+          <div class="time-container">
+            <div class="time-unit">
+              <FlipCard :value="formattedMinutes" />
+            </div>
+            <span class="time-separator">
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </span>
+            <div class="time-unit">
+              <FlipCard :value="formattedSeconds" />
+            </div>
+          </div>
           <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
         </div>
       </div>
@@ -131,20 +142,33 @@
 
 <script setup>
 import { computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
 import { Timer, Play, Pause, RotateCcw, Edit3 } from '@lucide/vue'
+import FlipCard from '../components/FlipCard.vue'
 
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
 const pomodoroStore = usePomodoroStore()
+const router = useRouter()
 
 const circumference = 2 * Math.PI * 180
 
 const progressOffset = computed(
   () => circumference * (1 - pomodoroStore.timeLeft / pomodoroStore.totalTime)
 )
+
+const formattedMinutes = computed(() => {
+  const minutes = Math.floor(pomodoroStore.timeLeft / 60)
+  return String(minutes).padStart(2, '0')
+})
+
+const formattedSeconds = computed(() => {
+  const seconds = pomodoroStore.timeLeft % 60
+  return String(seconds).padStart(2, '0')
+})
 
 const getParticleStyle = (_) => {
   const size = 2 + Math.random() * 4
@@ -172,12 +196,30 @@ const isDotFilled = (i) => {
 const exitFullscreen = () => {
   if (window.electronAPI?.closePomodoroFullscreen) {
     window.electronAPI.closePomodoroFullscreen()
+  } else {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {})
+    }
+    router.push('/pomodoro')
   }
 }
 
 onMounted(async () => {
   pomodoroStore.setupWatchers(watch)
   pomodoroStore.initElectronMode()
+
+  // Web 端请求浏览器原生全屏
+  if (!window.electronAPI) {
+    const el = document.documentElement
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {})
+    }
+    // ESC 键退出
+    const handleKeydown = (e) => {
+      if (e.key === 'Escape') exitFullscreen()
+    }
+    document.addEventListener('keydown', handleKeydown)
+  }
 })
 
 // 子窗口不清理主窗口的定时器
@@ -481,18 +523,76 @@ onMounted(async () => {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
-.time-text {
-  display: block;
-  font-size: 88px;
+.time-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 全屏模式翻转卡片放大 */
+.time-container :deep(.flip-card) {
+  width: 120px;
+  height: 170px;
+}
+
+.time-container :deep(.flip-card-card) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.time-container :deep(.digit-top),
+.time-container :deep(.digit-bottom) {
+  font-size: 120px;
   font-weight: 200;
   color: rgba(255, 255, 255, 0.95);
-  font-family: var(--font-mono, var(--font-body));
-  letter-spacing: 6px;
-  line-height: 1;
-  margin-bottom: 12px;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.time-container :deep(.flip-card-inner::before) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-separator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.time-separator .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  animation: separatorPulse 1s ease-in-out infinite;
+}
+
+.time-separator .dot:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+@keyframes separatorPulse {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
 }
 
 .mode-label {

@@ -199,12 +199,7 @@
       </button>
     </div>
 
-    <button
-      v-if="isElectron"
-      class="fullscreen-btn"
-      @click="openFullscreen"
-      :title="$t('pomodoro.fullscreen')"
-    >
+    <button class="fullscreen-btn" @click="openFullscreen" :title="$t('pomodoro.fullscreen')">
       <Maximize2 :size="16" />
       <span>{{ $t('pomodoro.fullscreen') }}</span>
     </button>
@@ -261,6 +256,7 @@
 
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
@@ -290,6 +286,7 @@ import {
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
 const pomodoroStore = usePomodoroStore()
+const router = useRouter()
 
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI
 const showNoisePanel = ref(false)
@@ -340,6 +337,8 @@ const isDotFilled = (i) => {
 const openFullscreen = () => {
   if (window.electronAPI?.openPomodoroFullscreen) {
     window.electronAPI.openPomodoroFullscreen()
+  } else {
+    router.push('/pomodoro-fullscreen')
   }
 }
 
