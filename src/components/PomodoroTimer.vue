@@ -24,52 +24,61 @@
 
     <div class="timer-container">
       <div class="progress-ring-wrapper">
-        <div class="ring-glow-outer" :style="{ boxShadow: `0 0 60px ${pomodoroStore.currentColor}20` }"></div>
+        <div class="ring-glow-outer" :style="{ boxShadow: `0 0 80px ${pomodoroStore.currentColor}30` }"></div>
         <svg class="progress-ring" viewBox="0 0 200 200">
-          <circle class="progress-ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="8" />
+          <defs>
+            <linearGradient :id="'gradient-' + pomodoroStore.currentMode" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" :stop-color="pomodoroStore.currentColor" stop-opacity="0.3" />
+              <stop offset="50%" :stop-color="pomodoroStore.currentColor" stop-opacity="1" />
+              <stop offset="100%" :stop-color="pomodoroStore.currentColor" stop-opacity="0.3" />
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <circle class="progress-ring-bg" cx="100" cy="100" r="88" fill="none" stroke-width="6" />
           <circle
             class="progress-ring-fill"
             cx="100"
             cy="100"
             r="88"
             fill="none"
-            stroke-width="8"
+            stroke-width="6"
             stroke-linecap="round"
             :stroke-dasharray="circumference"
             :stroke-dashoffset="progressOffset"
-            :style="{ stroke: pomodoroStore.currentColor }"
+            :stroke="`url(#gradient-${pomodoroStore.currentMode})`"
+            filter="url(#glow)"
           />
           <circle
             class="progress-ring-inner"
             cx="100"
             cy="100"
-            r="78"
+            r="80"
             fill="none"
             stroke-width="1"
-            :style="{ stroke: `${pomodoroStore.currentColor}30` }"
+            :style="{ stroke: `${pomodoroStore.currentColor}20` }"
           />
         </svg>
-        <div class="glow-effect" :style="{ background: `${pomodoroStore.currentColor}20` }"></div>
-        <div class="glow-effect-inner" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}10 0%, transparent 70%)` }"></div>
+        <div class="glow-effect" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}25 0%, transparent 70%)` }"></div>
+        <div class="glow-effect-inner" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}15 0%, transparent 60%)` }"></div>
       </div>
+      
       <div class="timer-display">
         <div class="time-container">
-          <div class="time-unit">
-            <div class="flip-card">
-              <div class="flip-card-inner">
-                <div class="flip-card-top">{{ formattedMinutes }}</div>
-                <div class="flip-card-bottom">{{ formattedMinutes }}</div>
-              </div>
-            </div>
+          <div class="time-unit minutes">
+            <FlipCard :value="formattedMinutes" />
           </div>
-          <span class="time-separator">:</span>
-          <div class="time-unit">
-            <div class="flip-card">
-              <div class="flip-card-inner">
-                <div class="flip-card-top">{{ formattedSeconds }}</div>
-                <div class="flip-card-bottom">{{ formattedSeconds }}</div>
-              </div>
-            </div>
+          <span class="time-separator">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </span>
+          <div class="time-unit seconds">
+            <FlipCard :value="formattedSeconds" />
           </div>
         </div>
         <Transition name="mode-fade" mode="out-in">
@@ -131,7 +140,7 @@
             i <= pomodoroStore.completedPomodoros
               ? {
                   backgroundColor: pomodoroStore.currentColor,
-                  boxShadow: `0 0 6px ${pomodoroStore.currentColor}80`
+                  boxShadow: `0 0 8px ${pomodoroStore.currentColor}60`
                 }
               : {}
           "
@@ -218,10 +227,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
+import FlipCard from './FlipCard.vue'
 import {
   Timer,
   Play,
@@ -304,9 +314,6 @@ onMounted(() => {
   pomodoroStore.requestNotificationPermission()
   pomodoroStore.setupWatchers(watch)
 })
-
-// 主组件不清理定时器，由 store 自身管理
-// cleanup() 仅在 store 销毁时调用
 </script>
 
 <style scoped>
@@ -315,20 +322,21 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 36px 28px 32px;
+  padding: 40px 32px 36px;
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
   box-shadow: 
     0 1px 2px rgba(0, 0, 0, 0.03),
-    0 8px 32px rgba(0, 0, 0, 0.04);
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition:
     background var(--transition-fluid),
     border-color var(--transition-smooth),
     box-shadow var(--transition-smooth);
   min-width: 0;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -337,31 +345,31 @@ onMounted(() => {
   position: absolute;
   left: 0;
   right: 0;
-  height: 120px;
+  height: 150px;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .decoration-top {
-  top: -60px;
+  top: -75px;
   background: radial-gradient(ellipse at top center, var(--color-primary-light) 0%, transparent 70%);
 }
 
 .decoration-bottom {
-  bottom: -60px;
+  bottom: -75px;
   background: radial-gradient(ellipse at bottom center, var(--color-primary-light) 0%, transparent 70%);
 }
 
 .mode-tabs {
   display: flex;
   gap: 2px;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
   padding: 4px;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-full);
   position: relative;
   width: 100%;
-  max-width: 320px;
+  max-width: 340px;
   min-width: 0;
   flex-wrap: nowrap;
   z-index: 1;
@@ -370,7 +378,7 @@ onMounted(() => {
 .mode-tab {
   position: relative;
   z-index: 1;
-  padding: 8px 14px;
+  padding: 10px 16px;
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
@@ -387,10 +395,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
-  min-height: 44px;
+  min-height: 48px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -404,10 +412,10 @@ onMounted(() => {
   color: var(--color-text-primary);
   background: var(--color-surface);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.08),
     0 1px 2px rgba(0, 0, 0, 0.04),
-    0 4px 12px rgba(0, 0, 0, 0.06);
-  transform: scale(1.03);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: scale(1.04);
 }
 
 .pomodoro-timer.mode-work .mode-tab.active {
@@ -424,9 +432,9 @@ onMounted(() => {
 
 .timer-container {
   position: relative;
-  width: 260px;
-  height: 260px;
-  margin-bottom: 28px;
+  width: 280px;
+  height: 280px;
+  margin-bottom: 32px;
   flex-shrink: 0;
   z-index: 1;
 }
@@ -440,7 +448,7 @@ onMounted(() => {
 
 .ring-glow-outer {
   position: absolute;
-  inset: -20px;
+  inset: -30px;
   border-radius: 50%;
   opacity: 0;
   transition: opacity var(--duration-slow) var(--ease-out-quart);
@@ -448,16 +456,18 @@ onMounted(() => {
 }
 
 .pomodoro-timer.is-running .ring-glow-outer {
-  opacity: 0.6;
-  animation: glowPulse 3s ease-in-out infinite;
+  opacity: 0.5;
+  animation: glowPulse 4s ease-in-out infinite;
 }
 
 @keyframes glowPulse {
   0%, 100% {
-    opacity: 0.4;
+    opacity: 0.3;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.7;
+    opacity: 0.6;
+    transform: scale(1.05);
   }
 }
 
@@ -465,26 +475,24 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .progress-ring-bg {
   stroke: var(--color-border-light);
-  stroke-width: 4;
-  opacity: 0.6;
+  stroke-width: 6;
+  opacity: 0.4;
 }
 
 .progress-ring-fill {
   transition:
-    stroke-dashoffset 0.6s var(--ease-out-expo),
+    stroke-dashoffset 0.8s var(--ease-out-expo),
     stroke 0.4s var(--ease-out-quart);
-  stroke-width: 4;
+  stroke-width: 6;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 6px currentColor);
 }
 
 .progress-ring-inner {
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .glow-effect {
@@ -492,14 +500,14 @@ onMounted(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 83.33%;
-  height: 83.33%;
+  width: 85%;
+  height: 85%;
   border-radius: 50%;
-  opacity: 0.1;
+  opacity: 0.15;
   transition:
     opacity var(--duration-slow) var(--ease-out-quart),
     filter var(--transition-smooth);
-  filter: blur(24px);
+  filter: blur(30px);
   pointer-events: none;
 }
 
@@ -511,45 +519,49 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  opacity: 0.5;
+  opacity: 0.4;
   transition: opacity var(--duration-slow) var(--ease-out-quart);
   pointer-events: none;
 }
 
 .pomodoro-timer.is-paused .glow-effect {
   opacity: 0.08;
-  filter: blur(20px);
+  filter: blur(25px);
 }
 
 .pomodoro-timer.is-running.mode-work .glow-effect {
-  animation: glowBreathingWork 3.5s var(--ease-in-out-quart) infinite;
+  animation: glowBreathingWork 4s var(--ease-in-out-quart) infinite;
 }
 
 .pomodoro-timer.is-running.mode-shortBreak .glow-effect {
-  animation: glowBreathingBreak 4s var(--ease-in-out-quart) infinite;
+  animation: glowBreathingBreak 4.5s var(--ease-in-out-quart) infinite;
 }
 
 .pomodoro-timer.is-running.mode-longBreak .glow-effect {
-  animation: glowBreathingBreak 4.5s var(--ease-in-out-quart) infinite;
+  animation: glowBreathingBreak 5s var(--ease-in-out-quart) infinite;
 }
 
 @keyframes glowBreathingWork {
   0%,
   100% {
-    opacity: 0.22;
+    opacity: 0.2;
+    filter: blur(28px);
   }
   50% {
-    opacity: 0.34;
+    opacity: 0.35;
+    filter: blur(35px);
   }
 }
 
 @keyframes glowBreathingBreak {
   0%,
   100% {
-    opacity: 0.18;
+    opacity: 0.15;
+    filter: blur(25px);
   }
   50% {
     opacity: 0.28;
+    filter: blur(32px);
   }
 }
 
@@ -563,13 +575,13 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .time-container {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .time-unit {
@@ -578,64 +590,35 @@ onMounted(() => {
   align-items: center;
 }
 
-.flip-card {
-  position: relative;
-  width: 60px;
-  height: 80px;
-  perspective: 300px;
-}
-
-.flip-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.flip-card-top,
-.flip-card-bottom {
-  position: absolute;
-  width: 100%;
-  height: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 56px;
-  font-weight: 300;
-  color: var(--color-text-primary);
-  font-family: var(--font-mono, var(--font-body));
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  background: var(--color-surface);
-}
-
-.flip-card-top {
-  top: 0;
-  border-radius: 12px 12px 0 0;
-  border-bottom: 1px solid var(--color-border-light);
-  align-items: flex-end;
-}
-
-.flip-card-bottom {
-  bottom: 0;
-  border-radius: 0 0 12px 12px;
-  border-top: 1px solid var(--color-border-light);
-  align-items: flex-start;
-}
-
 .time-separator {
-  font-size: 48px;
-  font-weight: 200;
-  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   margin-top: -8px;
+}
+
+.time-separator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-primary);
+  opacity: 0.7;
   animation: separatorPulse 1s ease-in-out infinite;
+}
+
+.time-separator .dot:nth-child(2) {
+  animation-delay: 0.5s;
 }
 
 @keyframes separatorPulse {
   0%, 100% {
-    opacity: 1;
+    opacity: 0.8;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.3;
+    transform: scale(0.8);
   }
 }
 
@@ -643,33 +626,12 @@ onMounted(() => {
   display: block;
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  font-weight: 500;
-  letter-spacing: 1.5px;
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
   transition: color var(--transition-fluid);
 }
 
-/* 时间数字模式切换淡入淡出 */
-.time-fade-enter-active {
-  transition:
-    opacity var(--duration-normal) var(--ease-out-expo),
-    transform var(--duration-normal) var(--ease-out-expo);
-}
-.time-fade-leave-active {
-  transition:
-    opacity var(--duration-fast) var(--ease-out-quart),
-    transform var(--duration-fast) var(--ease-out-quart);
-}
-.time-fade-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
-}
-.time-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
-/* 模式标签淡入淡出 */
 .mode-fade-enter-active {
   transition: opacity var(--duration-normal) var(--ease-out-quart);
 }
@@ -684,8 +646,8 @@ onMounted(() => {
 .custom-duration-toggle {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
+  gap: 6px;
+  padding: 8px 16px;
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
@@ -696,7 +658,7 @@ onMounted(() => {
   transition:
     background var(--transition-smooth),
     color var(--transition-smooth);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .custom-duration-toggle:hover {
@@ -708,26 +670,26 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 14px 18px;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-md);
   width: 100%;
-  max-width: 200px;
+  max-width: 220px;
 }
 
 .custom-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .custom-input {
-  width: 72px;
-  padding: 6px 10px;
+  width: 80px;
+  padding: 8px 12px;
   border: none;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-body);
@@ -745,11 +707,11 @@ onMounted(() => {
 
 .custom-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .custom-btn {
-  padding: 5px 18px;
+  padding: 6px 20px;
   border: none;
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
@@ -784,9 +746,9 @@ onMounted(() => {
 .current-task {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding: 10px 18px;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 12px 20px;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-lg);
   max-width: 100%;
@@ -821,7 +783,7 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 220px;
+  max-width: 240px;
   min-width: 0;
   flex: 1;
 }
@@ -829,23 +791,23 @@ onMounted(() => {
 .pomodoro-count {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
+  gap: 14px;
+  margin-bottom: 36px;
 }
 
 .count-dots {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 13px;
+  gap: 8px;
+  padding: 8px 15px;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-full);
   transition: background var(--transition-smooth);
 }
 
 .count-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--color-border-light);
   transition:
@@ -855,13 +817,13 @@ onMounted(() => {
 }
 
 .count-dot.filled {
-  transform: scale(1.3);
+  transform: scale(1.4);
 }
 
 .count-text {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 5px;
   margin-left: 4px;
   letter-spacing: 0.3px;
 }
@@ -884,8 +846,8 @@ onMounted(() => {
 .controls {
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 20px;
+  gap: 28px;
+  margin-bottom: 24px;
   min-width: 0;
   flex-wrap: nowrap;
 }
@@ -909,8 +871,8 @@ onMounted(() => {
 
 .control-btn.reset-btn,
 .control-btn.reset-btn-secondary {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   min-width: 44px;
   min-height: 44px;
   background: var(--color-bg-secondary);
@@ -941,11 +903,11 @@ onMounted(() => {
 }
 
 .control-btn.primary-btn {
-  width: 76px;
-  height: 76px;
+  width: 80px;
+  height: 80px;
   background: #ef4444;
   color: white;
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.35);
   transition:
     background var(--transition-fluid),
     transform var(--transition-spring-soft),
@@ -954,25 +916,25 @@ onMounted(() => {
 
 .pomodoro-timer.mode-shortBreak .control-btn.primary-btn {
   background: #22c55e;
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35);
 }
 
 .pomodoro-timer.mode-longBreak .control-btn.primary-btn {
   background: #06b6d4;
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.3);
+  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.35);
 }
 
 .control-btn.primary-btn:hover:not(.running) {
-  transform: translateY(-3px) scale(1.06);
-  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.4);
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 14px 36px rgba(239, 68, 68, 0.45);
 }
 
 .pomodoro-timer.mode-shortBreak .control-btn.primary-btn:hover:not(.running) {
-  box-shadow: 0 12px 30px rgba(34, 197, 94, 0.4);
+  box-shadow: 0 14px 36px rgba(34, 197, 94, 0.45);
 }
 
 .pomodoro-timer.mode-longBreak .control-btn.primary-btn:hover:not(.running) {
-  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.4);
+  box-shadow: 0 14px 36px rgba(6, 182, 212, 0.45);
 }
 
 .control-btn.primary-btn:active {
@@ -980,24 +942,24 @@ onMounted(() => {
 }
 
 .control-btn.primary-btn.running {
-  animation: btnPulse 2.5s var(--ease-in-out-quart) infinite;
+  animation: btnPulse 3s var(--ease-in-out-quart) infinite;
 }
 
 @keyframes btnPulse {
   0%,
   100% {
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.35);
   }
   50% {
-    box-shadow: 0 6px 32px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 8px 40px rgba(239, 68, 68, 0.55);
   }
 }
 
 .fullscreen-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 10px 18px;
   border: none;
   border-radius: var(--radius-full);
   background: transparent;
@@ -1020,8 +982,8 @@ onMounted(() => {
 .fab-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 10px 18px;
   border: none;
   border-radius: var(--radius-full);
   background: transparent;
@@ -1041,300 +1003,19 @@ onMounted(() => {
   background: var(--color-bg-secondary);
 }
 
-@media (max-width: 768px) {
-  .pomodoro-timer {
-    padding: 20px 16px 24px;
-    border-radius: var(--radius-lg);
-  }
-
-  .mode-tabs {
-    margin-bottom: 24px;
-    max-width: 100%;
-  }
-
-  .mode-tab {
-    padding: 6px 10px;
-    font-size: var(--font-size-xs);
-    min-height: 44px;
-    gap: 4px;
-  }
-
-  .mode-tab span {
-    display: none;
-  }
-
-  .timer-container {
-    width: 200px;
-    height: 200px;
-    margin-bottom: 24px;
-  }
-
-  .glow-effect {
-    filter: blur(20px);
-  }
-
-  .time-text {
-    font-size: 44px;
-    letter-spacing: 1px;
-  }
-
-  .mode-label {
-    font-size: var(--font-size-2xs);
-    letter-spacing: 1px;
-  }
-
-  .custom-duration {
-    max-width: 100%;
-    padding: 12px 14px;
-  }
-
-  .current-task {
-    padding: 10px 14px;
-    margin-bottom: 16px;
-  }
-
-  .task-title {
-    max-width: none;
-    font-size: var(--font-size-sm);
-  }
-
-  .pomodoro-count {
-    margin-bottom: 24px;
-    gap: 8px;
-  }
-
-  .count-dots {
-    padding: 6px 11px;
-    gap: 6px;
-  }
-
-  .count-dot {
-    width: 6px;
-    height: 6px;
-  }
-
-  .count-text {
-    margin-left: 2px;
-  }
-
-  .count-number {
-    font-size: var(--font-size-sm);
-  }
-
-  .count-label {
-    font-size: var(--font-size-3xs);
-  }
-
-  .controls {
-    gap: 20px;
-    margin-bottom: 16px;
-  }
-
-  .control-btn.reset-btn,
-  .control-btn.reset-btn-secondary {
-    width: 48px;
-    height: 48px;
-  }
-
-  .control-btn.primary-btn {
-    width: 68px;
-    height: 68px;
-  }
-
-  .fullscreen-btn,
-  .fab-btn {
-    padding: 10px 14px;
-    min-height: 44px;
-  }
-}
-
-@media (max-width: 380px) {
-  .pomodoro-timer {
-    padding: 16px 12px 20px;
-    max-width: 340px;
-  }
-
-  .mode-tabs {
-    margin-bottom: 16px;
-    padding: 3px;
-  }
-
-  .mode-tab {
-    padding: 8px 6px;
-    font-size: var(--font-size-2xs);
-    min-height: 44px;
-  }
-
-  .mode-tab span {
-    display: none;
-  }
-
-  .timer-container {
-    width: 170px;
-    height: 170px;
-    margin-bottom: 16px;
-  }
-
-  .time-text {
-    font-size: 36px;
-    letter-spacing: 0;
-  }
-
-  .mode-label {
-    font-size: var(--font-size-3xs);
-    letter-spacing: 0.5px;
-  }
-
-  .current-task {
-    padding: 8px 12px;
-    margin-bottom: 12px;
-  }
-
-  .task-title {
-    font-size: var(--font-size-xs);
-  }
-
-  .pomodoro-count {
-    margin-bottom: 16px;
-    gap: 6px;
-  }
-
-  .count-dots {
-    padding: 5px 9px;
-    gap: 5px;
-  }
-
-  .count-dot {
-    width: 5px;
-    height: 5px;
-  }
-
-  .count-number {
-    font-size: var(--font-size-xs);
-  }
-
-  .count-label {
-    font-size: 9px;
-  }
-
-  .controls {
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .control-btn.reset-btn,
-  .control-btn.reset-btn-secondary {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-  }
-
-  .control-btn.primary-btn {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
-    min-height: 56px;
-  }
-
-  .fullscreen-btn,
-  .fab-btn {
-    padding: 8px 12px;
-    font-size: var(--font-size-2xs);
-    min-height: 44px;
-  }
-}
-
-@media (max-height: 568px) {
-  .pomodoro-timer {
-    padding: 14px 12px 16px;
-  }
-
-  .mode-tabs {
-    margin-bottom: 14px;
-  }
-
-  .timer-container {
-    width: 140px;
-    height: 140px;
-    margin-bottom: 14px;
-  }
-
-  .time-text {
-    font-size: 30px;
-  }
-
-  .mode-label {
-    font-size: var(--font-size-3xs);
-  }
-
-  .current-task {
-    padding: 6px 10px;
-    margin-bottom: 10px;
-  }
-
-  .task-title {
-    font-size: var(--font-size-xs);
-  }
-
-  .pomodoro-count {
-    margin-bottom: 14px;
-  }
-
-  .controls {
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  .control-btn.reset-btn,
-  .control-btn.reset-btn-secondary {
-    width: 40px;
-    height: 40px;
-  }
-
-  .control-btn.primary-btn {
-    width: 52px;
-    height: 52px;
-  }
-
-  .fullscreen-btn,
-  .fab-btn {
-    padding: 6px 10px;
-    font-size: var(--font-size-2xs);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .progress-ring-fill,
-  .glow-effect,
-  .time-text,
-  .mode-label,
-  .count-dot,
-  .control-btn,
-  .mode-tab {
-    transition-duration: 0.01ms !important;
-  }
-
-  .pomodoro-timer.is-running .glow-effect,
-  .pomodoro-timer.is-paused .time-text,
-  .control-btn.primary-btn.running {
-    animation: none !important;
-  }
-}
-
 .noise-section {
   width: 100%;
-  max-width: 320px;
-  margin-top: 16px;
+  max-width: 340px;
+  margin-top: 20px;
 }
 
 .noise-toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 10px 16px;
+  padding: 12px 18px;
   border: none;
   background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
@@ -1361,8 +1042,8 @@ onMounted(() => {
 }
 
 .noise-panel {
-  margin-top: 12px;
-  padding: 16px;
+  margin-top: 14px;
+  padding: 18px;
   background: var(--color-bg-secondary);
   border-radius: var(--radius-lg);
 }
@@ -1370,14 +1051,14 @@ onMounted(() => {
 .noise-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .noise-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 12px 14px;
   border: none;
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -1404,9 +1085,9 @@ onMounted(() => {
 .noise-volume {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-  padding-top: 12px;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
   border-top: 1px solid var(--color-border-light);
 }
 
@@ -1424,8 +1105,8 @@ onMounted(() => {
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background: var(--color-primary);
   border-radius: 50%;
   cursor: pointer;
@@ -1433,12 +1114,12 @@ onMounted(() => {
 }
 
 .volume-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.3);
 }
 
 .volume-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background: var(--color-primary);
   border: none;
   border-radius: 50%;
@@ -1462,5 +1143,271 @@ onMounted(() => {
 .collapse-leave-from {
   opacity: 1;
   max-height: 300px;
+}
+
+@media (max-width: 768px) {
+  .pomodoro-timer {
+    padding: 24px 18px 28px;
+    border-radius: var(--radius-lg);
+  }
+
+  .mode-tabs {
+    margin-bottom: 28px;
+    max-width: 100%;
+  }
+
+  .mode-tab {
+    padding: 8px 12px;
+    font-size: var(--font-size-xs);
+    min-height: 48px;
+    gap: 6px;
+  }
+
+  .mode-tab span {
+    display: none;
+  }
+
+  .timer-container {
+    width: 220px;
+    height: 220px;
+    margin-bottom: 28px;
+  }
+
+  .glow-effect {
+    filter: blur(25px);
+  }
+
+  .mode-label {
+    font-size: var(--font-size-2xs);
+    letter-spacing: 1.5px;
+  }
+
+  .custom-duration {
+    max-width: 100%;
+    padding: 14px 16px;
+  }
+
+  .current-task {
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+
+  .task-title {
+    max-width: none;
+    font-size: var(--font-size-sm);
+  }
+
+  .pomodoro-count {
+    margin-bottom: 28px;
+    gap: 10px;
+  }
+
+  .count-dots {
+    padding: 7px 13px;
+    gap: 7px;
+  }
+
+  .count-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .count-text {
+    margin-left: 2px;
+  }
+
+  .count-number {
+    font-size: var(--font-size-sm);
+  }
+
+  .count-label {
+    font-size: var(--font-size-3xs);
+  }
+
+  .controls {
+    gap: 24px;
+    margin-bottom: 20px;
+  }
+
+  .control-btn.reset-btn,
+  .control-btn.reset-btn-secondary {
+    width: 52px;
+    height: 52px;
+  }
+
+  .control-btn.primary-btn {
+    width: 72px;
+    height: 72px;
+  }
+
+  .fullscreen-btn,
+  .fab-btn {
+    padding: 12px 16px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pomodoro-timer {
+    padding: 20px 14px 24px;
+    max-width: 340px;
+  }
+
+  .mode-tabs {
+    margin-bottom: 20px;
+    padding: 3px;
+  }
+
+  .mode-tab {
+    padding: 10px 8px;
+    font-size: var(--font-size-2xs);
+    min-height: 44px;
+  }
+
+  .mode-tab span {
+    display: none;
+  }
+
+  .timer-container {
+    width: 190px;
+    height: 190px;
+    margin-bottom: 20px;
+  }
+
+  .mode-label {
+    font-size: var(--font-size-3xs);
+    letter-spacing: 1px;
+  }
+
+  .current-task {
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+
+  .task-title {
+    font-size: var(--font-size-xs);
+  }
+
+  .pomodoro-count {
+    margin-bottom: 20px;
+    gap: 8px;
+  }
+
+  .count-dots {
+    padding: 6px 11px;
+    gap: 6px;
+  }
+
+  .count-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .count-number {
+    font-size: var(--font-size-xs);
+  }
+
+  .count-label {
+    font-size: 9px;
+  }
+
+  .controls {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .control-btn.reset-btn,
+  .control-btn.reset-btn-secondary {
+    width: 48px;
+    height: 48px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .control-btn.primary-btn {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+  }
+
+  .fullscreen-btn,
+  .fab-btn {
+    padding: 10px 14px;
+    font-size: var(--font-size-2xs);
+    min-height: 44px;
+  }
+}
+
+@media (max-height: 568px) {
+  .pomodoro-timer {
+    padding: 16px 14px 20px;
+  }
+
+  .mode-tabs {
+    margin-bottom: 18px;
+  }
+
+  .timer-container {
+    width: 160px;
+    height: 160px;
+    margin-bottom: 18px;
+  }
+
+  .mode-label {
+    font-size: var(--font-size-3xs);
+  }
+
+  .current-task {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+  }
+
+  .task-title {
+    font-size: var(--font-size-xs);
+  }
+
+  .pomodoro-count {
+    margin-bottom: 18px;
+  }
+
+  .controls {
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .control-btn.reset-btn,
+  .control-btn.reset-btn-secondary {
+    width: 44px;
+    height: 44px;
+  }
+
+  .control-btn.primary-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .fullscreen-btn,
+  .fab-btn {
+    padding: 8px 12px;
+    font-size: var(--font-size-2xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-ring-fill,
+  .glow-effect,
+  .mode-label,
+  .count-dot,
+  .control-btn,
+  .mode-tab {
+    transition-duration: 0.01ms !important;
+  }
+
+  .pomodoro-timer.is-running .glow-effect,
+  .control-btn.primary-btn.running,
+  .time-separator .dot {
+    animation: none !important;
+  }
 }
 </style>
