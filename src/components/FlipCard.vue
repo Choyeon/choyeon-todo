@@ -91,12 +91,10 @@ onMounted(() => {
   overflow: hidden;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.03) 50%,
-    rgba(0, 0, 0, 0.05) 100%
+    var(--color-bg-tertiary) 0%,
+    var(--color-bg-secondary) 100%
   );
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .digit-top,
@@ -124,14 +122,14 @@ onMounted(() => {
 .flip-card-bottom-top {
   top: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   z-index: 1;
 }
 
 .flip-card-bottom-bottom {
   bottom: 0;
   border-radius: 0 0 16px 16px;
-  border-top: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
   transform-origin: top center;
   transform: rotateX(180deg);
   z-index: 2;
@@ -143,7 +141,7 @@ onMounted(() => {
 .flip-card-top-top {
   top: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   transform-origin: bottom center;
   z-index: 3;
   backface-visibility: hidden;
@@ -153,7 +151,7 @@ onMounted(() => {
 .flip-card-top-bottom {
   bottom: 0;
   border-radius: 0 0 16px 16px;
-  border-top: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
   z-index: 1;
 }
 
