@@ -56,16 +56,12 @@
         ></div>
         <div class="timer-display">
           <div class="time-container">
-            <div class="time-unit">
-              <FlipCard :value="formattedMinutes" />
-            </div>
+            <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedMinutes }}</span>
             <span class="time-separator">
               <span class="dot"></span>
               <span class="dot"></span>
             </span>
-            <div class="time-unit">
-              <FlipCard :value="formattedSeconds" />
-            </div>
+            <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedSeconds }}</span>
           </div>
           <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
         </div>
@@ -147,7 +143,6 @@ import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
 import { Timer, Play, Pause, RotateCcw, Edit3 } from '@lucide/vue'
-import FlipCard from '../components/FlipCard.vue'
 
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
@@ -532,36 +527,20 @@ onMounted(async () => {
 .time-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-/* 全屏模式翻转卡片放大 */
-.time-container :deep(.flip-card) {
-  width: 120px;
-  height: 170px;
-}
-
-.time-container :deep(.flip-card-card) {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-.time-container :deep(.digit-top),
-.time-container :deep(.digit-bottom) {
+.time-text {
+  font-family: var(--font-mono, 'SF Mono', 'Monaco', 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
   font-size: 120px;
   font-weight: 200;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.time-container :deep(.flip-card-inner::before) {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.time-unit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  line-height: 1;
+  letter-spacing: 4px;
+  text-shadow:
+    0 0 30px currentColor,
+    0 0 60px currentColor;
+  filter: drop-shadow(0 0 12px currentColor);
 }
 
 .time-separator {

@@ -89,16 +89,12 @@
 
       <div class="timer-display">
         <div class="time-container">
-          <div class="time-unit minutes">
-            <FlipCard :value="formattedMinutes" />
-          </div>
+          <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedMinutes }}</span>
           <span class="time-separator">
             <span class="dot"></span>
             <span class="dot"></span>
           </span>
-          <div class="time-unit seconds">
-            <FlipCard :value="formattedSeconds" />
-          </div>
+          <span class="time-text" :style="{ color: pomodoroStore.currentColor }">{{ formattedSeconds }}</span>
         </div>
         <Transition name="mode-fade" mode="out-in">
           <span :key="pomodoroStore.currentMode" class="mode-label">{{
@@ -260,7 +256,6 @@ import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
-import FlipCard from './FlipCard.vue'
 import {
   Timer,
   Play,
@@ -622,21 +617,44 @@ onMounted(() => {
 .time-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
-.time-unit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.time-text {
+  font-family: var(--font-mono, 'SF Mono', 'Monaco', 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 64px;
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: 2px;
+  text-shadow:
+    0 0 20px currentColor,
+    0 0 40px currentColor;
+  filter: drop-shadow(0 0 8px currentColor);
+  transition: text-shadow var(--transition-smooth), filter var(--transition-smooth);
+}
+
+.pomodoro-timer.is-running .time-text {
+  animation: timeGlow 2s ease-in-out infinite;
+}
+
+@keyframes timeGlow {
+  0%, 100% {
+    text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
+    filter: drop-shadow(0 0 14px currentColor);
+  }
 }
 
 .time-separator {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-top: -8px;
+  gap: 10px;
+  margin: 0 2px;
 }
 
 .time-separator .dot {
