@@ -5,6 +5,7 @@
       `mode-${pomodoroStore.currentMode}`,
       { 'is-running': pomodoroStore.isRunning, 'is-paused': !pomodoroStore.isRunning }
     ]"
+    :style="{ '--glow-color': pomodoroStore.currentColor }"
   >
     <div class="timer-decoration decoration-top"></div>
     <div class="timer-decoration decoration-bottom"></div>
@@ -485,25 +486,25 @@ onMounted(() => {
   position: absolute;
   inset: -30px;
   border-radius: 50%;
-  opacity: 0;
+  opacity: 0.2;
   transition: opacity var(--duration-slow) var(--ease-out-quart);
   pointer-events: none;
 }
 
 .pomodoro-timer.is-running .ring-glow-outer {
-  opacity: 0.5;
+  opacity: 0.6;
   animation: glowPulse 4s ease-in-out infinite;
 }
 
 @keyframes glowPulse {
   0%,
   100% {
-    opacity: 0.3;
+    opacity: 0.4;
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
-    transform: scale(1.05);
+    opacity: 0.75;
+    transform: scale(1.03);
   }
 }
 
@@ -511,6 +512,12 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
+  filter: drop-shadow(0 0 8px var(--glow-color, transparent));
+  transition: filter var(--transition-smooth);
+}
+
+.pomodoro-timer.is-running .progress-ring {
+  filter: drop-shadow(0 0 12px var(--glow-color, transparent));
 }
 
 .progress-ring-bg {
@@ -627,20 +634,20 @@ onMounted(() => {
   font-weight: 200;
   line-height: 1;
   letter-spacing: 2px;
-  text-shadow: 0 0 12px currentColor;
+  text-shadow: 0 0 6px currentColor;
   transition: text-shadow var(--transition-smooth);
 }
 
 .pomodoro-timer.is-running .time-text {
-  animation: timeGlow 3s ease-in-out infinite;
+  animation: timeGlow 4s ease-in-out infinite;
 }
 
 @keyframes timeGlow {
   0%, 100% {
-    text-shadow: 0 0 12px currentColor;
+    text-shadow: 0 0 6px currentColor;
   }
   50% {
-    text-shadow: 0 0 18px currentColor;
+    text-shadow: 0 0 10px currentColor;
   }
 }
 

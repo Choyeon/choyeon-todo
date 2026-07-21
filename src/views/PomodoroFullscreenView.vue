@@ -1,5 +1,5 @@
 <template>
-  <div class="pomodoro-fullscreen" :class="`mode-${pomodoroStore.currentMode}`">
+  <div class="pomodoro-fullscreen" :class="`mode-${pomodoroStore.currentMode}`" :style="{ '--glow-color': pomodoroStore.currentColor }">
     <div class="bg-particles">
       <div v-for="i in 20" :key="i" class="particle" :style="getParticleStyle(i)"></div>
     </div>
@@ -422,30 +422,30 @@ onMounted(async () => {
   position: absolute;
   inset: -30px;
   border-radius: 50%;
-  opacity: 0.4;
+  opacity: 0.5;
   animation: ringGlowPulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
 }
 
 @keyframes ringGlowPulse {
   0% {
-    opacity: 0.35;
+    opacity: 0.4;
     transform: scale(1);
   }
   25% {
-    opacity: 0.55;
+    opacity: 0.65;
     transform: scale(1.02);
   }
   50% {
-    opacity: 0.35;
+    opacity: 0.4;
     transform: scale(1);
   }
   75% {
-    opacity: 0.25;
+    opacity: 0.3;
     transform: scale(0.98);
   }
   100% {
-    opacity: 0.35;
+    opacity: 0.4;
     transform: scale(1);
   }
 }
@@ -454,7 +454,9 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.3));
+  filter:
+    drop-shadow(0 0 12px var(--glow-color, currentColor)),
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.3));
 }
 
 .ring-bg {
@@ -537,7 +539,7 @@ onMounted(async () => {
   font-weight: 200;
   line-height: 1;
   letter-spacing: 4px;
-  text-shadow: 0 0 20px currentColor;
+  text-shadow: 0 0 10px currentColor;
 }
 
 .time-separator {
