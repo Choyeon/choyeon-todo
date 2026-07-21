@@ -60,7 +60,7 @@
     "copyright": "Copyright © 2026 Choyeon",
     "asar": true,
     "directories": {
-      "output": "dist",
+      "output": "release",
       "buildResources": "build"
     },
     "files": [
