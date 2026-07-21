@@ -135,8 +135,12 @@
             v-if="!task.completed"
             class="task-myday"
             :class="{ active: taskStore.isInMyDay(task.id) }"
-            :aria-label="taskStore.isInMyDay(task.id) ? $t('task.removeFromMyDay') : $t('task.addToMyDay')"
-            :title="taskStore.isInMyDay(task.id) ? $t('task.removeFromMyDay') : $t('task.addToMyDay')"
+            :aria-label="
+              taskStore.isInMyDay(task.id) ? $t('task.removeFromMyDay') : $t('task.addToMyDay')
+            "
+            :title="
+              taskStore.isInMyDay(task.id) ? $t('task.removeFromMyDay') : $t('task.addToMyDay')
+            "
             @click.stop="onToggleMyDay(task.id)"
           >
             <Sun :size="16" />
@@ -190,7 +194,17 @@ import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useSnackbar } from '../composables/useSnackbar'
 import { getTodayStr, getTomorrowStr, parseDateStr, isTaskOverdue } from '../utils/date'
-import { Check, Star, Bell, Trash2, GripVertical, ChevronDown, RotateCw, Timer, Sun } from '@lucide/vue'
+import {
+  Check,
+  Star,
+  Bell,
+  Trash2,
+  GripVertical,
+  ChevronDown,
+  RotateCw,
+  Timer,
+  Sun
+} from '@lucide/vue'
 import EmptyState from './EmptyState.vue'
 
 const pendingTimers = []
@@ -432,9 +446,7 @@ const formatDate = (task) => {
   }
 
   const monthDay = t('date.monthDayFormat', { month: date.getMonth() + 1, day: date.getDate() })
-  return task.time
-    ? `${monthDay} ${task.time}`
-    : monthDay
+  return task.time ? `${monthDay} ${task.time}` : monthDay
 }
 
 const toggleSubTasks = (taskId) => {
@@ -1233,17 +1245,17 @@ const getConfettiStyle = (n) => {
 }
 
 .task-myday:hover {
-  color: #F59E0B;
+  color: #f59e0b;
   background: rgba(245, 158, 11, 0.1);
 }
 
 .task-myday.active {
-  color: #F59E0B;
+  color: #f59e0b;
   opacity: 1;
 }
 
 .task-myday:focus-visible {
-  outline: 2px solid #F59E0B;
+  outline: 2px solid #f59e0b;
   outline-offset: 2px;
   opacity: 1;
 }

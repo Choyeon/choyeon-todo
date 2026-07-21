@@ -82,12 +82,20 @@ const { show: showSnackbar } = useSnackbar()
 
 const toggleNotifications = () => {
   settingsStore.notificationsEnabled = !settingsStore.notificationsEnabled
-  showSnackbar(settingsStore.notificationsEnabled ? t('settings.notificationEnabled') : t('settings.notificationDisabled'))
+  showSnackbar(
+    settingsStore.notificationsEnabled
+      ? t('settings.notificationEnabled')
+      : t('settings.notificationDisabled')
+  )
 }
 
 const toggleDoNotDisturb = () => {
   settingsStore.toggleDoNotDisturb()
-  showSnackbar(settingsStore.doNotDisturb ? t('settings.doNotDisturbEnabled') : t('settings.doNotDisturbDisabled'))
+  showSnackbar(
+    settingsStore.doNotDisturb
+      ? t('settings.doNotDisturbEnabled')
+      : t('settings.doNotDisturbDisabled')
+  )
 }
 
 const onReminderTimeChange = (e) => {

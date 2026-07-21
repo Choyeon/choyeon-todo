@@ -21,7 +21,11 @@
           class="nav-btn"
           :class="{ active: isActive('myday') }"
           @click="navigateTo('myday')"
-          :aria-label="isActive('myday') ? `${$t('nav.myDay')}，${$t('common.currentlySelected')}` : $t('nav.myDay')"
+          :aria-label="
+            isActive('myday')
+              ? `${$t('nav.myDay')}，${$t('common.currentlySelected')}`
+              : $t('nav.myDay')
+          "
         >
           <Sun :size="20" />
           <span class="nav-label">{{ $t('nav.myDay') }}</span>
@@ -35,7 +39,11 @@
           class="nav-btn"
           :class="{ active: isActive('today') }"
           @click="navigateTo('today')"
-          :aria-label="isActive('today') ? `${$t('nav.today')}，${$t('common.currentlySelected')}` : $t('nav.today')"
+          :aria-label="
+            isActive('today')
+              ? `${$t('nav.today')}，${$t('common.currentlySelected')}`
+              : $t('nav.today')
+          "
         >
           <Calendar :size="20" />
           <span class="nav-label">{{ $t('nav.today') }}</span>
@@ -49,7 +57,11 @@
           class="nav-btn"
           :class="{ active: isActive('tomorrow') }"
           @click="navigateTo('tomorrow')"
-          :aria-label="isActive('tomorrow') ? `${$t('nav.tomorrow')}，${$t('common.currentlySelected')}` : $t('nav.tomorrow')"
+          :aria-label="
+            isActive('tomorrow')
+              ? `${$t('nav.tomorrow')}，${$t('common.currentlySelected')}`
+              : $t('nav.tomorrow')
+          "
         >
           <Sunrise :size="20" />
           <span class="nav-label">{{ $t('nav.tomorrow') }}</span>
@@ -63,7 +75,11 @@
           class="nav-btn"
           :class="{ active: isActive('week') }"
           @click="navigateTo('week')"
-          :aria-label="isActive('week') ? `${$t('nav.nextWeek')}，${$t('common.currentlySelected')}` : $t('nav.nextWeek')"
+          :aria-label="
+            isActive('week')
+              ? `${$t('nav.nextWeek')}，${$t('common.currentlySelected')}`
+              : $t('nav.nextWeek')
+          "
         >
           <CalendarRange :size="20" />
           <span class="nav-label">{{ $t('nav.nextWeek') }}</span>
@@ -77,7 +93,11 @@
           class="nav-btn"
           :class="{ active: isActive('important') }"
           @click="navigateTo('important')"
-          :aria-label="isActive('important') ? `${$t('nav.important')}，${$t('common.currentlySelected')}` : $t('nav.important')"
+          :aria-label="
+            isActive('important')
+              ? `${$t('nav.important')}，${$t('common.currentlySelected')}`
+              : $t('nav.important')
+          "
         >
           <Star :size="20" />
           <span class="nav-label">{{ $t('nav.important') }}</span>
@@ -91,7 +111,11 @@
           class="nav-btn"
           :class="{ active: isActive('planned') }"
           @click="navigateTo('planned')"
-          :aria-label="isActive('planned') ? `${$t('nav.planned')}，${$t('common.currentlySelected')}` : $t('nav.planned')"
+          :aria-label="
+            isActive('planned')
+              ? `${$t('nav.planned')}，${$t('common.currentlySelected')}`
+              : $t('nav.planned')
+          "
         >
           <Calendar :size="20" />
           <span class="nav-label">{{ $t('nav.planned') }}</span>
@@ -105,7 +129,11 @@
           class="nav-btn"
           :class="{ active: isActive('all') }"
           @click="navigateTo('all')"
-          :aria-label="isActive('all') ? `${$t('nav.allTasks')}，${$t('common.currentlySelected')}` : $t('nav.allTasks')"
+          :aria-label="
+            isActive('all')
+              ? `${$t('nav.allTasks')}，${$t('common.currentlySelected')}`
+              : $t('nav.allTasks')
+          "
         >
           <ListTodo :size="20" />
           <span class="nav-label">{{ $t('nav.allTasks') }}</span>
@@ -121,7 +149,11 @@
           class="nav-btn"
           :class="{ active: $route.name === 'Completed' }"
           @click="$router.push('/completed')"
-          :aria-label="$route.name === 'Completed' ? `${$t('nav.completed')}，${$t('common.currentlySelected')}` : $t('nav.completed')"
+          :aria-label="
+            $route.name === 'Completed'
+              ? `${$t('nav.completed')}，${$t('common.currentlySelected')}`
+              : $t('nav.completed')
+          "
         >
           <CheckCircle :size="20" />
           <span class="nav-label">{{ $t('nav.completed') }}</span>
@@ -135,7 +167,11 @@
           class="nav-btn"
           :class="{ active: $route.name === 'Calendar' }"
           @click="$router.push('/calendar')"
-          :aria-label="$route.name === 'Calendar' ? `${$t('nav.calendar')}，${$t('common.currentlySelected')}` : $t('nav.calendar')"
+          :aria-label="
+            $route.name === 'Calendar'
+              ? `${$t('nav.calendar')}，${$t('common.currentlySelected')}`
+              : $t('nav.calendar')
+          "
         >
           <CalendarDays :size="20" />
           <span class="nav-label">{{ $t('nav.calendar') }}</span>
@@ -146,7 +182,11 @@
           class="nav-btn"
           :class="{ active: $route.name === 'Stats' }"
           @click="$router.push('/stats')"
-          :aria-label="$route.name === 'Stats' ? `${$t('nav.stats')}，${$t('common.currentlySelected')}` : $t('nav.stats')"
+          :aria-label="
+            $route.name === 'Stats'
+              ? `${$t('nav.stats')}，${$t('common.currentlySelected')}`
+              : $t('nav.stats')
+          "
         >
           <BarChart3 :size="20" />
           <span class="nav-label">{{ $t('nav.stats') }}</span>
@@ -157,7 +197,11 @@
           class="nav-btn"
           :class="{ active: $route.name === 'Pomodoro' }"
           @click="$router.push('/pomodoro')"
-          :aria-label="$route.name === 'Pomodoro' ? `${$t('nav.pomodoro')}，${$t('common.currentlySelected')}` : $t('nav.pomodoro')"
+          :aria-label="
+            $route.name === 'Pomodoro'
+              ? `${$t('nav.pomodoro')}，${$t('common.currentlySelected')}`
+              : $t('nav.pomodoro')
+          "
         >
           <Timer :size="20" />
           <span class="nav-label">{{ $t('nav.pomodoro') }}</span>
@@ -168,7 +212,9 @@
       <div class="nav-divider"></div>
 
       <div class="nav-section">
-        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">{{ $t('nav.categories') }}</span>
+        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">{{
+          $t('nav.categories')
+        }}</span>
         <button
           v-for="cat in taskStore.categories"
           :key="cat.id"
@@ -179,7 +225,9 @@
           @dragover.prevent="onCategoryDragOver($event, cat.id)"
           @dragleave="onCategoryDragLeave"
           @drop="onCategoryDrop($event, cat.id)"
-          :aria-label="isCategoryActive(cat.id) ? `${cat.name}，${$t('common.currentlySelected')}` : cat.name"
+          :aria-label="
+            isCategoryActive(cat.id) ? `${cat.name}，${$t('common.currentlySelected')}` : cat.name
+          "
         >
           <component :is="getIcon(cat.icon)" :size="20" />
           <span class="cat-dot" :style="{ background: cat.color }"></span>
@@ -196,7 +244,9 @@
       <div class="nav-divider" v-show="taskStore.tags.length > 0"></div>
 
       <div class="nav-section" v-show="taskStore.tags.length > 0">
-        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">{{ $t('nav.tags') }}</span>
+        <span class="nav-section-label" v-show="!settingsStore.sidebarCollapsed">{{
+          $t('nav.tags')
+        }}</span>
         <button
           v-for="tag in taskStore.tags"
           :key="tag.id"
@@ -204,7 +254,9 @@
           :class="{ active: isTagActive(tag.id) }"
           @click="navigateToTag(tag.id)"
           @contextmenu.prevent="onTagContextMenu($event, tag)"
-          :aria-label="isTagActive(tag.id) ? `${tag.name}，${$t('common.currentlySelected')}` : tag.name"
+          :aria-label="
+            isTagActive(tag.id) ? `${tag.name}，${$t('common.currentlySelected')}` : tag.name
+          "
         >
           <Tag :size="20" />
           <span class="tag-dot" :style="{ background: tag.color }"></span>
@@ -231,13 +283,21 @@
       <button
         class="nav-btn collapse-toggle-btn"
         @click="settingsStore.toggleSidebar()"
-        :aria-label="settingsStore.sidebarCollapsed ? $t('sidebar.expandSidebar') : $t('sidebar.collapseSidebar')"
+        :aria-label="
+          settingsStore.sidebarCollapsed
+            ? $t('sidebar.expandSidebar')
+            : $t('sidebar.collapseSidebar')
+        "
       >
         <ChevronLeft v-if="!settingsStore.sidebarCollapsed" :size="20" />
         <ChevronRight v-else :size="20" />
-        <span class="nav-label">{{ settingsStore.sidebarCollapsed ? $t('sidebar.expand') : $t('sidebar.collapse') }}</span>
+        <span class="nav-label">{{
+          settingsStore.sidebarCollapsed ? $t('sidebar.expand') : $t('sidebar.collapse')
+        }}</span>
         <span class="nav-tooltip">{{
-          settingsStore.sidebarCollapsed ? $t('sidebar.expandSidebar') : $t('sidebar.collapseSidebar')
+          settingsStore.sidebarCollapsed
+            ? $t('sidebar.expandSidebar')
+            : $t('sidebar.collapseSidebar')
         }}</span>
       </button>
     </div>

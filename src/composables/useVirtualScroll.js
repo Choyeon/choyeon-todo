@@ -1,11 +1,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 
 export function useVirtualScroll(options = {}) {
-  const {
-    itemHeight = 60,
-    buffer = 5,
-    getScrollContainer
-  } = options
+  const { itemHeight = 60, buffer = 5, getScrollContainer } = options
 
   const scrollTop = ref(0)
   const containerHeight = ref(0)

@@ -5,7 +5,7 @@
     </div>
     <div class="bg-gradient-1"></div>
     <div class="bg-gradient-2"></div>
-    
+
     <div class="fullscreen-content">
       <div class="mode-tabs">
         <button
@@ -20,7 +20,10 @@
       </div>
 
       <div class="timer-container">
-        <div class="ring-glow" :style="{ boxShadow: `0 0 100px ${pomodoroStore.currentColor}30` }"></div>
+        <div
+          class="ring-glow"
+          :style="{ boxShadow: `0 0 100px ${pomodoroStore.currentColor}30` }"
+        ></div>
         <svg class="progress-ring" viewBox="0 0 400 400">
           <circle cx="200" cy="200" r="180" fill="none" stroke-width="12" class="ring-bg" />
           <circle
@@ -45,7 +48,12 @@
             class="ring-inner"
           />
         </svg>
-        <div class="timer-glow" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}15 0%, transparent 70%)` }"></div>
+        <div
+          class="timer-glow"
+          :style="{
+            background: `radial-gradient(circle, ${pomodoroStore.currentColor}15 0%, transparent 70%)`
+          }"
+        ></div>
         <div class="timer-display">
           <span class="time-text">{{ pomodoroStore.formattedTime }}</span>
           <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
@@ -67,7 +75,9 @@
           class="dot"
           :class="{ filled: isDotFilled(i) }"
         ></span>
-        <span class="count-text">{{ $t('pomodoro.completedTomatoes', { count: pomodoroStore.completedPomodoros }) }}</span>
+        <span class="count-text">{{
+          $t('pomodoro.completedTomatoes', { count: pomodoroStore.completedPomodoros })
+        }}</span>
       </div>
 
       <div v-if="pomodoroStore.isCustomEditing" class="custom-row">
@@ -86,8 +96,12 @@
           @keyup.enter="pomodoroStore.applyCustomDuration()"
         />
         <span class="custom-unit">{{ $t('pomodoro.minutes') }}</span>
-        <button class="custom-ok" @click="pomodoroStore.applyCustomDuration()">{{ $t('common.confirm') }}</button>
-        <button class="custom-cancel" @click="pomodoroStore.isCustomEditing = false">{{ $t('common.cancel') }}</button>
+        <button class="custom-ok" @click="pomodoroStore.applyCustomDuration()">
+          {{ $t('common.confirm') }}
+        </button>
+        <button class="custom-cancel" @click="pomodoroStore.isCustomEditing = false">
+          {{ $t('common.cancel') }}
+        </button>
       </div>
       <button v-else class="custom-toggle" @click="pomodoroStore.isCustomEditing = true">
         <Edit3 :size="13" /> {{ $t('pomodoro.customDuration') }}

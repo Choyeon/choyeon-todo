@@ -27,7 +27,11 @@
         <span class="mode-label">{{ $t('pomodoro.' + pomodoroStore.currentMode) }}</span>
       </div>
       <div class="fab-actions">
-        <button class="fab-btn reset-btn" @click.stop="pomodoroStore.resetTimer()" :title="$t('pomodoro.reset')">
+        <button
+          class="fab-btn reset-btn"
+          @click.stop="pomodoroStore.resetTimer()"
+          :title="$t('pomodoro.reset')"
+        >
           <RotateCcw :size="12" />
         </button>
       </div>
@@ -170,7 +174,8 @@ onMounted(async () => {
 }
 
 @keyframes outerGlowPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -224,7 +229,8 @@ onMounted(async () => {
 }
 
 @keyframes innerGlowPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: translate(-50%, -50%) scale(1);
   }

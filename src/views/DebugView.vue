@@ -7,7 +7,12 @@
         </div>
         <span class="debug-title">{{ $t('debug.title') }}</span>
       </div>
-      <button class="debug-close" @click="handleClose" :title="$t('common.close')" :aria-label="$t('common.close')">
+      <button
+        class="debug-close"
+        @click="handleClose"
+        :title="$t('common.close')"
+        :aria-label="$t('common.close')"
+      >
         <X :size="14" />
       </button>
     </div>
@@ -198,12 +203,7 @@ import {
   RefreshCw,
   Download
 } from '@lucide/vue'
-import {
-  getErrorLogs,
-  getErrorStats,
-  clearErrorLogs,
-  captureError
-} from '../utils/errorMonitor'
+import { getErrorLogs, getErrorStats, clearErrorLogs, captureError } from '../utils/errorMonitor'
 
 const { t } = useI18n()
 
@@ -278,13 +278,16 @@ const handleClose = () => {
 
 const handleMockUpdate = () => {
   if (window.electronAPI?.onUpdateAvailable) {
-    window.dispatchEvent(new CustomEvent('mock-update-available', {
-      detail: {
-        version: '99.99.99',
-        releaseNotes: '<h2>模拟更新测试</h2><p>这是一个模拟的更新通知，用于测试更新弹窗功能。</p><ul><li>修复了一些问题</li><li>添加了新功能</li></ul>',
-        releaseDate: new Date().toISOString()
-      }
-    }))
+    window.dispatchEvent(
+      new CustomEvent('mock-update-available', {
+        detail: {
+          version: '99.99.99',
+          releaseNotes:
+            '<h2>模拟更新测试</h2><p>这是一个模拟的更新通知，用于测试更新弹窗功能。</p><ul><li>修复了一些问题</li><li>添加了新功能</li></ul>',
+          releaseDate: new Date().toISOString()
+        }
+      })
+    )
   }
 }
 
@@ -336,7 +339,10 @@ const handleTestNotification = () => {
     notificationStatus.value = {
       type: 'success',
       icon: CheckCircle,
-      message: response.action === 'clicked' ? t('debug.notificationClicked') : t('debug.notificationClosed')
+      message:
+        response.action === 'clicked'
+          ? t('debug.notificationClicked')
+          : t('debug.notificationClosed')
     }
     if (statusTimeout) {
       clearTimeout(statusTimeout)
@@ -360,9 +366,12 @@ onMounted(() => {
   currentTitlebarStyle.value = localStorage.getItem('choyeon_debug_titlebar') || 'auto'
   refreshErrors()
   if (window.electronAPI?.getAppVersion) {
-    window.electronAPI.getAppVersion().then((ver) => {
-      if (ver) appVersion.value = ver
-    }).catch(() => {})
+    window.electronAPI
+      .getAppVersion()
+      .then((ver) => {
+        if (ver) appVersion.value = ver
+      })
+      .catch(() => {})
   }
 })
 

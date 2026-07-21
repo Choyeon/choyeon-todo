@@ -419,33 +419,41 @@ const setupElectronListeners = () => {
 const setupAutoUpdateListeners = () => {
   if (!window.electronAPI) return
 
-  updateCleanupListeners.push(window.electronAPI.onUpdateAvailable?.((info) => {
-    if (updateModalRef.value) {
-      updateModalRef.value.show({
-        currentVersion: currentAppVersion.value,
-        version: info.version,
-        releaseNotes: info.releaseNotes
-      })
-    }
-  }))
+  updateCleanupListeners.push(
+    window.electronAPI.onUpdateAvailable?.((info) => {
+      if (updateModalRef.value) {
+        updateModalRef.value.show({
+          currentVersion: currentAppVersion.value,
+          version: info.version,
+          releaseNotes: info.releaseNotes
+        })
+      }
+    })
+  )
 
-  updateCleanupListeners.push(window.electronAPI.onUpdateDownloadProgress?.((progress) => {
-    if (updateModalRef.value) {
-      updateModalRef.value.setDownloadProgress(progress)
-    }
-  }))
+  updateCleanupListeners.push(
+    window.electronAPI.onUpdateDownloadProgress?.((progress) => {
+      if (updateModalRef.value) {
+        updateModalRef.value.setDownloadProgress(progress)
+      }
+    })
+  )
 
-  updateCleanupListeners.push(window.electronAPI.onUpdateDownloaded?.(() => {
-    if (updateModalRef.value) {
-      updateModalRef.value.onDownloadComplete()
-    }
-  }))
+  updateCleanupListeners.push(
+    window.electronAPI.onUpdateDownloaded?.(() => {
+      if (updateModalRef.value) {
+        updateModalRef.value.onDownloadComplete()
+      }
+    })
+  )
 
-  updateCleanupListeners.push(window.electronAPI.onUpdateError?.((err) => {
-    if (updateModalRef.value) {
-      updateModalRef.value.onDownloadError()
-    }
-  }))
+  updateCleanupListeners.push(
+    window.electronAPI.onUpdateError?.((err) => {
+      if (updateModalRef.value) {
+        updateModalRef.value.onDownloadError()
+      }
+    })
+  )
 
   const mockUpdateHandler = (e) => {
     if (updateModalRef.value) {

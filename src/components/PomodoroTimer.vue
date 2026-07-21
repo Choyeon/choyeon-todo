@@ -8,7 +8,7 @@
   >
     <div class="timer-decoration decoration-top"></div>
     <div class="timer-decoration decoration-bottom"></div>
-    
+
     <div class="mode-tabs">
       <button
         v-for="mode in pomodoroStore.modes"
@@ -24,19 +24,28 @@
 
     <div class="timer-container">
       <div class="progress-ring-wrapper">
-        <div class="ring-glow-outer" :style="{ boxShadow: `0 0 80px ${pomodoroStore.currentColor}30` }"></div>
+        <div
+          class="ring-glow-outer"
+          :style="{ boxShadow: `0 0 80px ${pomodoroStore.currentColor}30` }"
+        ></div>
         <svg class="progress-ring" viewBox="0 0 200 200">
           <defs>
-            <linearGradient :id="'gradient-' + pomodoroStore.currentMode" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              :id="'gradient-' + pomodoroStore.currentMode"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" :stop-color="pomodoroStore.currentColor" stop-opacity="0.3" />
               <stop offset="50%" :stop-color="pomodoroStore.currentColor" stop-opacity="1" />
               <stop offset="100%" :stop-color="pomodoroStore.currentColor" stop-opacity="0.3" />
             </linearGradient>
             <filter id="glow">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
               <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
@@ -64,10 +73,20 @@
             :style="{ stroke: `${pomodoroStore.currentColor}20` }"
           />
         </svg>
-        <div class="glow-effect" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}25 0%, transparent 70%)` }"></div>
-        <div class="glow-effect-inner" :style="{ background: `radial-gradient(circle, ${pomodoroStore.currentColor}15 0%, transparent 60%)` }"></div>
+        <div
+          class="glow-effect"
+          :style="{
+            background: `radial-gradient(circle, ${pomodoroStore.currentColor}25 0%, transparent 70%)`
+          }"
+        ></div>
+        <div
+          class="glow-effect-inner"
+          :style="{
+            background: `radial-gradient(circle, ${pomodoroStore.currentColor}15 0%, transparent 60%)`
+          }"
+        ></div>
       </div>
-      
+
       <div class="timer-display">
         <div class="time-container">
           <div class="time-unit minutes">
@@ -153,7 +172,11 @@
     </div>
 
     <div class="controls">
-      <button class="control-btn reset-btn" @click="pomodoroStore.resetTimer" :title="$t('pomodoro.reset')">
+      <button
+        class="control-btn reset-btn"
+        @click="pomodoroStore.resetTimer"
+        :title="$t('pomodoro.reset')"
+      >
         <RotateCcw :size="18" />
       </button>
       <button
@@ -176,12 +199,22 @@
       </button>
     </div>
 
-    <button v-if="isElectron" class="fullscreen-btn" @click="openFullscreen" :title="$t('pomodoro.fullscreen')">
+    <button
+      v-if="isElectron"
+      class="fullscreen-btn"
+      @click="openFullscreen"
+      :title="$t('pomodoro.fullscreen')"
+    >
       <Maximize2 :size="16" />
       <span>{{ $t('pomodoro.fullscreen') }}</span>
     </button>
 
-    <button v-if="isElectron" class="fab-btn" @click="pomodoroStore.toggleFab" :title="$t('pomodoro.desktopFab')">
+    <button
+      v-if="isElectron"
+      class="fab-btn"
+      @click="pomodoroStore.toggleFab"
+      :title="$t('pomodoro.desktopFab')"
+    >
       <Monitor :size="16" />
       <span>{{ $t('pomodoro.desktopFab') }}</span>
     </button>
@@ -326,7 +359,7 @@ onMounted(() => {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
-  box-shadow: 
+  box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.03),
     0 8px 32px rgba(0, 0, 0, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -352,12 +385,20 @@ onMounted(() => {
 
 .decoration-top {
   top: -75px;
-  background: radial-gradient(ellipse at top center, var(--color-primary-light) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse at top center,
+    var(--color-primary-light) 0%,
+    transparent 70%
+  );
 }
 
 .decoration-bottom {
   bottom: -75px;
-  background: radial-gradient(ellipse at bottom center, var(--color-primary-light) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse at bottom center,
+    var(--color-primary-light) 0%,
+    transparent 70%
+  );
 }
 
 .mode-tabs {
@@ -461,7 +502,8 @@ onMounted(() => {
 }
 
 @keyframes glowPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -612,7 +654,8 @@ onMounted(() => {
 }
 
 @keyframes separatorPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.8;
     transform: scale(1);
   }

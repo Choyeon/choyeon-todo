@@ -76,7 +76,15 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../../stores/taskStore'
 import { useSnackbar } from '../../composables/useSnackbar'
-import { Database, Download, Upload, ChevronRight, RefreshCw, AlertTriangle, Bell } from '@lucide/vue'
+import {
+  Database,
+  Download,
+  Upload,
+  ChevronRight,
+  RefreshCw,
+  AlertTriangle,
+  Bell
+} from '@lucide/vue'
 
 const { t } = useI18n()
 const emit = defineEmits(['show-reset', 'show-clear'])

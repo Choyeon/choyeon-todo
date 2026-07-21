@@ -5,8 +5,8 @@
         <svg width="64" height="64" viewBox="0 0 512 512">
           <defs>
             <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#6BA3FF;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#4C8BF5;stop-opacity:1" />
+              <stop offset="0%" style="stop-color: #6ba3ff; stop-opacity: 1" />
+              <stop offset="100%" style="stop-color: #4c8bf5; stop-opacity: 1" />
             </linearGradient>
           </defs>
           <rect width="512" height="512" rx="112" fill="url(#logoGrad)" />
@@ -32,7 +32,19 @@
     <div class="about-highlights">
       <div class="highlight-item">
         <div class="highlight-icon highlight-icon-task">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
         </div>
         <div class="highlight-text">
           <span class="highlight-title">{{ $t('about.smartTask') }}</span>
@@ -41,7 +53,21 @@
       </div>
       <div class="highlight-item">
         <div class="highlight-icon highlight-icon-calendar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
         </div>
         <div class="highlight-text">
           <span class="highlight-title">{{ $t('about.calendarView') }}</span>
@@ -50,7 +76,21 @@
       </div>
       <div class="highlight-item">
         <div class="highlight-icon highlight-icon-tomato">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/><path d="M12 2v2"/></svg>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="13" r="8" />
+            <path d="M12 9v4l2 2" />
+            <path d="M9 2h6" />
+            <path d="M12 2v2" />
+          </svg>
         </div>
         <div class="highlight-text">
           <span class="highlight-title">{{ $t('about.pomodoro') }}</span>
@@ -59,7 +99,20 @@
       </div>
       <div class="highlight-item">
         <div class="highlight-icon highlight-icon-stats">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
         </div>
         <div class="highlight-text">
           <span class="highlight-title">{{ $t('about.analytics') }}</span>
@@ -283,7 +336,7 @@ const handleVersionClick = () => {
 
 .highlight-icon-task {
   background: rgba(76, 139, 245, 0.12);
-  color: #4C8BF5;
+  color: #4c8bf5;
 }
 
 .highlight-icon-calendar {
@@ -337,8 +390,13 @@ const handleVersionClick = () => {
 }
 
 @keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 .links-card {

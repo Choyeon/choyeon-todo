@@ -41,11 +41,11 @@ watch(
     if (newVal !== oldVal) {
       previousValue.value = oldVal
       isFlipping.value = true
-      
+
       setTimeout(() => {
         displayValue.value = newVal
       }, 180)
-      
+
       setTimeout(() => {
         isFlipping.value = false
         previousValue.value = newVal
@@ -81,21 +81,26 @@ onMounted(() => {
   width: 100%;
   height: 50%;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 50%, rgba(0,0,0,0.05) 100%);
-  border: 1px solid rgba(0,0,0,0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  border: 1px solid rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(4px);
 }
 
 .flip-card-top {
   top: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid rgba(0,0,0,0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
 }
 
 .flip-card-bottom {
   bottom: 0;
   border-radius: 0 0 16px 16px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .flip-card-top-inner,
@@ -109,7 +114,7 @@ onMounted(() => {
   font-weight: 200;
   color: var(--color-text-primary);
   line-height: 1;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .flip-card-top-inner {
@@ -137,22 +142,27 @@ onMounted(() => {
   width: 100%;
   height: 50%;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.08) 100%);
-  border: 1px solid rgba(0,0,0,0.1);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(0, 0, 0, 0.08) 100%
+  );
+  border: 1px solid rgba(0, 0, 0, 0.1);
   backface-visibility: hidden;
 }
 
 .flip-card-back-top {
   top: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   transform-origin: bottom center;
 }
 
 .flip-card-back-bottom {
   bottom: 0;
   border-radius: 0 0 16px 16px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   transform-origin: top center;
 }
 
@@ -167,7 +177,7 @@ onMounted(() => {
   font-weight: 200;
   color: var(--color-text-primary);
   line-height: 1;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .flip-card-back-top span {
@@ -192,36 +202,36 @@ onMounted(() => {
 @keyframes flipTop {
   0% {
     transform: rotateX(0deg);
-    box-shadow: 0 0 0 rgba(0,0,0,0);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
   25% {
-    box-shadow: 0 -8px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.15);
   }
   50% {
     transform: rotateX(-90deg);
-    box-shadow: 0 -12px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.2);
   }
   100% {
     transform: rotateX(-90deg);
-    box-shadow: 0 0 0 rgba(0,0,0,0);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 
 @keyframes flipBottom {
   0% {
     transform: rotateX(90deg);
-    box-shadow: 0 0 0 rgba(0,0,0,0);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
   50% {
     transform: rotateX(90deg);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   }
   75% {
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   }
   100% {
     transform: rotateX(0deg);
-    box-shadow: 0 0 0 rgba(0,0,0,0);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 
@@ -247,7 +257,7 @@ onMounted(() => {
   right: 0;
   bottom: 50%;
   border-radius: 16px 16px 0 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
   pointer-events: none;
   z-index: 10;
 }
@@ -272,7 +282,12 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.03) 0%, transparent 40%, rgba(0,0,0,0.03) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.03) 0%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.03) 100%
+  );
   border-radius: 16px;
   pointer-events: none;
 }
@@ -282,19 +297,19 @@ onMounted(() => {
     width: 56px;
     height: 80px;
   }
-  
+
   .flip-card-top-inner,
   .flip-card-bottom-inner,
   .flip-card-back-top span,
   .flip-card-back-bottom span {
     font-size: 52px;
   }
-  
+
   .flip-card-top-inner,
   .flip-card-back-top span {
     padding-bottom: 4px;
   }
-  
+
   .flip-card-bottom-inner,
   .flip-card-back-bottom span {
     padding-top: 4px;
@@ -306,19 +321,19 @@ onMounted(() => {
     width: 48px;
     height: 68px;
   }
-  
+
   .flip-card-top-inner,
   .flip-card-bottom-inner,
   .flip-card-back-top span,
   .flip-card-back-bottom span {
     font-size: 44px;
   }
-  
+
   .flip-card-top-inner,
   .flip-card-back-top span {
     padding-bottom: 3px;
   }
-  
+
   .flip-card-bottom-inner,
   .flip-card-back-bottom span {
     padding-top: 3px;
@@ -330,7 +345,7 @@ onMounted(() => {
     width: 42px;
     height: 60px;
   }
-  
+
   .flip-card-top-inner,
   .flip-card-bottom-inner,
   .flip-card-back-top span,

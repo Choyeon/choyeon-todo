@@ -96,10 +96,7 @@ const handleClickOutside = (e) => {
   if (showMenu.value) {
     const menuEl = document.querySelector('.mini-menu')
     const btnEl = document.querySelector('.mini-actions .mini-btn')
-    if (
-      menuEl && !menuEl.contains(e.target) &&
-      btnEl && !btnEl.contains(e.target)
-    ) {
+    if (menuEl && !menuEl.contains(e.target) && btnEl && !btnEl.contains(e.target)) {
       showMenu.value = false
     }
   }

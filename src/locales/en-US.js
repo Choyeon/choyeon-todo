@@ -87,7 +87,8 @@ export default {
     p4: 'Low Priority',
     clearCompleted: 'Clear Completed',
     clearCompletedConfirm: 'Clear Completed',
-    clearCompletedDesc: 'Are you sure you want to clear all completed tasks? This action cannot be undone.',
+    clearCompletedDesc:
+      'Are you sure you want to clear all completed tasks? This action cannot be undone.',
     clearedMessage: 'Cleared {count} completed tasks',
     addSubtaskPlaceholder: 'Add subtask...',
     deleteTaskConfirm: 'Delete this task?',
@@ -154,7 +155,20 @@ export default {
   date: {
     weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     weekdaysFull: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    months: [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ],
     monthDayFormat: '{month}/{day}',
     yearMonthFormat: '{month}/{year}',
     overdueFormat: 'Overdue · {date}'
@@ -298,8 +312,10 @@ export default {
     closeToQuitDisabled: 'Close to quit disabled',
     moveToDefaultCategory: 'Move to default category',
     deleteTasks: 'Delete tasks',
-    deleteCategoriesConfirm: 'About to delete {count} categories with {taskCount} total tasks. How to handle these tasks?',
-    deleteCategoryConfirm: 'About to delete category "{name}" with {count} tasks. How to handle these tasks?',
+    deleteCategoriesConfirm:
+      'About to delete {count} categories with {taskCount} total tasks. How to handle these tasks?',
+    deleteCategoryConfirm:
+      'About to delete category "{name}" with {count} tasks. How to handle these tasks?',
     pleaseEnterCategoryName: 'Please enter category name',
     categoryUpdated: 'Category updated',
     categoryAdded: 'Category added',
@@ -308,10 +324,12 @@ export default {
     categoryAndTasksDeleted: 'Category and tasks deleted',
     categoriesAndTasksDeleted: '{count} categories and tasks deleted',
     clearAllDataConfirm: 'Clear All Data',
-    clearAllDataDesc: 'All tasks, categories, and settings will be deleted. This action cannot be undone, and the page will reload after clearing.',
+    clearAllDataDesc:
+      'All tasks, categories, and settings will be deleted. This action cannot be undone, and the page will reload after clearing.',
     confirmClear: 'Clear All',
     resetDataConfirm: 'Reset to Default Data',
-    resetDataDesc: 'All current tasks and settings will be cleared and restored to default sample data. This action cannot be undone.',
+    resetDataDesc:
+      'All current tasks and settings will be cleared and restored to default sample data. This action cannot be undone.',
     confirmReset: 'Reset',
     dataCleared: 'Data cleared, reloading page...',
     clearDataFailed: 'Failed to clear data: ',
@@ -425,7 +443,7 @@ export default {
     pomodoro: 'Pomodoro',
     pomodoroDesc: 'Focus timer to help you get things done',
     analytics: 'Stats',
-    analyticsDesc: 'See how much you\'ve accomplished',
+    analyticsDesc: "See how much you've accomplished",
     madeWith: 'Made with care',
     author: 'Choyeon',
     feedback: 'Feedback'

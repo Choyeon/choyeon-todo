@@ -12,15 +12,26 @@
       <SettingsNotifications />
       <SettingsSystem />
       <SettingsShortcuts />
-      <SettingsData @show-clear="showClearDataModal = true" @show-reset="showResetDataModal = true" />
+      <SettingsData
+        @show-clear="showClearDataModal = true"
+        @show-reset="showResetDataModal = true"
+      />
       <SettingsAbout />
     </div>
 
     <Teleport to="body">
       <Transition name="fade">
-        <div v-if="showClearDataModal" class="modal-backdrop" @click.self="showClearDataModal = false">
+        <div
+          v-if="showClearDataModal"
+          class="modal-backdrop"
+          @click.self="showClearDataModal = false"
+        >
           <Transition name="slide-up">
-            <div v-if="showClearDataModal" class="category-modal delete-modal" @keydown.esc="showClearDataModal = false">
+            <div
+              v-if="showClearDataModal"
+              class="category-modal delete-modal"
+              @keydown.esc="showClearDataModal = false"
+            >
               <div class="delete-icon">
                 <AlertTriangle :size="32" />
               </div>
@@ -34,7 +45,9 @@
                   {{ $t('settings.confirmClear') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="showClearDataModal = false">{{ $t('common.cancel') }}</button>
+              <button class="cancel-btn full-width" @click="showClearDataModal = false">
+                {{ $t('common.cancel') }}
+              </button>
             </div>
           </Transition>
         </div>
@@ -43,9 +56,17 @@
 
     <Teleport to="body">
       <Transition name="fade">
-        <div v-if="showResetDataModal" class="modal-backdrop" @click.self="showResetDataModal = false">
+        <div
+          v-if="showResetDataModal"
+          class="modal-backdrop"
+          @click.self="showResetDataModal = false"
+        >
           <Transition name="slide-up">
-            <div v-if="showResetDataModal" class="category-modal delete-modal" @keydown.esc="showResetDataModal = false">
+            <div
+              v-if="showResetDataModal"
+              class="category-modal delete-modal"
+              @keydown.esc="showResetDataModal = false"
+            >
               <div class="delete-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b">
                 <RefreshCw :size="32" />
               </div>
@@ -54,12 +75,18 @@
                 {{ $t('settings.resetDataDesc') }}
               </p>
               <div class="delete-options">
-                <button class="delete-option-btn" style="background: rgba(245, 158, 11, 0.12); color: #d97706" @click="confirmResetData">
+                <button
+                  class="delete-option-btn"
+                  style="background: rgba(245, 158, 11, 0.12); color: #d97706"
+                  @click="confirmResetData"
+                >
                   <RefreshCw :size="16" />
                   {{ $t('settings.confirmReset') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="showResetDataModal = false">{{ $t('common.cancel') }}</button>
+              <button class="cancel-btn full-width" @click="showResetDataModal = false">
+                {{ $t('common.cancel') }}
+              </button>
             </div>
           </Transition>
         </div>

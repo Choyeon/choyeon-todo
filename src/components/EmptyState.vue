@@ -334,7 +334,16 @@ const props = defineProps({
     type: String,
     default: 'default',
     validator: (val) =>
-      ['today', 'myday', 'important', 'planned', 'search', 'completed', 'category', 'default'].includes(val)
+      [
+        'today',
+        'myday',
+        'important',
+        'planned',
+        'search',
+        'completed',
+        'category',
+        'default'
+      ].includes(val)
   },
   title: {
     type: String,

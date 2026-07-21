@@ -1031,12 +1031,18 @@ const isFromMini = (event) => {
 
 // 发送方校验：确保 IPC 来自番茄钟全屏窗口
 const isFromPomodoroFullscreen = (event) => {
-  return pomodoroWindow && !pomodoroWindow.isDestroyed() && event.sender === pomodoroWindow.webContents
+  return (
+    pomodoroWindow && !pomodoroWindow.isDestroyed() && event.sender === pomodoroWindow.webContents
+  )
 }
 
 // 发送方校验：确保 IPC 来自番茄钟悬浮球窗口
 const isFromPomodoroFab = (event) => {
-  return pomodoroFabWindow && !pomodoroFabWindow.isDestroyed() && event.sender === pomodoroFabWindow.webContents
+  return (
+    pomodoroFabWindow &&
+    !pomodoroFabWindow.isDestroyed() &&
+    event.sender === pomodoroFabWindow.webContents
+  )
 }
 
 ipcMain.on('window:minimize', (event) => {
@@ -1368,14 +1374,14 @@ ipcMain.handle('updater:checkForUpdates', async () => {
   try {
     console.log('[Updater] Checking for updates...')
     console.log('[Updater] Current app version:', app.getVersion())
-    
+
     const result = await autoUpdater.checkForUpdates()
     console.log('[Updater] Check result:', result ? result.updateInfo : 'no info')
-    
+
     if (result && result.updateInfo) {
       console.log('[Updater] Update found:', result.updateInfo.version)
     }
-    
+
     return { success: true, version: app.getVersion() }
   } catch (err) {
     console.error('[Updater] Check failed:', err)
@@ -1407,7 +1413,7 @@ function setupAutoUpdater() {
 
   if (!app.isPackaged) {
     console.log('[Updater] Not in packaged mode, simulating auto-updater for testing')
-    
+
     const simulateUpdate = () => {
       setTimeout(() => {
         console.log('[Updater] Simulating update available for testing')
@@ -1418,9 +1424,9 @@ function setupAutoUpdater() {
         })
       }, 5000)
     }
-    
+
     simulateUpdate()
-    
+
     autoUpdater.on('checking-for-update', () => {
       console.log('[Updater] Checking for update (simulated)...')
       sendToMainWindow('updater:checking')

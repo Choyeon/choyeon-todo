@@ -35,7 +35,9 @@
           <div class="stat-info">
             <span class="stat-label">{{ $t('stats.createdTasks') }}</span>
             <span class="stat-value"><AnimatedNumber :value="stats.totalCreatedInRange" /></span>
-            <span class="stat-sub">{{ $t('stats.dailyAverageCreated', { count: stats.avgDailyCreated }) }}</span>
+            <span class="stat-sub">{{
+              $t('stats.dailyAverageCreated', { count: stats.avgDailyCreated })
+            }}</span>
           </div>
         </div>
 
@@ -64,9 +66,9 @@
           <div class="stat-info">
             <span class="stat-label">{{ $t('stats.pomodoro') }}</span>
             <span class="stat-value"
-              ><AnimatedNumber :value="stats.totalPomodoro" /><span class="stat-value-unit"
-                >{{ $t('stats.timesUnit') }}</span
-              ></span
+              ><AnimatedNumber :value="stats.totalPomodoro" /><span class="stat-value-unit">{{
+                $t('stats.timesUnit')
+              }}</span></span
             >
             <span class="stat-sub">{{ $t('stats.completedSessions') }}</span>
           </div>
@@ -81,9 +83,9 @@
           <div class="stat-info">
             <span class="stat-label">{{ $t('stats.streakDays') }}</span>
             <span class="stat-value mini"
-              ><AnimatedNumber :value="stats.streakDays" /><span class="stat-value-unit"
-                >{{ $t('stats.dayUnit') }}</span
-              ></span
+              ><AnimatedNumber :value="stats.streakDays" /><span class="stat-value-unit">{{
+                $t('stats.dayUnit')
+              }}</span></span
             >
             <span class="stat-sub">{{ $t('stats.longestStreak', { days: stats.maxStreak }) }}</span>
           </div>
@@ -110,9 +112,9 @@
           <div class="stat-info">
             <span class="stat-label">{{ $t('stats.dailyCompleted') }}</span>
             <span class="stat-value mini"
-              ><AnimatedNumber :value="stats.avgDailyCompleted" /><span class="stat-value-unit"
-                >{{ $t('stats.countUnit') }}</span
-              ></span
+              ><AnimatedNumber :value="stats.avgDailyCompleted" /><span class="stat-value-unit">{{
+                $t('stats.countUnit')
+              }}</span></span
             >
             <span class="stat-sub">{{ $t('stats.lastNDays', { days: rangeDays }) }}</span>
           </div>
@@ -141,9 +143,9 @@
           <div class="stat-info">
             <span class="stat-label">{{ $t('stats.overdueTasks') }}</span>
             <span class="stat-value mini"
-              ><AnimatedNumber :value="stats.overdueActive" /><span class="stat-value-unit"
-                >{{ $t('stats.countUnit') }}</span
-              ></span
+              ><AnimatedNumber :value="stats.overdueActive" /><span class="stat-value-unit">{{
+                $t('stats.countUnit')
+              }}</span></span
             >
             <span class="stat-sub">{{ $t('stats.pending') }}</span>
           </div>
@@ -173,7 +175,9 @@
           <div class="stat-info">
             <span class="stat-label">{{ $t('stats.mostProductiveDay') }}</span>
             <span class="stat-value mini">{{ bestDayLabel }}</span>
-            <span class="stat-sub">{{ $t('stats.taskCount', { count: stats.bestDay.count }) }}</span>
+            <span class="stat-sub">{{
+              $t('stats.taskCount', { count: stats.bestDay.count })
+            }}</span>
           </div>
         </div>
 

@@ -154,7 +154,20 @@ export default {
   date: {
     weekdays: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
     weekdaysFull: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
-    months: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    months: [
+      '一月',
+      '二月',
+      '三月',
+      '四月',
+      '五月',
+      '六月',
+      '七月',
+      '八月',
+      '九月',
+      '十月',
+      '十一月',
+      '十二月'
+    ],
     monthDayFormat: '{month}月{day}日',
     yearMonthFormat: '{year}年{month}月',
     overdueFormat: '已逾期 · {date}'
@@ -298,8 +311,10 @@ export default {
     closeToQuitDisabled: '关闭窗口即退出已关闭',
     moveToDefaultCategory: '移动到默认分类',
     deleteTasks: '删除待办事项',
-    deleteCategoriesConfirm: '即将删除 {count} 个分类，共包含 {taskCount} 个待办事项。这些待办事项如何处理？',
-    deleteCategoryConfirm: '即将删除分类 "{name}"，该分类下有 {count} 个待办事项。这些待办事项如何处理？',
+    deleteCategoriesConfirm:
+      '即将删除 {count} 个分类，共包含 {taskCount} 个待办事项。这些待办事项如何处理？',
+    deleteCategoryConfirm:
+      '即将删除分类 "{name}"，该分类下有 {count} 个待办事项。这些待办事项如何处理？',
     pleaseEnterCategoryName: '请输入分类名称',
     categoryUpdated: '分类已更新',
     categoryAdded: '分类已添加',
@@ -461,7 +476,7 @@ export default {
     hasTasks: '有任务',
     todayAriaLabel: '今天'
   },
-  "update": {
+  update: {
     title: '发现新版本',
     message: '发现新版本可用，是否立即更新？',
     later: '下次更新',
@@ -473,7 +488,7 @@ export default {
     installLater: '稍后安装',
     installNow: '立即安装并重启'
   },
-  "stats": {
+  stats: {
     title: '统计',
     dataTitle: '数据统计',
     subtitle: '查看你的任务完成情况',

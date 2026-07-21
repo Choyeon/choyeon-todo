@@ -26,9 +26,7 @@
           </div>
         </div>
         <p class="header-subtitle">
-          {{
-            viewMode === 'month' ? currentYearMonthFormatted : selectedDateFormatted
-          }}
+          {{ viewMode === 'month' ? currentYearMonthFormatted : selectedDateFormatted }}
         </p>
       </div>
 
@@ -55,7 +53,9 @@
           </div>
 
           <div class="cal-weekdays">
-            <div v-for="(weekday, index) in weekdayLabels" :key="index" class="cal-weekday">{{ weekday }}</div>
+            <div v-for="(weekday, index) in weekdayLabels" :key="index" class="cal-weekday">
+              {{ weekday }}
+            </div>
           </div>
 
           <div class="cal-grid" :key="`${currentYear}-${currentMonth}`">
@@ -83,7 +83,9 @@
           </div>
         </div>
 
-        <h2 class="section-title">{{ $t('calendar.tasksForDate', { date: selectedDateFormatted }) }}</h2>
+        <h2 class="section-title">
+          {{ $t('calendar.tasksForDate', { date: selectedDateFormatted }) }}
+        </h2>
         <TaskList :tasks="selectedTasks" empty-type="planned" />
       </template>
 
@@ -98,10 +100,19 @@
               <span class="timeline-weekday">{{ selectedWeekday }}</span>
             </div>
             <div class="timeline-nav-right">
-              <button v-if="!isToday" class="today-btn" @click="goToToday" :aria-label="$t('calendar.backToToday')">
+              <button
+                v-if="!isToday"
+                class="today-btn"
+                @click="goToToday"
+                :aria-label="$t('calendar.backToToday')"
+              >
                 {{ $t('calendar.today') }}
               </button>
-              <button class="timeline-nav-btn" @click="nextDay" :aria-label="$t('calendar.nextDay')">
+              <button
+                class="timeline-nav-btn"
+                @click="nextDay"
+                :aria-label="$t('calendar.nextDay')"
+              >
                 <ChevronRight :size="20" />
               </button>
             </div>

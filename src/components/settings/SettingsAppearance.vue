@@ -132,19 +132,19 @@
     </div>
 
     <div class="color-options">
-          <button
-            v-for="color in settingsStore.themeColors"
-            :key="color.value"
-            class="color-option"
-            :class="{ active: settingsStore.primaryColor === color.value }"
-            :style="{ background: color.value }"
-            :title="color.name"
-            :aria-label="`${$t('settings.themeColor')} ${color.name}`"
-            @click="setThemeColor(color.value)"
-          >
-            <Check v-if="settingsStore.primaryColor === color.value" :size="16" />
-          </button>
-        </div>
+      <button
+        v-for="color in settingsStore.themeColors"
+        :key="color.value"
+        class="color-option"
+        :class="{ active: settingsStore.primaryColor === color.value }"
+        :style="{ background: color.value }"
+        :title="color.name"
+        :aria-label="`${$t('settings.themeColor')} ${color.name}`"
+        @click="setThemeColor(color.value)"
+      >
+        <Check v-if="settingsStore.primaryColor === color.value" :size="16" />
+      </button>
+    </div>
 
     <div class="setting-row">
       <div class="setting-icon-wrap icon-green">
@@ -217,12 +217,18 @@ const setFontSize = (size) => {
 
 const toggleSidebar = () => {
   settingsStore.toggleSidebar()
-  showSnackbar(settingsStore.sidebarCollapsed ? t('settings.sidebarCollapsed') : t('settings.sidebarExpanded'))
+  showSnackbar(
+    settingsStore.sidebarCollapsed ? t('settings.sidebarCollapsed') : t('settings.sidebarExpanded')
+  )
 }
 
 const toggleGlassEffect = () => {
   settingsStore.toggleGlassEffect()
-  showSnackbar(settingsStore.glassEffectEnabled ? t('settings.glassEffectEnabled') : t('settings.glassEffectDisabled'))
+  showSnackbar(
+    settingsStore.glassEffectEnabled
+      ? t('settings.glassEffectEnabled')
+      : t('settings.glassEffectDisabled')
+  )
 }
 
 const setThemeColor = (color) => {

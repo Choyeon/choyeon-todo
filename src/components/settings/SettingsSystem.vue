@@ -71,7 +71,9 @@
       <div class="setting-label-wrap">
         <span class="setting-label">{{ $t('settings.checkUpdates') }}</span>
         <p class="setting-desc" v-if="updateStatusText">{{ updateStatusText }}</p>
-        <p class="setting-desc" v-else>{{ $t('settings.checkUpdatesDesc') }} {{ currentVersion }}</p>
+        <p class="setting-desc" v-else>
+          {{ $t('settings.checkUpdatesDesc') }} {{ currentVersion }}
+        </p>
       </div>
       <button
         class="btn-secondary btn-small"
@@ -159,12 +161,16 @@ const downloadUpdate = () => {
 
 const toggleAutoStart = () => {
   settingsStore.toggleAutoStart()
-  showSnackbar(settingsStore.autoStart ? t('settings.autoStartEnabled') : t('settings.autoStartDisabled'))
+  showSnackbar(
+    settingsStore.autoStart ? t('settings.autoStartEnabled') : t('settings.autoStartDisabled')
+  )
 }
 
 const toggleCloseToQuit = () => {
   settingsStore.toggleCloseToQuit()
-  showSnackbar(settingsStore.closeToQuit ? t('settings.closeToQuitEnabled') : t('settings.closeToQuitDisabled'))
+  showSnackbar(
+    settingsStore.closeToQuit ? t('settings.closeToQuitEnabled') : t('settings.closeToQuitDisabled')
+  )
 }
 
 const toggleMiniWindow = () => {
@@ -181,49 +187,61 @@ onMounted(async () => {
 
   if (window.electronAPI) {
     if (window.electronAPI.onUpdateChecking) {
-      cleanupListeners.push(window.electronAPI.onUpdateChecking(() => {
-        isChecking.value = true
-      }))
+      cleanupListeners.push(
+        window.electronAPI.onUpdateChecking(() => {
+          isChecking.value = true
+        })
+      )
     }
     if (window.electronAPI.onUpdateAvailable) {
-      cleanupListeners.push(window.electronAPI.onUpdateAvailable((info) => {
-        isChecking.value = false
-        updateAvailable.value = true
-        latestVersion.value = info.version
-      }))
+      cleanupListeners.push(
+        window.electronAPI.onUpdateAvailable((info) => {
+          isChecking.value = false
+          updateAvailable.value = true
+          latestVersion.value = info.version
+        })
+      )
     }
     if (window.electronAPI.onUpdateNotAvailable) {
-      cleanupListeners.push(window.electronAPI.onUpdateNotAvailable(() => {
-        isChecking.value = false
-        updateAvailable.value = false
-        showSnackbar(t('settings.upToDate'))
-      }))
+      cleanupListeners.push(
+        window.electronAPI.onUpdateNotAvailable(() => {
+          isChecking.value = false
+          updateAvailable.value = false
+          showSnackbar(t('settings.upToDate'))
+        })
+      )
     }
     if (window.electronAPI.onUpdateDownloadProgress) {
-      cleanupListeners.push(window.electronAPI.onUpdateDownloadProgress((progress) => {
-        downloadPercent.value = progress.percent
-      }))
+      cleanupListeners.push(
+        window.electronAPI.onUpdateDownloadProgress((progress) => {
+          downloadPercent.value = progress.percent
+        })
+      )
     }
     if (window.electronAPI.onUpdateDownloaded) {
-      cleanupListeners.push(window.electronAPI.onUpdateDownloaded(() => {
-        isDownloading.value = false
-        updateDownloaded.value = true
-        downloadPercent.value = 100
-      }))
+      cleanupListeners.push(
+        window.electronAPI.onUpdateDownloaded(() => {
+          isDownloading.value = false
+          updateDownloaded.value = true
+          downloadPercent.value = 100
+        })
+      )
     }
     if (window.electronAPI.onUpdateError) {
-      cleanupListeners.push(window.electronAPI.onUpdateError((err) => {
-        isChecking.value = false
-        isDownloading.value = false
-        downloadPercent.value = -1
-        showSnackbar(t('settings.updateError') + ': ' + err.message)
-      }))
+      cleanupListeners.push(
+        window.electronAPI.onUpdateError((err) => {
+          isChecking.value = false
+          isDownloading.value = false
+          downloadPercent.value = -1
+          showSnackbar(t('settings.updateError') + ': ' + err.message)
+        })
+      )
     }
   }
 })
 
 onUnmounted(() => {
-  cleanupListeners.forEach(fn => {
+  cleanupListeners.forEach((fn) => {
     if (typeof fn === 'function') fn()
   })
   cleanupListeners = []

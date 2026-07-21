@@ -220,7 +220,8 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof data.doNotDisturb === 'boolean') doNotDisturb.value = data.doNotDisturb
         if (typeof data.autoStart === 'boolean') autoStart.value = data.autoStart
         if (typeof data.closeToQuit === 'boolean') closeToQuit.value = data.closeToQuit
-        if (typeof data.miniWindowEnabled === 'boolean') miniWindowEnabled.value = data.miniWindowEnabled
+        if (typeof data.miniWindowEnabled === 'boolean')
+          miniWindowEnabled.value = data.miniWindowEnabled
         if (
           typeof data.pomodoroWorkMinutes === 'number' &&
           data.pomodoroWorkMinutes > 0 &&

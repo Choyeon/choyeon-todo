@@ -19,22 +19,23 @@
             <h3 class="update-title">{{ title }}</h3>
             <p class="update-message">{{ message }}</p>
             <div v-if="releaseNotes" class="update-release-notes">
-            <p class="release-notes-label">{{ $t('update.releaseNotes') }}</p>
-            <div class="release-notes-content" v-html="sanitizedReleaseNotes"></div>
-          </div>
+              <p class="release-notes-label">{{ $t('update.releaseNotes') }}</p>
+              <div class="release-notes-content" v-html="sanitizedReleaseNotes"></div>
+            </div>
             <div class="update-version-info">
-              <span class="current-version">{{ $t('update.currentVersion') }} {{ currentVersion }}</span>
-              <span class="latest-version">{{ $t('update.latestVersion') }} {{ latestVersion }}</span>
+              <span class="current-version"
+                >{{ $t('update.currentVersion') }} {{ currentVersion }}</span
+              >
+              <span class="latest-version"
+                >{{ $t('update.latestVersion') }} {{ latestVersion }}</span
+              >
             </div>
             <div class="update-actions">
               <template v-if="isDownloaded">
                 <button class="update-btn later-btn" @click="handleLater">
                   {{ $t('update.installLater') }}
                 </button>
-                <button
-                  class="update-btn update-btn-primary"
-                  @click="handleInstall"
-                >
+                <button class="update-btn update-btn-primary" @click="handleInstall">
                   {{ $t('update.installNow') }}
                 </button>
               </template>
@@ -55,7 +56,10 @@
                 </button>
               </template>
             </div>
-            <div v-if="(isDownloading || isDownloaded) && downloadPercent >= 0" class="update-progress">
+            <div
+              v-if="(isDownloading || isDownloaded) && downloadPercent >= 0"
+              class="update-progress"
+            >
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: downloadPercent + '%' }"></div>
               </div>

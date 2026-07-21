@@ -7,7 +7,11 @@
         </div>
         <h3 class="settings-section-title">{{ $t('categories.manage') }}</h3>
       </div>
-      <button v-if="selectedCategories.length > 0" class="batch-delete-btn" @click="handleBatchDelete">
+      <button
+        v-if="selectedCategories.length > 0"
+        class="batch-delete-btn"
+        @click="handleBatchDelete"
+      >
         <Trash2 :size="14" />
         {{ $t('categories.batchDelete') }} ({{ selectedCategories.length }})
       </button>
@@ -57,7 +61,9 @@
         <div v-if="showCategoryModal" class="modal-backdrop" @click.self="closeCategoryModal">
           <Transition name="slide-up">
             <div v-if="showCategoryModal" class="category-modal" @keydown.esc="closeCategoryModal">
-              <h3 class="modal-title">{{ editingCategory ? $t('categories.editCategory') : $t('categories.addNew') }}</h3>
+              <h3 class="modal-title">
+                {{ editingCategory ? $t('categories.editCategory') : $t('categories.addNew') }}
+              </h3>
               <input
                 type="text"
                 class="form-input"
@@ -83,7 +89,9 @@
                 </button>
               </div>
               <div class="modal-actions">
-                <button class="cancel-btn" @click="closeCategoryModal">{{ $t('common.cancel') }}</button>
+                <button class="cancel-btn" @click="closeCategoryModal">
+                  {{ $t('common.cancel') }}
+                </button>
                 <button class="save-btn" @click="saveCategory">
                   {{ editingCategory ? $t('common.save') : $t('common.add') }}
                 </button>
@@ -120,7 +128,9 @@
                   {{ $t('settings.deleteTasks') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="closeDeleteModal">{{ $t('common.cancel') }}</button>
+              <button class="cancel-btn full-width" @click="closeDeleteModal">
+                {{ $t('common.cancel') }}
+              </button>
             </div>
           </Transition>
         </div>
@@ -135,15 +145,7 @@ import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useTaskStore } from '../../stores/taskStore'
 import { useSnackbar } from '../../composables/useSnackbar'
-import {
-  FolderTree,
-  Plus,
-  Trash2,
-  Pencil,
-  Check,
-  AlertTriangle,
-  ArrowRight
-} from '@lucide/vue'
+import { FolderTree, Plus, Trash2, Pencil, Check, AlertTriangle, ArrowRight } from '@lucide/vue'
 
 const { t } = useI18n()
 const settingsStore = useSettingsStore()
@@ -168,7 +170,10 @@ const deleteModalMessage = computed(() => {
     const totalCount = deletingCategories.value.reduce((sum, catId) => {
       return sum + taskStore.getCategoryCount(catId)
     }, 0)
-    return t('settings.deleteCategoriesConfirm', { count: deletingCategories.value.length, taskCount: totalCount })
+    return t('settings.deleteCategoriesConfirm', {
+      count: deletingCategories.value.length,
+      taskCount: totalCount
+    })
   }
   if (deletingCategory.value) {
     const count = taskStore.getCategoryCount(deletingCategory.value.id)
@@ -279,7 +284,9 @@ const confirmDeleteWithRemove = () => {
       taskStore.deleteCategory(catId, { moveTasks: false })
     })
     selectedCategories.value = []
-    showSnackbar(t('settings.categoriesAndTasksDeleted', { count: deletingCategories.value.length }))
+    showSnackbar(
+      t('settings.categoriesAndTasksDeleted', { count: deletingCategories.value.length })
+    )
   }
   closeDeleteModal()
 }

@@ -114,5 +114,15 @@
 </template>
 
 <script setup>
-import { Keyboard, Search, ArrowUpDown, CheckCircle, Star, Clock, Settings, Timer, HelpCircle } from '@lucide/vue'
+import {
+  Keyboard,
+  Search,
+  ArrowUpDown,
+  CheckCircle,
+  Star,
+  Clock,
+  Settings,
+  Timer,
+  HelpCircle
+} from '@lucide/vue'
 </script>

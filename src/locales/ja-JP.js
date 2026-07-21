@@ -298,8 +298,10 @@ export default {
     closeToQuitDisabled: '閉じたら終了をオフにしました',
     moveToDefaultCategory: 'デフォルトカテゴリに移動',
     deleteTasks: 'タスクを削除',
-    deleteCategoriesConfirm: '{count}個のカテゴリを削除しようとしています。合計{taskCount}個のタスクが含まれています。これらのタスクをどう処理しますか？',
-    deleteCategoryConfirm: 'カテゴリ"{name}"を削除しようとしています。このカテゴリには{count}個のタスクがあります。これらのタスクをどう処理しますか？',
+    deleteCategoriesConfirm:
+      '{count}個のカテゴリを削除しようとしています。合計{taskCount}個のタスクが含まれています。これらのタスクをどう処理しますか？',
+    deleteCategoryConfirm:
+      'カテゴリ"{name}"を削除しようとしています。このカテゴリには{count}個のタスクがあります。これらのタスクをどう処理しますか？',
     pleaseEnterCategoryName: 'カテゴリ名を入力してください',
     categoryUpdated: 'カテゴリを更新しました',
     categoryAdded: 'カテゴリを追加しました',
@@ -308,10 +310,12 @@ export default {
     categoryAndTasksDeleted: 'カテゴリとタスクを削除しました',
     categoriesAndTasksDeleted: '{count}個のカテゴリとタスクを削除しました',
     clearAllDataConfirm: 'すべてのデータを消去',
-    clearAllDataDesc: 'すべてのタスク、カテゴリ、設定が削除されます。この操作は元に戻せません。消去後、ページが再読み込みされます。',
+    clearAllDataDesc:
+      'すべてのタスク、カテゴリ、設定が削除されます。この操作は元に戻せません。消去後、ページが再読み込みされます。',
     confirmClear: '消去を確認',
     resetDataConfirm: 'デフォルトデータにリセット',
-    resetDataDesc: '現在のすべてのタスクと設定が消去され、デフォルトのサンプルデータに復元されます。この操作は元に戻せません。',
+    resetDataDesc:
+      '現在のすべてのタスクと設定が消去され、デフォルトのサンプルデータに復元されます。この操作は元に戻せません。',
     confirmReset: 'リセットを確認',
     dataCleared: 'データを消去しました。ページを再読み込みしています...',
     clearDataFailed: 'データの消去に失敗しました：',

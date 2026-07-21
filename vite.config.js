@@ -2,8 +2,9 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import pkg from './package.json'
+import { env } from 'node:process'
 
-const pwaEnabled = process.env.PWA !== 'false'
+const pwaEnabled = env.PWA !== 'false'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -49,7 +50,7 @@ export default defineConfig({
       }
     })
   ],
-  base: process.env.GITHUB_PAGES ? '/choyeon-todo/' : './',
+  base: env.GITHUB_PAGES ? '/choyeon-todo/' : './',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version)
   },

@@ -200,12 +200,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useSnackbar } from '../composables/useSnackbar'
-import {
-  getErrorLogs,
-  getErrorStats,
-  clearErrorLogs,
-  deleteErrorLog
-} from '../utils/errorMonitor'
+import { getErrorLogs, getErrorStats, clearErrorLogs, deleteErrorLog } from '../utils/errorMonitor'
 import {
   AlertTriangle,
   Clock,
@@ -242,9 +237,7 @@ const filteredLogs = computed(() => {
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(
-      (l) =>
-        l.message.toLowerCase().includes(q) ||
-        l.name.toLowerCase().includes(q)
+      (l) => l.message.toLowerCase().includes(q) || l.name.toLowerCase().includes(q)
     )
   }
 
@@ -544,10 +537,18 @@ onMounted(() => {
   font-weight: 600;
 }
 
-.error-name.type-vue { color: #10b981; }
-.error-name.type-promise { color: #f59e0b; }
-.error-name.type-window { color: #ef4444; }
-.error-name.type-runtime { color: #6b7280; }
+.error-name.type-vue {
+  color: #10b981;
+}
+.error-name.type-promise {
+  color: #f59e0b;
+}
+.error-name.type-window {
+  color: #ef4444;
+}
+.error-name.type-runtime {
+  color: #6b7280;
+}
 
 .error-time {
   font-size: var(--font-size-2xs);
@@ -648,10 +649,22 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.type-badge.type-vue { background: rgba(16, 185, 129, 0.12); color: #10b981; }
-.type-badge.type-promise { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
-.type-badge.type-window { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
-.type-badge.type-runtime { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
+.type-badge.type-vue {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+.type-badge.type-promise {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+.type-badge.type-window {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.type-badge.type-runtime {
+  background: rgba(107, 114, 128, 0.12);
+  color: #6b7280;
+}
 
 .detail-block {
   padding: 12px 0;
@@ -764,9 +777,18 @@ onMounted(() => {
   color: var(--color-text-secondary);
 }
 
-.top-rank.rank-1 { background: #fef3c7; color: #d97706; }
-.top-rank.rank-2 { background: #f3f4f6; color: #6b7280; }
-.top-rank.rank-3 { background: #fee2e2; color: #b91c1c; }
+.top-rank.rank-1 {
+  background: #fef3c7;
+  color: #d97706;
+}
+.top-rank.rank-2 {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.top-rank.rank-3 {
+  background: #fee2e2;
+  color: #b91c1c;
+}
 
 .top-error-info {
   flex: 1;

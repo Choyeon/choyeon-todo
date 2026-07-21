@@ -47,7 +47,11 @@
               </div>
 
               <div class="form-section-label">{{ $t('task.category') }}</div>
-              <div class="category-scroll" role="radiogroup" :aria-label="$t('task.selectCategory')">
+              <div
+                class="category-scroll"
+                role="radiogroup"
+                :aria-label="$t('task.selectCategory')"
+              >
                 <div
                   v-for="cat in taskStore.categories"
                   :key="cat.id"
@@ -134,7 +138,12 @@
                 <Calendar :size="18" class="row-icon" />
                 <span class="setting-label">{{ $t('task.selectDate') }}</span>
                 <div class="setting-action">
-                  <input type="date" class="date-input" v-model="form.date" :aria-label="$t('task.selectDate')" />
+                  <input
+                    type="date"
+                    class="date-input"
+                    v-model="form.date"
+                    :aria-label="$t('task.selectDate')"
+                  />
                 </div>
               </div>
 
@@ -142,7 +151,12 @@
                 <Clock :size="18" class="row-icon" />
                 <span class="setting-label">{{ $t('task.selectTime') }}</span>
                 <div class="setting-action">
-                  <input type="time" class="date-input" v-model="form.time" :aria-label="$t('task.selectTime')" />
+                  <input
+                    type="time"
+                    class="date-input"
+                    v-model="form.time"
+                    :aria-label="$t('task.selectTime')"
+                  />
                 </div>
               </div>
 

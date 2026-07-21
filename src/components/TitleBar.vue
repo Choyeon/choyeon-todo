@@ -2,7 +2,12 @@
   <div class="title-bar" :class="[`title-bar-${currentPlatform}`]" @dblclick="handleToggleMaximize">
     <div class="title-bar-left">
       <div v-if="currentPlatform === 'darwin'" class="mac-controls">
-        <button class="mac-btn mac-btn-close" @click="handleClose" :title="t('titlebar.close')" :aria-label="t('titlebar.close')">
+        <button
+          class="mac-btn mac-btn-close"
+          @click="handleClose"
+          :title="t('titlebar.close')"
+          :aria-label="t('titlebar.close')"
+        >
           <span class="mac-btn-inner"></span>
         </button>
         <button
@@ -24,7 +29,12 @@
       </div>
 
       <div v-if="currentPlatform === 'linux'" class="linux-controls-left">
-        <button class="linux-btn linux-btn-menu" @click="handleMenu" :title="t('titlebar.menu')" :aria-label="t('titlebar.menu')">
+        <button
+          class="linux-btn linux-btn-menu"
+          @click="handleMenu"
+          :title="t('titlebar.menu')"
+          :aria-label="t('titlebar.menu')"
+        >
           <svg width="16" height="14" viewBox="0 0 16 14" fill="none">
             <path
               d="M2 3H14M2 7H14M2 11H14"
@@ -94,7 +104,12 @@
             />
           </svg>
         </button>
-        <button class="win-btn win-btn-close" @click="handleClose" :title="t('titlebar.close')" :aria-label="t('titlebar.close')">
+        <button
+          class="win-btn win-btn-close"
+          @click="handleClose"
+          :title="t('titlebar.close')"
+          :aria-label="t('titlebar.close')"
+        >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path
               d="M1 1L9 9M9 1L1 9"

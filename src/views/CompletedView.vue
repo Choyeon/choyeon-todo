@@ -3,7 +3,9 @@
     <div class="content-inner">
       <div class="content-header">
         <h1>{{ $t('nav.completed') }}</h1>
-        <p class="header-subtitle">{{ $t('task.completedCount', { count: taskStore.getCount('completed') }) }}</p>
+        <p class="header-subtitle">
+          {{ $t('task.completedCount', { count: taskStore.getCount('completed') }) }}
+        </p>
       </div>
 
       <div v-if="completedTasks.length > 0" class="action-bar">
@@ -31,7 +33,9 @@
                   <Trash2 :size="16" />
                   {{ $t('task.clearCompletedConfirm') }}
                 </button>
-                <button class="confirm-btn cancel" @click="showClearModal = false">{{ $t('common.cancel') }}</button>
+                <button class="confirm-btn cancel" @click="showClearModal = false">
+                  {{ $t('common.cancel') }}
+                </button>
               </div>
             </div>
           </Transition>

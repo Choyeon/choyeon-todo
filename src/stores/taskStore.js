@@ -476,10 +476,13 @@ export const useTaskStore = defineStore('task', () => {
       localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(data.tasks))
       localStorage.setItem(STORAGE_KEYS.categories, JSON.stringify(data.categories))
       localStorage.setItem(STORAGE_KEYS.tags, JSON.stringify(data.tags))
-      localStorage.setItem(STORAGE_KEYS.myDay, JSON.stringify({
-        date: myDayDate.value,
-        taskIds: myDayTaskIds.value
-      }))
+      localStorage.setItem(
+        STORAGE_KEYS.myDay,
+        JSON.stringify({
+          date: myDayDate.value,
+          taskIds: myDayTaskIds.value
+        })
+      )
     } catch (e) {
       console.error('[TaskStore] Failed to save to storage:', e)
       if (e && e.name === 'QuotaExceededError') {

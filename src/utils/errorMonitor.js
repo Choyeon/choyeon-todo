@@ -93,9 +93,7 @@ export const getErrorLogs = (filters = {}) => {
   if (filters.search) {
     const q = filters.search.toLowerCase()
     logs = logs.filter(
-      (l) =>
-        l.message.toLowerCase().includes(q) ||
-        l.name.toLowerCase().includes(q)
+      (l) => l.message.toLowerCase().includes(q) || l.name.toLowerCase().includes(q)
     )
   }
 
