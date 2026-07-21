@@ -537,10 +537,7 @@ onMounted(async () => {
   font-weight: 200;
   line-height: 1;
   letter-spacing: 4px;
-  text-shadow:
-    0 0 30px currentColor,
-    0 0 60px currentColor;
-  filter: drop-shadow(0 0 12px currentColor);
+  text-shadow: 0 0 20px currentColor;
 }
 
 .time-separator {

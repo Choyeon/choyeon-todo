@@ -627,25 +627,20 @@ onMounted(() => {
   font-weight: 200;
   line-height: 1;
   letter-spacing: 2px;
-  text-shadow:
-    0 0 20px currentColor,
-    0 0 40px currentColor;
-  filter: drop-shadow(0 0 8px currentColor);
-  transition: text-shadow var(--transition-smooth), filter var(--transition-smooth);
+  text-shadow: 0 0 12px currentColor;
+  transition: text-shadow var(--transition-smooth);
 }
 
 .pomodoro-timer.is-running .time-text {
-  animation: timeGlow 2s ease-in-out infinite;
+  animation: timeGlow 3s ease-in-out infinite;
 }
 
 @keyframes timeGlow {
   0%, 100% {
-    text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
-    filter: drop-shadow(0 0 8px currentColor);
+    text-shadow: 0 0 12px currentColor;
   }
   50% {
-    text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
-    filter: drop-shadow(0 0 14px currentColor);
+    text-shadow: 0 0 18px currentColor;
   }
 }
 
