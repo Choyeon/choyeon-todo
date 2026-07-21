@@ -29,6 +29,9 @@
           class="ring-glow-outer"
           :style="{ boxShadow: `0 0 80px ${pomodoroStore.currentColor}30` }"
         ></div>
+        <!-- 脉冲环：运行时从内向外扩散，形成交错脉冲效果 -->
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring-2"></div>
         <svg class="progress-ring" viewBox="0 0 200 200">
           <defs>
             <linearGradient
@@ -86,6 +89,15 @@
             background: `radial-gradient(circle, ${pomodoroStore.currentColor}15 0%, transparent 60%)`
           }"
         ></div>
+        <!-- 粒子爆发：点击开始时从中心向四周发散 -->
+        <div class="particle-burst" v-if="showParticles">
+          <div
+            class="burst-particle"
+            v-for="i in 12"
+            :key="i"
+            :style="getBurstParticleStyle(i)"
+          ></div>
+        </div>
       </div>
 
       <div class="timer-display">
@@ -205,7 +217,7 @@
       <button
         class="control-btn primary-btn"
         :class="{ running: pomodoroStore.isRunning }"
-        @click="pomodoroStore.toggleTimer()"
+        @click="handleToggleTimer"
         :title="pomodoroStore.isRunning ? $t('pomodoro.pause') : $t('pomodoro.start')"
       >
         <Play v-if="!pomodoroStore.isRunning" :size="26" />
@@ -315,6 +327,8 @@ const router = useRouter()
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI
 const showNoisePanel = ref(false)
 const showTaskPicker = ref(false)
+// 粒子爆发显示控制
+const showParticles = ref(false)
 
 const incompleteTasks = computed(() =>
   taskStore.tasks.filter((t) => !t.completed).slice(0, 20)
@@ -328,6 +342,31 @@ const selectTask = (taskId) => {
 const handleSkip = () => {
   if (!pomodoroStore.canSkip) return
   pomodoroStore.skipTimer()
+}
+
+// 点击开始按钮时触发粒子爆发效果
+const handleToggleTimer = () => {
+  if (!pomodoroStore.isRunning) {
+    showParticles.value = true
+    setTimeout(() => {
+      showParticles.value = false
+    }, 1000)
+  }
+  pomodoroStore.toggleTimer()
+}
+
+// 计算每个爆发粒子的飞散方向和距离
+const getBurstParticleStyle = (i) => {
+  const angle = (i - 1) * 30
+  const distance = 80 + Math.random() * 40
+  const rad = (angle * Math.PI) / 180
+  const x = Math.cos(rad) * distance
+  const y = Math.sin(rad) * distance
+  return {
+    '--tx': x + 'px',
+    '--ty': y + 'px',
+    animationDelay: i * 0.02 + 's'
+  }
 }
 
 const modeIcons = {
@@ -546,6 +585,37 @@ onMounted(() => {
   }
 }
 
+/* 脉冲环：运行时从内向外扩散，形成交错脉冲效果 */
+.pulse-ring,
+.pulse-ring-2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--glow-color, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pomodoro-timer.is-running .pulse-ring {
+  animation: pulseExpand 3s ease-out infinite;
+}
+
+.pomodoro-timer.is-running .pulse-ring-2 {
+  animation: pulseExpand 3s ease-out infinite;
+  animation-delay: 1.5s;
+}
+
+@keyframes pulseExpand {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
 .progress-ring {
   width: 100%;
   height: 100%;
@@ -603,6 +673,38 @@ onMounted(() => {
   opacity: 0.4;
   transition: opacity var(--duration-slow) var(--ease-out-quart);
   pointer-events: none;
+}
+
+/* 粒子爆发容器：从进度环中心定位 */
+.particle-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 单个爆发粒子：使用 --tx/--ty 自定义属性控制飞散方向 */
+.burst-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--glow-color, #ef4444);
+  box-shadow: 0 0 8px var(--glow-color, #ef4444);
+  animation: burstFly 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes burstFly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0);
+    opacity: 0;
+  }
 }
 
 .pomodoro-timer.is-paused .glow-effect {
@@ -1650,8 +1752,11 @@ onMounted(() => {
   }
 
   .pomodoro-timer.is-running .glow-effect,
+  .pomodoro-timer.is-running .pulse-ring,
+  .pomodoro-timer.is-running .pulse-ring-2,
   .control-btn.primary-btn.running,
-  .time-separator .dot {
+  .time-separator .dot,
+  .burst-particle {
     animation: none !important;
   }
 }
