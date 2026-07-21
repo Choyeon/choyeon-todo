@@ -436,7 +436,12 @@ export default {
     testNotificationContent: '测试通知：请查看右下角toast弹窗',
     notificationClicked: '通知已点击',
     notificationClosed: '通知已关闭',
-    notificationSent: '通知已发送'
+    notificationSent: '通知已发送',
+    update: '更新测试',
+    mockUpdate: '模拟更新通知',
+    mockUpdateDesc: '测试更新弹窗',
+    checkUpdate: '检查更新',
+    checkUpdateDesc: '手动检查更新'
   },
   calendar: {
     title: '日历',

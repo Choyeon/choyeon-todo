@@ -54,7 +54,7 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version)
   },
   build: {
-    outDir: 'dist',
+    outDir: 'dist-web',
     assetsDir: 'assets',
     sourcemap: false,
     target: 'chrome120',

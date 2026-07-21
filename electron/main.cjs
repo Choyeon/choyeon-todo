@@ -380,7 +380,7 @@ function createWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
+    mainWindow.loadFile(path.join(__dirname, '../dist-web/index.html'))
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -505,7 +505,7 @@ function createDebugWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     debugWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/debug')
   } else {
-    debugWindow.loadFile(path.join(__dirname, '../dist/index.html'), { hash: 'debug' })
+    debugWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), { hash: 'debug' })
   }
 
   debugWindow.once('ready-to-show', () => {
@@ -567,7 +567,7 @@ function createPomodoroWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     pomodoroWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fullscreen?slave=1')
   } else {
-    pomodoroWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+    pomodoroWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
       hash: 'pomodoro-fullscreen',
       query: { slave: '1' }
     })
@@ -636,7 +636,7 @@ function createPomodoroFabWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     pomodoroFabWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fab?slave=1')
   } else {
-    pomodoroFabWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+    pomodoroFabWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
       hash: 'pomodoro-fab',
       query: { slave: '1' }
     })
@@ -699,7 +699,7 @@ function createMiniWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     miniWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/mini-window?slave=1')
   } else {
-    miniWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+    miniWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
       hash: 'mini-window',
       query: { slave: '1' }
     })

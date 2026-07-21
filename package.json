@@ -1,7 +1,7 @@
 {
   "name": "todolist-app",
   "private": true,
-  "version": "1.2.1",
+  "version": "1.2.3",
   "main": "electron/main.cjs",
   "type": "module",
   "description": "Choyeon To Do - A  task management application",
@@ -23,7 +23,7 @@
     "lint:fix": "eslint . --ext .vue,.js,.cjs --fix",
     "format": "prettier --write \"src/**/*.{vue,js,css}\" \"electron/**/*.{js,cjs}\" \"tests/**/*.{js,vue}\"",
     "build:pages": "cross-env GITHUB_PAGES=true vite build",
-    "deploy:pages": "cross-env GITHUB_PAGES=true vite build && gh-pages -d dist -b gh-pages"
+    "deploy:pages": "cross-env GITHUB_PAGES=true vite build && gh-pages -d dist-web -b gh-pages"
   },
   "dependencies": {
     "@lucide/vue": "^1.23.0",
@@ -60,12 +60,12 @@
     "copyright": "Copyright © 2026 Choyeon",
     "asar": true,
     "directories": {
-      "output": "app-build",
+      "output": "dist",
       "buildResources": "build"
     },
     "files": [
-      "dist/**/*",
-      "!dist/**/*.map",
+      "dist-web/**/*",
+      "!dist-web/**/*.map",
       "electron/main.cjs",
       "electron/preload.cjs",
       "electron/debug-preload.cjs",

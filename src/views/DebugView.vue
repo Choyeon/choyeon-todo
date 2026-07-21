@@ -127,6 +127,25 @@
 
       <div class="debug-menu-section">
         <div class="debug-menu-section-title">
+          <Download :size="14" />
+          <span>{{ $t('debug.update') }}</span>
+        </div>
+        <button class="debug-menu-item" @click="handleMockUpdate">
+          <Download :size="14" />
+          <span class="item-label">{{ $t('debug.mockUpdate') }}</span>
+          <span class="item-desc">{{ $t('debug.mockUpdateDesc') }}</span>
+        </button>
+        <button class="debug-menu-item" @click="handleCheckUpdate">
+          <RefreshCw :size="14" />
+          <span class="item-label">{{ $t('debug.checkUpdate') }}</span>
+          <span class="item-desc">{{ $t('debug.checkUpdateDesc') }}</span>
+        </button>
+      </div>
+
+      <div class="debug-menu-divider"></div>
+
+      <div class="debug-menu-section">
+        <div class="debug-menu-section-title">
           <Info :size="14" />
           <span>{{ $t('debug.systemInfo') }}</span>
         </div>
@@ -176,7 +195,8 @@ import {
   Info,
   AlertTriangle,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Download
 } from '@lucide/vue'
 import {
   getErrorLogs,
@@ -253,6 +273,24 @@ const setTitlebarStyle = (style) => {
 const handleClose = () => {
   if (window.electronAPI?.closeDebugWindow) {
     window.electronAPI.closeDebugWindow()
+  }
+}
+
+const handleMockUpdate = () => {
+  if (window.electronAPI?.onUpdateAvailable) {
+    window.dispatchEvent(new CustomEvent('mock-update-available', {
+      detail: {
+        version: '99.99.99',
+        releaseNotes: '<h2>模拟更新测试</h2><p>这是一个模拟的更新通知，用于测试更新弹窗功能。</p><ul><li>修复了一些问题</li><li>添加了新功能</li></ul>',
+        releaseDate: new Date().toISOString()
+      }
+    }))
+  }
+}
+
+const handleCheckUpdate = () => {
+  if (window.electronAPI?.checkForUpdates) {
+    window.electronAPI.checkForUpdates()
   }
 }
 

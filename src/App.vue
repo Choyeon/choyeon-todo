@@ -446,6 +446,20 @@ const setupAutoUpdateListeners = () => {
       updateModalRef.value.onDownloadError()
     }
   }))
+
+  const mockUpdateHandler = (e) => {
+    if (updateModalRef.value) {
+      updateModalRef.value.show({
+        currentVersion: currentAppVersion.value,
+        version: e.detail.version,
+        releaseNotes: e.detail.releaseNotes
+      })
+    }
+  }
+  window.addEventListener('mock-update-available', mockUpdateHandler)
+  updateCleanupListeners.push(() => {
+    window.removeEventListener('mock-update-available', mockUpdateHandler)
+  })
 }
 
 const checkForUpdatesOnStartup = async () => {
@@ -464,12 +478,33 @@ const checkForUpdatesOnStartup = async () => {
 }
 
 const syncTasksToTray = () => {
-  // IPC 仅能克隆可序列化数据：传纯数组副本，避免 Pinia ref/Proxy 对象导致 "An object could not be cloned"
-  const tasks = Array.isArray(taskStore.tasks) ? taskStore.tasks.map((t) => ({ ...t })) : []
-  const categories = Array.isArray(taskStore.categories)
-    ? taskStore.categories.map((c) => ({ ...c }))
-    : []
-  window.electronAPI?.syncTasks?.(tasks, categories)
+  try {
+    const tasks = Array.isArray(taskStore.tasks)
+      ? taskStore.tasks.map((t) => {
+          const obj = { ...t }
+          Object.keys(obj).forEach((key) => {
+            if (typeof obj[key] === 'function' || obj[key] === undefined) {
+              delete obj[key]
+            }
+          })
+          return obj
+        })
+      : []
+    const categories = Array.isArray(taskStore.categories)
+      ? taskStore.categories.map((c) => {
+          const obj = { ...c }
+          Object.keys(obj).forEach((key) => {
+            if (typeof obj[key] === 'function' || obj[key] === undefined) {
+              delete obj[key]
+            }
+          })
+          return obj
+        })
+      : []
+    window.electronAPI?.syncTasks?.(tasks, categories)
+  } catch (e) {
+    console.error('[App] syncTasksToTray error:', e)
+  }
 }
 
 onMounted(() => {

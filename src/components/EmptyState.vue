@@ -2,7 +2,7 @@
   <div class="empty-state">
     <div class="empty-illustration">
       <svg
-        v-if="type === 'today'"
+        v-if="type === 'today' || type === 'myday'"
         viewBox="0 0 200 160"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -334,7 +334,7 @@ const props = defineProps({
     type: String,
     default: 'default',
     validator: (val) =>
-      ['today', 'important', 'planned', 'search', 'completed', 'category', 'default'].includes(val)
+      ['today', 'myday', 'important', 'planned', 'search', 'completed', 'category', 'default'].includes(val)
   },
   title: {
     type: String,
