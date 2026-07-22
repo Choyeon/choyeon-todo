@@ -121,9 +121,12 @@
     <div
       v-if="bingWallpaperUrl"
       class="bing-wallpaper"
+      :class="{ 'bing-wallpaper-loaded': bingWallpaperLoaded }"
       :style="{ backgroundImage: `url(${bingWallpaperUrl})` }"
+      @load="bingWallpaperLoaded = true"
     ></div>
     <div v-if="bingWallpaperUrl" class="bing-wallpaper-overlay"></div>
+    <div v-if="bingWallpaperUrl" class="bing-wallpaper-gradient"></div>
   </div>
 </template>
 
@@ -174,6 +177,7 @@ let updateCleanupListeners = []
 const { start: startReminderScheduler } = useReminderScheduler()
 
 const bingWallpaperUrl = ref('')
+const bingWallpaperLoaded = ref(false)
 const BING_WALLPAPER_STORAGE_KEY = 'choyeon_bing_wallpaper'
 
 const setBingWallpaperClass = (enabled) => {
@@ -193,7 +197,18 @@ const fetchBingWallpaper = async () => {
     if (cached) {
       const parsed = JSON.parse(cached)
       if (parsed.date === today && parsed.url) {
-        bingWallpaperUrl.value = parsed.url
+        const cachedUrl = parsed.url
+        bingWallpaperLoaded.value = false
+        const img = new Image()
+        img.onload = () => {
+          bingWallpaperUrl.value = cachedUrl
+          bingWallpaperLoaded.value = true
+        }
+        img.onerror = () => {
+          // 缓存图片加载失败，重新获取
+          localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
+        }
+        img.src = cachedUrl
         return
       }
     }
@@ -220,11 +235,21 @@ const fetchBingWallpaper = async () => {
     }
 
     if (imageUrl) {
-      bingWallpaperUrl.value = imageUrl
-      localStorage.setItem(
-        BING_WALLPAPER_STORAGE_KEY,
-        JSON.stringify({ date: today, url: imageUrl })
-      )
+      bingWallpaperLoaded.value = false
+      // 预加载图片，加载完成后再显示，避免闪烁
+      const img = new Image()
+      img.onload = () => {
+        bingWallpaperUrl.value = imageUrl
+        bingWallpaperLoaded.value = true
+        localStorage.setItem(
+          BING_WALLPAPER_STORAGE_KEY,
+          JSON.stringify({ date: today, url: imageUrl })
+        )
+      }
+      img.onerror = () => {
+        console.warn('[App] Failed to load Bing wallpaper image:', imageUrl)
+      }
+      img.src = imageUrl
     }
   } catch (e) {
     console.warn('[App] Failed to fetch Bing wallpaper:', e)
@@ -852,8 +877,17 @@ onUnmounted(() => {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  z-index: -2;
-  transition: opacity 0.5s ease;
+  z-index: -3;
+  opacity: 0;
+  transform: scale(1.02);
+  transition:
+    opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bing-wallpaper-loaded {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .bing-wallpaper-overlay {
@@ -862,13 +896,60 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--bing-wallpaper-overlay, rgba(255, 255, 255, 0.7));
+  z-index: -2;
+  background: var(--bing-wallpaper-overlay, rgba(255, 255, 255, 0.32));
+  backdrop-filter: blur(2px) saturate(1.05);
+  -webkit-backdrop-filter: blur(2px) saturate(1.05);
+  transition: background 0.5s ease;
+}
+
+.bing-wallpaper-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: -1;
-  transition: background 0.3s ease;
+  pointer-events: none;
+  /* 微软 To Do 风格：顶部和左侧有较强的暗色渐变，保证文字可读性 */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.35) 0%,
+      rgba(0, 0, 0, 0.15) 35%,
+      rgba(0, 0, 0, 0.05) 60%,
+      rgba(0, 0, 0, 0.2) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.45) 0%,
+      rgba(0, 0, 0, 0.18) 280px,
+      rgba(0, 0, 0, 0.08) 380px,
+      transparent 480px
+    );
+  transition: opacity 0.5s ease;
 }
 
 html[data-theme='dark'] .bing-wallpaper-overlay {
-  --bing-wallpaper-overlay: rgba(18, 18, 26, 0.85);
+  --bing-wallpaper-overlay: rgba(18, 18, 26, 0.42);
+}
+
+html[data-theme='dark'] .bing-wallpaper-gradient {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.3) 40%,
+      rgba(0, 0, 0, 0.15) 65%,
+      rgba(0, 0, 0, 0.35) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(0, 0, 0, 0.35) 280px,
+      rgba(0, 0, 0, 0.18) 380px,
+      transparent 480px
+    );
 }
 
 @media (max-width: 767px) {

@@ -459,31 +459,55 @@ html.bing-wallpaper #app {
 }
 
 html.bing-wallpaper {
-  --content-bg: rgba(255, 255, 255, 0.4);
-  --sidebar-bg: rgba(248, 249, 250, 0.5);
-  --titlebar-bg: rgba(255, 255, 255, 0.45);
-  --card-bg: rgba(255, 255, 255, 0.6);
+  --content-bg: rgba(255, 255, 255, 0.28);
+  --content-blur: 28px;
+  --content-saturate: 180%;
+  --sidebar-bg: rgba(248, 249, 250, 0.32);
+  --sidebar-blur: 32px;
+  --sidebar-saturate: 200%;
+  --titlebar-bg: rgba(255, 255, 255, 0.32);
+  --titlebar-blur: 32px;
+  --titlebar-saturate: 200%;
+  --card-bg: rgba(255, 255, 255, 0.42);
+  --card-border: rgba(255, 255, 255, 0.18);
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #4a4a5a;
 }
 
 html.bing-wallpaper[data-theme='dark'] {
-  --content-bg: rgba(18, 18, 26, 0.5);
-  --sidebar-bg: rgba(26, 27, 37, 0.55);
-  --titlebar-bg: rgba(18, 18, 26, 0.5);
-  --card-bg: rgba(34, 35, 46, 0.65);
+  --content-bg: rgba(18, 18, 26, 0.32);
+  --content-blur: 32px;
+  --content-saturate: 180%;
+  --sidebar-bg: rgba(26, 27, 37, 0.36);
+  --sidebar-blur: 36px;
+  --sidebar-saturate: 200%;
+  --titlebar-bg: rgba(18, 18, 26, 0.36);
+  --titlebar-blur: 36px;
+  --titlebar-saturate: 200%;
+  --card-bg: rgba(34, 35, 46, 0.42);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --color-text-primary: #f8f9fa;
+  --color-text-secondary: #c5c8cc;
 }
 
 html.bing-wallpaper[data-glass='false'] {
-  --content-bg: rgba(255, 255, 255, 0.85);
-  --sidebar-bg: rgba(248, 249, 250, 0.9);
-  --titlebar-bg: rgba(255, 255, 255, 0.9);
-  --card-bg: rgba(255, 255, 255, 0.95);
+  --content-bg: rgba(255, 255, 255, 0.78);
+  --content-blur: 0px;
+  --sidebar-bg: rgba(248, 249, 250, 0.85);
+  --sidebar-blur: 0px;
+  --titlebar-bg: rgba(255, 255, 255, 0.85);
+  --titlebar-blur: 0px;
+  --card-bg: rgba(255, 255, 255, 0.88);
 }
 
 html.bing-wallpaper[data-glass='false'][data-theme='dark'] {
-  --content-bg: rgba(18, 18, 26, 0.9);
-  --sidebar-bg: rgba(26, 27, 37, 0.92);
-  --titlebar-bg: rgba(18, 18, 26, 0.92);
-  --card-bg: rgba(34, 35, 46, 0.95);
+  --content-bg: rgba(18, 18, 26, 0.82);
+  --content-blur: 0px;
+  --sidebar-bg: rgba(26, 27, 37, 0.85);
+  --sidebar-blur: 0px;
+  --titlebar-bg: rgba(18, 18, 26, 0.85);
+  --titlebar-blur: 0px;
+  --card-bg: rgba(34, 35, 46, 0.88);
 }
 
 ::selection {
