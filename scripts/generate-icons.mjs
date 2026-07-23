@@ -14,13 +14,13 @@ async function generateIcons() {
   }
 
   const faviconPath = path.join(publicDir, 'favicon.png')
-  console.log('Looking for favicon at:', faviconPath)
+  console.warn('Looking for favicon at:', faviconPath)
   if (!fs.existsSync(faviconPath)) {
     console.error('favicon.png not found in public directory')
     process.exit(1)
   }
 
-  console.log('Generating icons from favicon.png...')
+  console.warn('Generating icons from favicon.png...')
 
   for (const size of iconSizes) {
     const outputPath = path.join(buildDir, `icon-${size}x${size}.png`)
@@ -31,7 +31,7 @@ async function generateIcons() {
       })
       .png()
       .toFile(outputPath)
-    console.log(`Generated: ${outputPath}`)
+    console.warn(`Generated: ${outputPath}`)
   }
 
   const icoPath = path.join(buildDir, 'icon.ico')
@@ -49,7 +49,7 @@ async function generateIcons() {
 
   const icoData = createIco(icoBuffers)
   fs.writeFileSync(icoPath, icoData)
-  console.log(`Generated: ${icoPath}`)
+  console.warn(`Generated: ${icoPath}`)
 
   const pngPath = path.join(buildDir, 'icon.png')
   await sharp(faviconPath)
@@ -59,9 +59,9 @@ async function generateIcons() {
     })
     .png()
     .toFile(pngPath)
-  console.log(`Generated: ${pngPath}`)
+  console.warn(`Generated: ${pngPath}`)
 
-  console.log('Icon generation complete!')
+  console.warn('Icon generation complete!')
 }
 
 function createIco(images) {

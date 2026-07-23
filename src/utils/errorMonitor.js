@@ -9,7 +9,7 @@ const loadLogs = () => {
     if (raw) {
       errorLogs = JSON.parse(raw)
     }
-  } catch (_) {
+  } catch {
     errorLogs = []
   }
 }
@@ -20,7 +20,7 @@ const saveLogs = () => {
       errorLogs = errorLogs.slice(-MAX_LOGS)
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(errorLogs))
-  } catch (_) {
+  } catch {
     // ignore
   }
 }

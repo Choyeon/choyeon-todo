@@ -256,7 +256,7 @@ onMounted(async () => {
     try {
       const ver = await window.electronAPI.getAppVersion()
       if (ver) appVersion.value = ver
-    } catch (e) {
+    } catch {
       // ignore, fallback to build-time version
     }
   }

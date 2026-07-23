@@ -87,7 +87,7 @@ import {
 } from '@lucide/vue'
 
 const { t } = useI18n()
-const emit = defineEmits(['show-reset', 'show-clear'])
+defineEmits(['show-reset', 'show-clear'])
 
 const taskStore = useTaskStore()
 const { show: showSnackbar } = useSnackbar()
@@ -121,7 +121,7 @@ const handleFileImport = (e) => {
       const data = JSON.parse(event.target.result)
       taskStore.importData(data)
       showSnackbar(t('settings.dataImported'))
-    } catch (err) {
+    } catch {
       showSnackbar(t('settings.importFailed'), { type: 'error', duration: 3000 })
     }
   }

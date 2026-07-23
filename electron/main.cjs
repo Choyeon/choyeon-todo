@@ -24,6 +24,15 @@ let tray = null
 let isQuitting = false
 let updateDownloaded = false
 
+// 安全：允许在系统浏览器中打开的外部域名白名单
+const ALLOWED_EXTERNAL_DOMAINS = ['github.com', 'www.github.com', 'chuyuchoyeon.github.io']
+
+// 渲染进程崩溃追踪（用于退避机制）
+let renderCrashCount = 0
+let lastCrashTime = 0
+const MAX_CRASH_BEFORE_SAFE_MODE = 3
+const CRASH_BACKOFF_BASE_MS = 2000
+
 // 应用设置（主进程维护一份，用于窗口关闭行为等）
 let appSettings = {
   closeToQuit: true,
@@ -301,7 +310,7 @@ const loadWindowState = () => {
       y,
       isMaximized: !!state.isMaximized
     }
-  } catch (e) {
+  } catch {
     return { width: 1200, height: 800 }
   }
 }
@@ -318,7 +327,7 @@ const saveWindowState = () => {
       isMaximized: mainWindow.isMaximized()
     }
     fs.writeFileSync(windowStatePath, JSON.stringify(state))
-  } catch (e) {
+  } catch {
     // 忽略写入错误
   }
 }
@@ -450,21 +459,57 @@ function createWindow() {
     e.preventDefault()
   })
 
-  // 安全：阻止打开新窗口
+  // 安全：阻止打开新窗口，仅允许白名单域名在系统浏览器中打开
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    // 对外部链接用系统浏览器打开
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      shell.openExternal(url)
+      try {
+        const parsedUrl = new URL(url)
+        const isAllowed = ALLOWED_EXTERNAL_DOMAINS.some(
+          (domain) => parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`)
+        )
+        if (isAllowed) {
+          shell.openExternal(url)
+        } else {
+          console.warn('[Main] Blocked external URL (not in whitelist):', url)
+        }
+      } catch (e) {
+        console.warn('[Main] Failed to parse external URL:', url, e)
+      }
     }
     return { action: 'deny' }
   })
 
-  // 渲染进程崩溃处理
+  // 渲染进程崩溃处理 - 带指数退避和安全模式
   mainWindow.webContents.on('render-process-gone', (event, details) => {
     console.error('[Main] Render process gone:', details.reason)
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.reload()
+    if (!mainWindow || mainWindow.isDestroyed()) return
+
+    const now = Date.now()
+    // 如果距离上次崩溃超过 30 秒，重置计数器
+    if (now - lastCrashTime > 30000) {
+      renderCrashCount = 0
     }
+
+    renderCrashCount++
+    lastCrashTime = now
+
+    // 连续崩溃超过阈值，进入安全模式（不 reload，避免死循环）
+    if (renderCrashCount >= MAX_CRASH_BEFORE_SAFE_MODE) {
+      console.error(
+        `[Main] Render process crashed ${renderCrashCount} times consecutively, entering safe mode`
+      )
+      return
+    }
+
+    // 指数退避：2s → 4s → 8s
+    const backoffMs = CRASH_BACKOFF_BASE_MS * Math.pow(2, renderCrashCount - 1)
+    console.warn(`[Main] Reloading in ${backoffMs}ms (attempt ${renderCrashCount})`)
+
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.reload()
+      }
+    }, backoffMs)
   })
 
   mainWindow.webContents.on('unresponsive', () => {
@@ -770,7 +815,6 @@ function updateTrayTooltip() {
 
 function buildTrayMenu() {
   const stats = getTaskStats()
-  const today = getTodayStr()
   const isMac = process.platform === 'darwin'
   const modKey = isMac ? '⌘' : 'Ctrl'
 
@@ -1093,7 +1137,7 @@ ipcMain.handle('settings:getAutoStart', (event) => {
   try {
     const settings = app.getLoginItemSettings()
     return settings.openAtLogin
-  } catch (e) {
+  } catch {
     return appSettings.autoStart
   }
 })
@@ -1137,27 +1181,31 @@ ipcMain.handle('bing:getWallpaper', async (event) => {
   try {
     const https = require('https')
     const url = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN'
-    
+
     return new Promise((resolve, reject) => {
-      https.get(url, (res) => {
-        let data = ''
-        res.on('data', (chunk) => { data += chunk })
-        res.on('end', () => {
-          try {
-            const json = JSON.parse(data)
-            if (json.images && json.images.length > 0) {
-              const imageUrl = `https://www.bing.com${json.images[0].url}`
-              resolve({ url: imageUrl, copyright: json.images[0].copyright })
-            } else {
-              resolve(null)
+      https
+        .get(url, (res) => {
+          let data = ''
+          res.on('data', (chunk) => {
+            data += chunk
+          })
+          res.on('end', () => {
+            try {
+              const json = JSON.parse(data)
+              if (json.images && json.images.length > 0) {
+                const imageUrl = `https://www.bing.com${json.images[0].url}`
+                resolve({ url: imageUrl, copyright: json.images[0].copyright })
+              } else {
+                resolve(null)
+              }
+            } catch (e) {
+              reject(e)
             }
-          } catch (e) {
-            reject(e)
-          }
+          })
         })
-      }).on('error', (e) => {
-        reject(e)
-      })
+        .on('error', (e) => {
+          reject(e)
+        })
     })
   } catch (e) {
     console.error('[Main] Failed to get Bing wallpaper:', e)
@@ -1404,16 +1452,17 @@ ipcMain.handle('app:getVersion', () => {
   return app.getVersion()
 })
 
-ipcMain.handle('updater:checkForUpdates', async () => {
+ipcMain.handle('updater:checkForUpdates', async (event) => {
+  if (!isFromMain(event)) return { success: false, error: 'forbidden' }
   try {
-    console.log('[Updater] Checking for updates...')
-    console.log('[Updater] Current app version:', app.getVersion())
+    console.warn('[Updater] Checking for updates...')
+    console.warn('[Updater] Current app version:', app.getVersion())
 
     const result = await autoUpdater.checkForUpdates()
-    console.log('[Updater] Check result:', result ? result.updateInfo : 'no info')
+    console.warn('[Updater] Check result:', result ? result.updateInfo : 'no info')
 
     if (result && result.updateInfo) {
-      console.log('[Updater] Update found:', result.updateInfo.version)
+      console.warn('[Updater] Update found:', result.updateInfo.version)
     }
 
     return { success: true, version: app.getVersion() }
@@ -1424,12 +1473,14 @@ ipcMain.handle('updater:checkForUpdates', async () => {
   }
 })
 
-ipcMain.handle('updater:downloadUpdate', () => {
+ipcMain.handle('updater:downloadUpdate', (event) => {
+  if (!isFromMain(event)) return false
   autoUpdater.downloadUpdate()
   return true
 })
 
-ipcMain.handle('updater:quitAndInstall', () => {
+ipcMain.handle('updater:quitAndInstall', (event) => {
+  if (!isFromMain(event)) return false
   if (updateDownloaded) {
     isQuitting = true
     autoUpdater.quitAndInstall()
@@ -1441,16 +1492,16 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = true
 
-  console.log('[Updater] Auto updater setup started, isPackaged:', app.isPackaged)
-  console.log('[Updater] App version:', app.getVersion())
-  console.log('[Updater] AppId:', app.getAppUserModelId())
+  console.warn('[Updater] Auto updater setup started, isPackaged:', app.isPackaged)
+  console.warn('[Updater] App version:', app.getVersion())
+  console.warn('[Updater] AppId:', app.getAppUserModelId())
 
   if (!app.isPackaged) {
-    console.log('[Updater] Not in packaged mode, simulating auto-updater for testing')
+    console.warn('[Updater] Not in packaged mode, simulating auto-updater for testing')
 
     const simulateUpdate = () => {
       setTimeout(() => {
-        console.log('[Updater] Simulating update available for testing')
+        console.warn('[Updater] Simulating update available for testing')
         sendToMainWindow('updater:update-available', {
           version: '99.99.99',
           releaseNotes: 'This is a test update notification',
@@ -1462,19 +1513,19 @@ function setupAutoUpdater() {
     simulateUpdate()
 
     autoUpdater.on('checking-for-update', () => {
-      console.log('[Updater] Checking for update (simulated)...')
+      console.warn('[Updater] Checking for update (simulated)...')
       sendToMainWindow('updater:checking')
     })
 
     autoUpdater.on('update-not-available', (info) => {
-      console.log('[Updater] No update available (simulated)')
+      console.warn('[Updater] No update available (simulated)')
       sendToMainWindow('updater:update-not-available', {
         version: info.version
       })
     })
 
     autoUpdater.on('download-progress', (progressObj) => {
-      console.log('[Updater] Download progress:', progressObj.percent, '%')
+      console.warn('[Updater] Download progress:', progressObj.percent, '%')
       sendToMainWindow('updater:download-progress', {
         percent: progressObj.percent,
         speed: progressObj.bytesPerSecond,
@@ -1484,7 +1535,7 @@ function setupAutoUpdater() {
     })
 
     autoUpdater.on('update-downloaded', () => {
-      console.log('[Updater] Update downloaded')
+      console.warn('[Updater] Update downloaded')
       updateDownloaded = true
       sendToMainWindow('updater:update-downloaded')
     })
@@ -1496,17 +1547,17 @@ function setupAutoUpdater() {
       })
     })
 
-    console.log('[Updater] Simulated auto updater setup complete')
+    console.warn('[Updater] Simulated auto updater setup complete')
     return
   }
 
   autoUpdater.on('checking-for-update', () => {
-    console.log('[Updater] Checking for update...')
+    console.warn('[Updater] Checking for update...')
     sendToMainWindow('updater:checking')
   })
 
   autoUpdater.on('update-available', (info) => {
-    console.log('[Updater] Update available:', info)
+    console.warn('[Updater] Update available:', info)
     sendToMainWindow('updater:update-available', {
       version: info.version,
       releaseNotes: info.releaseNotes,
@@ -1515,14 +1566,14 @@ function setupAutoUpdater() {
   })
 
   autoUpdater.on('update-not-available', (info) => {
-    console.log('[Updater] No update available, current version:', info.version)
+    console.warn('[Updater] No update available, current version:', info.version)
     sendToMainWindow('updater:update-not-available', {
       version: info.version
     })
   })
 
   autoUpdater.on('download-progress', (progressObj) => {
-    console.log('[Updater] Download progress:', progressObj.percent, '%')
+    console.warn('[Updater] Download progress:', progressObj.percent, '%')
     sendToMainWindow('updater:download-progress', {
       percent: progressObj.percent,
       speed: progressObj.bytesPerSecond,
@@ -1532,7 +1583,7 @@ function setupAutoUpdater() {
   })
 
   autoUpdater.on('update-downloaded', () => {
-    console.log('[Updater] Update downloaded')
+    console.warn('[Updater] Update downloaded')
     updateDownloaded = true
     sendToMainWindow('updater:update-downloaded')
   })
@@ -1544,7 +1595,7 @@ function setupAutoUpdater() {
     })
   })
 
-  console.log('[Updater] Auto updater setup complete')
+  console.warn('[Updater] Auto updater setup complete')
 }
 
 function sendToMainWindow(channel, data) {
@@ -1635,7 +1686,7 @@ if (!gotLock) {
           const wsUrl = `ws://${url.host}`
           const httpUrl = `http://${url.host}`
           connectSrc = `connect-src 'self' ${wsUrl} ${httpUrl}; `
-        } catch (e) {
+        } catch {
           connectSrc = "connect-src 'self' ws://localhost:5173 http://localhost:5173; "
         }
       }

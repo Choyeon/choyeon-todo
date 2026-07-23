@@ -326,10 +326,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { Plus } from '@lucide/vue'
 
-const props = defineProps({
+defineProps({
   type: {
     type: String,
     default: 'default',

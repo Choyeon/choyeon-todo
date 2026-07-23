@@ -385,20 +385,7 @@ import { useTaskStore, generateId } from '../stores/taskStore'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { useSnackbar } from '../composables/useSnackbar'
 import { getTodayStr } from '../utils/date'
-import {
-  X,
-  Calendar,
-  Clock,
-  Bell,
-  Star,
-  Plus,
-  Trash2,
-  Check,
-  Tag,
-  RotateCcw,
-  ListTodo,
-  Mic
-} from '@lucide/vue'
+import { X, Calendar, Clock, Bell, Star, Plus, Trash2, Check, RotateCcw, Mic } from '@lucide/vue'
 
 const props = defineProps({
   visible: {

@@ -331,7 +331,6 @@ const parseTimeKeyword = (text, lang = 'zh-CN') => {
       }
 
       let period = null
-      const lowerMatch = match[0].toLowerCase()
       if (
         /am|a\.m\.|午前|あさ|ごぜん|morning|早上|上午|清晨|凌晨/.test(text.toLowerCase()) ||
         text.includes('午前')

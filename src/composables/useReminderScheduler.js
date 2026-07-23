@@ -6,6 +6,14 @@ import { getTodayStr, addDays, isValidDateStr } from '../utils/date'
 let checkInterval = null
 const triggeredReminders = new Set()
 const snoozedReminders = new Map()
+const OVERDUE_SUFFIX = '-overdue'
+
+const getOverdueReminderKey = (taskId) => `${taskId}${OVERDUE_SUFFIX}`
+
+const getReminderTaskId = (key) =>
+  typeof key === 'string' && key.endsWith(OVERDUE_SUFFIX)
+    ? key.slice(0, -OVERDUE_SUFFIX.length)
+    : key
 
 export const useReminderScheduler = () => {
   const start = () => {
@@ -31,6 +39,7 @@ export const useReminderScheduler = () => {
     const snoozeUntil = Date.now() + minutes * 60 * 1000
     snoozedReminders.set(taskId, snoozeUntil)
     triggeredReminders.delete(taskId)
+    triggeredReminders.delete(getOverdueReminderKey(taskId))
   }
 
   const checkReminders = () => {
@@ -74,7 +83,7 @@ export const useReminderScheduler = () => {
       if (!task.date || !isValidDateStr(task.date)) continue
 
       if (task.date < today) {
-        const triggerKey = `${task.id}-overdue`
+        const triggerKey = getOverdueReminderKey(task.id)
         if (!triggeredReminders.has(triggerKey)) {
           triggeredReminders.add(triggerKey)
           triggeredReminders.add(task.id)
@@ -135,7 +144,7 @@ export const useReminderScheduler = () => {
     }
 
     for (const key of triggeredReminders) {
-      const taskId = key.includes('-') ? key.split('-')[0] : key
+      const taskId = getReminderTaskId(key)
       if (!validTaskIds.has(taskId)) {
         triggeredReminders.delete(key)
       }

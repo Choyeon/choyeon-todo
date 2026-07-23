@@ -543,7 +543,7 @@ const setupAutoUpdateListeners = () => {
   )
 
   updateCleanupListeners.push(
-    window.electronAPI.onUpdateError?.((err) => {
+    window.electronAPI.onUpdateError?.((_err) => {
       if (updateModalRef.value) {
         updateModalRef.value.onDownloadError()
       }
@@ -573,7 +573,7 @@ const checkForUpdatesOnStartup = async () => {
     if (ver) {
       currentAppVersion.value = ver
     }
-  } catch (_) {
+  } catch {
     // ignore errors when getting app version
   }
 
@@ -616,6 +616,7 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   window.addEventListener('keydown', handleKeyDown)
+  window.focusTask = focusTask
 
   setupElectronListeners()
   syncTasksToTray()
@@ -653,6 +654,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
   window.removeEventListener('keydown', handleKeyDown)
+  delete window.focusTask
   if (highlightTimeout) clearTimeout(highlightTimeout)
   if (updateCheckTimer) clearTimeout(updateCheckTimer)
   cleanupFns.forEach((fn) => fn?.())

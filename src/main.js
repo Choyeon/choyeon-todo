@@ -9,7 +9,7 @@ import { usePomodoroStore } from './stores/pomodoroStore'
 import { useReminderScheduler } from './composables/useReminderScheduler'
 import { registerSW } from 'virtual:pwa-register'
 import { i18n } from './i18n'
-import { setupErrorMonitoring, captureError } from './utils/errorMonitor'
+import { setupErrorMonitoring } from './utils/errorMonitor'
 
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI
 
@@ -81,7 +81,7 @@ taskStore.setupStorageWatch(watch)
 settingsStore.setupStorageWatch(watch)
 
 if (isElectron) {
-  const syncSetting = async (getter, setter, prop) => {
+  const syncSetting = async (getter, prop) => {
     try {
       const val = await safeElectronCall(getter)
       if (typeof val === 'boolean') {
@@ -131,14 +131,14 @@ if (!isElectron) {
   registerSW({
     immediate: true,
     onOfflineReady() {
-      console.log('[PWA] App ready for offline use')
+      console.warn('[PWA] App ready for offline use')
     },
     onNeedRefresh() {
-      console.log('[PWA] New content available, refreshing...')
+      console.warn('[PWA] New content available, refreshing...')
       window.location.reload()
     },
     onRegisteredSW(swUrl) {
-      console.log('[PWA] Service Worker registered:', swUrl)
+      console.warn('[PWA] Service Worker registered:', swUrl)
     },
     onRegisterError(error) {
       console.warn('[PWA] Service Worker registration failed:', error)

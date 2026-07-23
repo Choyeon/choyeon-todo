@@ -19,7 +19,7 @@ const getDefaultLocale = () => {
     if (saved && SUPPORTED_LOCALES.includes(saved)) {
       return saved
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 
@@ -48,7 +48,7 @@ export const setLocale = (locale) => {
   i18n.global.locale.value = locale
   try {
     localStorage.setItem(STORAGE_KEY, locale)
-  } catch (e) {
+  } catch {
     // ignore
   }
 }

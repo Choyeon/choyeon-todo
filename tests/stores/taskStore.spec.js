@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, beforeEach, afterEach, test, expect } from 'vitest'
+import { watch, nextTick } from 'vue'
+import { describe, beforeEach, afterEach, test, expect, vi } from 'vitest'
 import { useTaskStore } from '@/stores/taskStore'
 import { getTodayStr } from '@/utils/date'
 
@@ -9,12 +10,15 @@ describe('TaskStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     store = useTaskStore()
+    localStorage.clear()
     store.resetAll()
     store.initSampleData()
   })
 
   afterEach(() => {
     store.resetAll()
+    localStorage.clear()
+    vi.useRealTimers()
   })
 
   describe('初始化', () => {
@@ -296,6 +300,51 @@ describe('TaskStore', () => {
       store.currentCategory = 'work'
       expect(store.currentView).toBe('category')
       expect(store.currentCategory).toBe('work')
+    })
+  })
+
+  describe('我的一天持久化', () => {
+    test('切换我的一天后应该写入本地存储', async () => {
+      vi.useFakeTimers()
+      store.resetAll()
+      store.setupStorageWatch(watch)
+
+      const task = store.addTask({
+        title: '我的一天任务',
+        category: 'work',
+        date: getTodayStr()
+      })
+
+      await nextTick()
+      vi.advanceTimersByTime(301)
+      localStorage.removeItem('choyeon_myday_v1')
+
+      store.toggleMyDay(task.id)
+      await nextTick()
+      vi.advanceTimersByTime(301)
+
+      const saved = JSON.parse(localStorage.getItem('choyeon_myday_v1'))
+      expect(saved).toEqual({
+        date: getTodayStr(),
+        taskIds: [task.id]
+      })
+    })
+
+    test('重置全部数据时应该清空我的一天状态', () => {
+      store.resetAll()
+      const task = store.addTask({
+        title: '待清空任务',
+        category: 'work',
+        date: getTodayStr()
+      })
+
+      store.addToMyDay(task.id)
+      expect(store.isInMyDay(task.id)).toBe(true)
+
+      store.resetAll()
+
+      expect(store.isInMyDay(task.id)).toBe(false)
+      expect(store.myDayCount).toBe(0)
     })
   })
 })

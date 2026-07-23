@@ -760,7 +760,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       try {
         noiseNode.stop()
         noiseNode.disconnect()
-      } catch (_) {
+      } catch {
         // ignore errors when stopping noise
       }
       noiseNode = null

@@ -188,7 +188,7 @@
 </template>
 
 <script setup>
-import { inject, computed, ref, TransitionGroup, onUnmounted } from 'vue'
+import { inject, computed, ref, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'

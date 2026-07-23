@@ -191,7 +191,6 @@
 </template>
 
 <script setup>
-import { inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSnackbar } from '../../composables/useSnackbar'
@@ -213,7 +212,6 @@ const { locale, t } = useI18n()
 const supportedLocales = SUPPORTED_LOCALES
 const settingsStore = useSettingsStore()
 const { show: showSnackbar } = useSnackbar()
-const triggerThemeTransition = inject('triggerThemeTransition')
 
 const getLocaleLabel = (loc) => {
   const labelMap = {
@@ -222,17 +220,6 @@ const getLocaleLabel = (loc) => {
     'ja-JP': t('settings.japanese')
   }
   return labelMap[loc] || loc
-}
-
-const toggleTheme = (e) => {
-  const targetTheme = settingsStore.themeMode === 'light' ? 'dark' : 'light'
-  if (e && triggerThemeTransition) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
-    triggerThemeTransition(x, y, targetTheme)
-  }
-  settingsStore.toggleTheme()
 }
 
 const setThemeMode = (mode) => {

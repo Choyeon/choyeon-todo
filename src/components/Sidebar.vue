@@ -380,8 +380,7 @@ import {
   ChevronRight,
   Tag,
   Sunrise,
-  CalendarRange,
-  AlertTriangle
+  CalendarRange
 } from '@lucide/vue'
 
 const route = useRoute()

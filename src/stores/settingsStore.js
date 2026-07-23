@@ -50,7 +50,7 @@ const hexToRgb = (hex) => {
       return { r: 74, g: 144, b: 217 }
     }
     return { r, g, b }
-  } catch (e) {
+  } catch {
     return { r: 74, g: 144, b: 217 }
   }
 }
@@ -260,7 +260,7 @@ export const useSettingsStore = defineStore('settings', () => {
       console.error('[SettingsStore] Failed to load settings:', e)
       try {
         localStorage.removeItem(STORAGE_KEY)
-      } catch (_) {
+      } catch {
         // ignore errors when removing corrupted settings
       }
       applyTheme()

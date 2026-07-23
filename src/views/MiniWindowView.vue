@@ -59,7 +59,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Sun, MoreHorizontal, X, Check, Inbox, Maximize2, Pin } from '@lucide/vue'
 import { useTaskStore } from '../stores/taskStore'
-import { useI18n } from 'vue-i18n'
 
 const taskStore = useTaskStore()
 const showMenu = ref(false)

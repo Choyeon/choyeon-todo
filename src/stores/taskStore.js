@@ -5,7 +5,6 @@ import {
   formatDateStr,
   isValidDateStr,
   isValidTimeStr,
-  isTaskOverdue,
   addDays,
   getNextWeekRange,
   getTomorrowStr
@@ -460,13 +459,9 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   let saveTimeout = null
-  let pendingSave = false
-  let isSaving = false
 
   const saveToStorage = () => {
     if (typeof localStorage === 'undefined') return
-    pendingSave = false
-    isSaving = true
     try {
       const data = {
         tasks: tasks.value,
@@ -488,14 +483,11 @@ export const useTaskStore = defineStore('task', () => {
       if (e && e.name === 'QuotaExceededError') {
         console.warn('[TaskStore] Storage quota exceeded')
       }
-    } finally {
-      isSaving = false
     }
   }
 
   const debouncedSave = () => {
     invalidateStatsCache()
-    pendingSave = true
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
       saveToStorage()
@@ -515,6 +507,8 @@ export const useTaskStore = defineStore('task', () => {
     watchFn(tasks, debouncedSave, { deep: true })
     watchFn(categories, debouncedSave, { deep: true })
     watchFn(tags, debouncedSave, { deep: true })
+    watchFn(myDayDate, debouncedSave)
+    watchFn(myDayTaskIds, debouncedSave, { deep: true })
   }
 
   const addTask = (task) => {
@@ -1419,10 +1413,13 @@ export const useTaskStore = defineStore('task', () => {
     tasks.value = []
     categories.value = [...DEFAULT_CATEGORIES]
     tags.value = [...DEFAULT_TAGS]
+    myDayDate.value = getTodayStr()
+    myDayTaskIds.value = []
     searchQuery.value = ''
     currentView.value = 'myday'
     currentCategory.value = null
     currentTag.value = null
+    focusedTaskId.value = null
   }
 
   const exportData = () => {
