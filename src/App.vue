@@ -661,6 +661,10 @@ onUnmounted(() => {
   cleanupFns = []
   updateCleanupListeners.forEach((fn) => fn?.())
   updateCleanupListeners = []
+  // Cleanup store resources (timers, listeners, etc.)
+  pomodoroStore.cleanup?.()
+  settingsStore.cleanup?.()
+  taskStore.cleanup?.()
 })
 </script>
 

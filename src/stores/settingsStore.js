@@ -447,11 +447,13 @@ export const useSettingsStore = defineStore('settings', () => {
     fontSize.value = DEFAULT_SETTINGS.fontSize
     language.value = DEFAULT_SETTINGS.language
     notificationsEnabled.value = DEFAULT_SETTINGS.notificationsEnabled
+    soundsEnabled.value = DEFAULT_SETTINGS.soundsEnabled
     glassEffectEnabled.value = DEFAULT_SETTINGS.glassEffectEnabled
     defaultReminderTime.value = DEFAULT_SETTINGS.defaultReminderTime
     doNotDisturb.value = DEFAULT_SETTINGS.doNotDisturb
     autoStart.value = DEFAULT_SETTINGS.autoStart
     closeToQuit.value = DEFAULT_SETTINGS.closeToQuit
+    miniWindowEnabled.value = DEFAULT_SETTINGS.miniWindowEnabled
     bingWallpaperEnabled.value = DEFAULT_SETTINGS.bingWallpaperEnabled
     pomodoroWorkMinutes.value = DEFAULT_SETTINGS.pomodoroWorkMinutes
     pomodoroBreakMinutes.value = DEFAULT_SETTINGS.pomodoroBreakMinutes
@@ -486,6 +488,14 @@ export const useSettingsStore = defineStore('settings', () => {
       }
       systemThemeHandler = null
     }
+  }
+
+  const cleanup = () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+      saveTimeout = null
+    }
+    cleanupSystemThemeListener()
   }
 
   return {
@@ -530,6 +540,7 @@ export const useSettingsStore = defineStore('settings', () => {
     setMiniWindowEnabled,
     toggleMiniWindow,
     toggleBingWallpaper,
-    resetSettings
+    resetSettings,
+    cleanup
   }
 })

@@ -246,7 +246,8 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const myDayTasks = computed(() => {
-    checkMyDayDate()
+    // computed 必须保持纯函数，不在内部修改状态
+    // 日期变更由 isInMyDay/addToMyDay 等方法中的 checkMyDayDate() 处理
     return tasks.value.filter((t) => !t.completed && myDayTaskIds.value.includes(t.id))
   })
 
@@ -648,6 +649,10 @@ export const useTaskStore = defineStore('task', () => {
     if (index === -1) return false
     tasks.value.splice(index, 1)
     removeFromMyDay(id)
+    // 如果删除的是当前聚焦的任务，清除聚焦状态
+    if (focusedTaskId.value === id) {
+      focusedTaskId.value = null
+    }
     return true
   }
 
@@ -1194,7 +1199,7 @@ export const useTaskStore = defineStore('task', () => {
 
   let statsCache = null
   let statsCacheDays = 0
-  let statsCacheKey = 0
+  let statsCacheKey = ''
 
   const invalidateStatsCache = () => {
     statsCache = null
@@ -1202,7 +1207,12 @@ export const useTaskStore = defineStore('task', () => {
 
   const getStats = (days = 7) => {
     const todayStr = getTodayStr()
-    const cacheKey = tasks.value.length + '-' + todayStr + '-' + days
+    // 使用更精确的缓存键：任务数量 + 最后修改时间 + 日期 + days
+    const lastModified =
+      tasks.value.length > 0
+        ? Math.max(...tasks.value.map((t) => t.completedAt || t.createdAt || 0))
+        : 0
+    const cacheKey = `${tasks.value.length}-${lastModified}-${todayStr}-${days}`
 
     if (statsCache && statsCacheKey === cacheKey && statsCacheDays === days) {
       return statsCache
@@ -1406,6 +1416,10 @@ export const useTaskStore = defineStore('task', () => {
   const clearCompleted = () => {
     const beforeCount = tasks.value.length
     tasks.value = tasks.value.filter((t) => !t.completed)
+    // 如果聚焦的任务已被清除，重置聚焦状态
+    if (focusedTaskId.value && !tasks.value.some((t) => t.id === focusedTaskId.value)) {
+      focusedTaskId.value = null
+    }
     return beforeCount - tasks.value.length
   }
 
@@ -1420,6 +1434,16 @@ export const useTaskStore = defineStore('task', () => {
     currentCategory.value = null
     currentTag.value = null
     focusedTaskId.value = null
+    // 清理定时器并立即保存
+    if (saveTimeout) clearTimeout(saveTimeout)
+    saveToStorage()
+  }
+
+  const cleanup = () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+      saveTimeout = null
+    }
   }
 
   const exportData = () => {
@@ -1501,6 +1525,11 @@ export const useTaskStore = defineStore('task', () => {
         if (validTags.length > 0) {
           tags.value = validTags
         }
+      }
+
+      // 导入后清理可能失效的聚焦状态
+      if (focusedTaskId.value && !tasks.value.some((t) => t.id === focusedTaskId.value)) {
+        focusedTaskId.value = null
       }
 
       return { success: true, imported: importedCount, settings: data.settings || null }
@@ -1591,6 +1620,7 @@ export const useTaskStore = defineStore('task', () => {
     unfocusTask,
     addPomodoroSession,
     markAllComplete,
-    restoreTask
+    restoreTask,
+    cleanup
   }
 })

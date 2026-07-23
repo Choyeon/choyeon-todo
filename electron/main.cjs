@@ -420,6 +420,14 @@ function createWindow() {
   mainWindow.on('resize', debouncedSaveWindowState)
   mainWindow.on('move', debouncedSaveWindowState)
 
+  // 窗口关闭时清理防抖定时器
+  mainWindow.on('closed', () => {
+    if (saveStateTimer) {
+      clearTimeout(saveStateTimer)
+      saveStateTimer = null
+    }
+  })
+
   mainWindow.on('minimize', (e) => {
     if (!appSettings.closeToQuit) {
       const iconPath = getIconPath()
@@ -1334,22 +1342,25 @@ ipcMain.on('pomodoro:stateSync', (event, state) => {
   if (state && typeof state === 'object') {
     // 拒绝未知字段，防止类型混淆
     for (const key of Object.keys(state)) {
-      if (!POMODORO_SYNC_FIELDS.has(key)) return
+      if (!POMODORO_SYNC_FIELDS.has(key)) {
+        console.warn('[Main] Invalid pomodoro sync field:', key)
+        return
+      }
     }
     if (state.currentMode && ['work', 'shortBreak', 'longBreak'].includes(state.currentMode)) {
       pomodoroState.currentMode = state.currentMode
     }
     if (typeof state.timeLeft === 'number' && !pomodoroState.isRunning) {
-      pomodoroPauseTimeLeft = Math.max(0, state.timeLeft)
+      pomodoroPauseTimeLeft = Math.max(0, Math.min(state.timeLeft, 24 * 60 * 60)) // 限制最大 24 小时
     }
     if (typeof state.totalTime === 'number') {
-      pomodoroState.totalTime = state.totalTime
+      pomodoroState.totalTime = Math.max(0, Math.min(state.totalTime, 24 * 60 * 60))
     }
     if (typeof state.hasStarted === 'boolean') {
       pomodoroState.hasStarted = state.hasStarted
     }
     if (typeof state.completedPomodoros === 'number') {
-      pomodoroState.completedPomodoros = state.completedPomodoros
+      pomodoroState.completedPomodoros = Math.max(0, state.completedPomodoros)
     }
   }
   updatePomodoroState()
@@ -1648,6 +1659,7 @@ ipcMain.on('notification:send', (event, { title, body, taskId }) => {
     if (!event.sender.isDestroyed()) {
       event.reply('notification:response', { action: 'clicked', taskId })
     }
+    notification.removeAllListeners()
   })
 
   notification.on('close', () => {
@@ -1679,15 +1691,17 @@ if (!gotLock) {
 
     // 注入 CSP 响应头
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-      let connectSrc = "connect-src 'self'; "
+      // Bing wallpaper fallback URL (renderer may fetch directly when IPC is unavailable)
+      const bingWallpaperSrc = 'https://www.bing.com'
+      let connectSrc = `connect-src 'self' ${bingWallpaperSrc}; `
       if (process.env.VITE_DEV_SERVER_URL) {
         try {
           const url = new URL(process.env.VITE_DEV_SERVER_URL)
           const wsUrl = `ws://${url.host}`
           const httpUrl = `http://${url.host}`
-          connectSrc = `connect-src 'self' ${wsUrl} ${httpUrl}; `
+          connectSrc = `connect-src 'self' ${bingWallpaperSrc} ${wsUrl} ${httpUrl}; `
         } catch {
-          connectSrc = "connect-src 'self' ws://localhost:5173 http://localhost:5173; "
+          connectSrc = `connect-src 'self' ${bingWallpaperSrc} ws://localhost:5173 http://localhost:5173; `
         }
       }
 
