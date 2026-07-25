@@ -111,6 +111,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   toggleMiniWindow: () => ipcRenderer.send('mini:toggle'),
   showMainWindow: () => ipcRenderer.send('mini:showMain'),
   toggleMiniAlwaysOnTop: () => ipcRenderer.invoke('mini:toggleAlwaysOnTop'),
+  closeQuickAdd: () => ipcRenderer.send('quickAdd:close'),
   syncPomodoroState: (state) => ipcRenderer.send('pomodoro:stateSync', state),
   sendPomodoroAction: (action) => ipcRenderer.send('pomodoro:action', action),
   getPomodoroState: () => ipcRenderer.invoke('pomodoro:getState'),

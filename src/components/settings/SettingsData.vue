@@ -18,6 +18,17 @@
       <ChevronRight :size="20" class="chevron" />
     </div>
 
+    <div class="setting-row" @click="exportCSV">
+      <div class="setting-icon-wrap icon-blue">
+        <FileText :size="20" />
+      </div>
+      <div class="setting-label-wrap">
+        <span class="setting-label">{{ $t('settings.exportCSV') }}</span>
+        <p class="setting-desc">{{ $t('settings.exportCSVDesc') }}</p>
+      </div>
+      <ChevronRight :size="20" class="chevron" />
+    </div>
+
     <div class="setting-row" @click="triggerImport">
       <div class="setting-icon-wrap icon-blue">
         <Upload :size="20" />
@@ -83,7 +94,8 @@ import {
   ChevronRight,
   RefreshCw,
   AlertTriangle,
-  Bell
+  Bell,
+  FileText
 } from '@lucide/vue'
 
 const { t } = useI18n()
@@ -105,6 +117,20 @@ const exportData = () => {
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
   showSnackbar(t('settings.dataExported'))
+}
+
+const exportCSV = () => {
+  const csv = taskStore.exportToCSV()
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `choyeon-todo-tasks-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  showSnackbar(t('settings.csvExported'))
 }
 
 const triggerImport = () => {
