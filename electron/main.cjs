@@ -20,6 +20,7 @@ let debugWindow = null
 let pomodoroWindow = null
 let pomodoroFabWindow = null
 let miniWindow = null
+let quickAddWindow = null
 let tray = null
 let isQuitting = false
 let updateDownloaded = false
@@ -779,6 +780,66 @@ function toggleMiniWindow() {
   }
 }
 
+function createQuickAddWindow() {
+  if (quickAddWindow) {
+    quickAddWindow.show()
+    quickAddWindow.focus()
+    return
+  }
+
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { workArea } = primaryDisplay
+  const windowWidth = 400
+  const windowHeight = 120
+
+  const options = {
+    width: windowWidth,
+    height: windowHeight,
+    x: workArea.x + (workArea.width - windowWidth) / 2,
+    y: workArea.y + 100,
+    title: '快速添加任务',
+    frame: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    show: false,
+    transparent: true,
+    hasShadow: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  }
+
+  const iconPath = getIconPath()
+  if (iconPath) options.icon = iconPath
+
+  quickAddWindow = new BrowserWindow(options)
+
+  quickAddWindow.setAlwaysOnTop(true, 'floating')
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    quickAddWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/quick-add')
+  } else {
+    quickAddWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
+      hash: 'quick-add'
+    })
+  }
+
+  quickAddWindow.once('ready-to-show', () => {
+    quickAddWindow.show()
+    quickAddWindow.focus()
+  })
+
+  quickAddWindow.on('closed', () => {
+    quickAddWindow = null
+  })
+}
+
 function getTodayStr() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -835,7 +896,15 @@ function buildTrayMenu() {
       }
     },
     {
+      label: '快速添加任务',
+      accelerator: `${modKey}+Shift+Q`,
+      click: () => {
+        createQuickAddWindow()
+      }
+    },
+    {
       label: '新建任务',
+      accelerator: `${modKey}+N`,
       click: () => {
         showAndFocusWindow()
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -1326,6 +1395,13 @@ ipcMain.handle('mini:toggleAlwaysOnTop', (event) => {
     return !isOnTop
   }
   return false
+})
+
+// 快速添加窗口
+ipcMain.on('quickAdd:close', (_event) => {
+  if (quickAddWindow && !quickAddWindow.isDestroyed()) {
+    quickAddWindow.close()
+  }
 })
 
 // 允许同步的字段白名单

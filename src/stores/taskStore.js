@@ -14,7 +14,8 @@ const STORAGE_KEYS = {
   tasks: 'choyeon_tasks_v2',
   categories: 'choyeon_categories_v2',
   tags: 'choyeon_tags_v2',
-  myDay: 'choyeon_myday_v1'
+  myDay: 'choyeon_myday_v1',
+  templates: 'choyeon_templates_v1'
 }
 
 const DEFAULT_CATEGORIES = [
@@ -31,6 +32,59 @@ const DEFAULT_TAGS = [
   { id: 'tag_idea', name: '想法', color: '#F59E0B' },
   { id: 'tag_meeting', name: '会议', color: '#3B82F6' },
   { id: 'tag_project', name: '项目', color: '#8B5CF6' }
+]
+
+const DEFAULT_TEMPLATES = [
+  {
+    id: 'tpl_daily_routine',
+    name: '日常任务',
+    icon: 'sun',
+    color: '#F59E0B',
+    category: 'personal',
+    priority: 3,
+    tags: [],
+    subTasks: [],
+    notes: '',
+    repeat: null,
+    reminder: false,
+    important: false
+  },
+  {
+    id: 'tpl_meeting',
+    name: '会议',
+    icon: 'users',
+    color: '#3B82F6',
+    category: 'work',
+    priority: 2,
+    tags: ['tag_meeting'],
+    subTasks: [
+      { id: 'sub_prepare', title: '准备会议资料', completed: false, order: 0 },
+      { id: 'sub_agenda', title: '确认会议议程', completed: false, order: 1 },
+      { id: 'sub_minutes', title: '整理会议纪要', completed: false, order: 2 }
+    ],
+    notes: '',
+    repeat: null,
+    reminder: true,
+    important: true
+  },
+  {
+    id: 'tpl_study',
+    name: '学习任务',
+    icon: 'book-open',
+    color: '#A855F7',
+    category: 'study',
+    priority: 3,
+    tags: [],
+    subTasks: [
+      { id: 'sub_read', title: '阅读材料', completed: false, order: 0 },
+      { id: 'sub_notes', title: '做笔记', completed: false, order: 1 },
+      { id: 'sub_review', title: '复习总结', completed: false, order: 2 }
+    ],
+    notes: '',
+    repeat: null,
+    reminder: false,
+    important: false
+  }
 ]
 
 const UNDELETABLE_CATEGORY = 'other'
@@ -140,6 +194,7 @@ export const useTaskStore = defineStore('task', () => {
   const tasks = ref([])
   const categories = ref([...DEFAULT_CATEGORIES])
   const tags = ref([...DEFAULT_TAGS])
+  const templates = ref([...DEFAULT_TEMPLATES])
   const searchQuery = ref('')
   const currentView = ref('myday')
   const currentCategory = ref(null)
@@ -451,11 +506,23 @@ export const useTaskStore = defineStore('task', () => {
           console.warn('[TaskStore] Failed to parse myDay:', e)
         }
       }
+      const savedTemplates = localStorage.getItem(STORAGE_KEYS.templates)
+      if (savedTemplates) {
+        try {
+          const parsed = JSON.parse(savedTemplates)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            templates.value = parsed.filter((t) => t && t.id && t.name)
+          }
+        } catch (e) {
+          console.warn('[TaskStore] Failed to parse templates:', e)
+        }
+      }
     } catch (e) {
       console.error('[TaskStore] Failed to load from storage:', e)
       tasks.value = []
       categories.value = [...DEFAULT_CATEGORIES]
       tags.value = [...DEFAULT_TAGS]
+      templates.value = [...DEFAULT_TEMPLATES]
     }
   }
 
@@ -472,6 +539,7 @@ export const useTaskStore = defineStore('task', () => {
       localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(data.tasks))
       localStorage.setItem(STORAGE_KEYS.categories, JSON.stringify(data.categories))
       localStorage.setItem(STORAGE_KEYS.tags, JSON.stringify(data.tags))
+      localStorage.setItem(STORAGE_KEYS.templates, JSON.stringify(templates.value))
       localStorage.setItem(
         STORAGE_KEYS.myDay,
         JSON.stringify({
@@ -499,6 +567,7 @@ export const useTaskStore = defineStore('task', () => {
     tasks.value = []
     categories.value = [...DEFAULT_CATEGORIES]
     tags.value = [...DEFAULT_TAGS]
+    templates.value = [...DEFAULT_TEMPLATES]
     initSampleData()
     if (saveTimeout) clearTimeout(saveTimeout)
     saveToStorage()
@@ -508,6 +577,7 @@ export const useTaskStore = defineStore('task', () => {
     watchFn(tasks, debouncedSave, { deep: true })
     watchFn(categories, debouncedSave, { deep: true })
     watchFn(tags, debouncedSave, { deep: true })
+    watchFn(templates, debouncedSave, { deep: true })
     watchFn(myDayDate, debouncedSave)
     watchFn(myDayTaskIds, debouncedSave, { deep: true })
   }
@@ -556,7 +626,8 @@ export const useTaskStore = defineStore('task', () => {
       pomodoroSessions: 0,
       totalFocusTime: 0,
       createdAt: now,
-      completedAt: null
+      completedAt: null,
+      isInbox: !!task.isInbox
     }
     tasks.value.unshift(newTask)
     return newTask
@@ -1099,6 +1170,9 @@ export const useTaskStore = defineStore('task', () => {
           ? tasks.value.filter((t) => t.tags.includes(currentTag.value) && !t.completed)
           : []
         break
+      case 'inbox':
+        result = tasks.value.filter((t) => t.isInbox && !t.completed)
+        break
       default:
         result = []
     }
@@ -1123,13 +1197,15 @@ export const useTaskStore = defineStore('task', () => {
       plannedCount = 0,
       allCount = 0,
       completedCount = 0,
-      overdueCount = 0
+      overdueCount = 0,
+      inboxCount = 0
     const catCounts = {}
     const tagCounts = {}
 
     for (const t of tasks.value) {
       if (!t.completed) {
         allCount++
+        if (t.isInbox) inboxCount++
         if (t.date === today) todayCount++
         if (t.date === tomorrow) tomorrowCount++
         if (t.date >= nextWeek.start && t.date <= nextWeek.end) weekCount++
@@ -1154,6 +1230,7 @@ export const useTaskStore = defineStore('task', () => {
       allCount,
       completedCount,
       overdueCount,
+      inboxCount,
       catCounts,
       tagCounts
     }
@@ -1180,6 +1257,8 @@ export const useTaskStore = defineStore('task', () => {
         return c.completedCount
       case 'overdue':
         return c.overdueCount
+      case 'inbox':
+        return c.inboxCount
       default:
         return 0
     }
@@ -1427,6 +1506,7 @@ export const useTaskStore = defineStore('task', () => {
     tasks.value = []
     categories.value = [...DEFAULT_CATEGORIES]
     tags.value = [...DEFAULT_TAGS]
+    templates.value = [...DEFAULT_TEMPLATES]
     myDayDate.value = getTodayStr()
     myDayTaskIds.value = []
     searchQuery.value = ''
@@ -1439,6 +1519,141 @@ export const useTaskStore = defineStore('task', () => {
     saveToStorage()
   }
 
+  // ========== 任务模板 ==========
+  const addTemplate = (template) => {
+    if (!template || !template.name || !template.name.trim()) return null
+    const newTpl = {
+      id: generateId('tpl_'),
+      name: template.name.trim().slice(0, 50),
+      icon: template.icon || 'file-text',
+      color: isValidHexColor(template.color) ? template.color : '#6B7280',
+      category: template.category || UNDELETABLE_CATEGORY,
+      priority: template.priority !== undefined ? template.priority : 3,
+      tags: Array.isArray(template.tags) ? [...template.tags] : [],
+      subTasks: Array.isArray(template.subTasks)
+        ? template.subTasks.map((st, i) => ({
+            id: generateId('sub_'),
+            title: st.title || '',
+            completed: false,
+            order: i
+          }))
+        : [],
+      notes: (template.notes || '').slice(0, 2000),
+      repeat: isValidRepeatConfig(template.repeat) ? template.repeat : null,
+      reminder: !!template.reminder,
+      important: !!template.important
+    }
+    templates.value.push(newTpl)
+    debouncedSave()
+    return newTpl
+  }
+
+  const updateTemplate = (id, updates) => {
+    if (!id || !updates) return false
+    const index = templates.value.findIndex((t) => t.id === id)
+    if (index === -1) return false
+    const tpl = templates.value[index]
+    if (updates.name !== undefined) tpl.name = String(updates.name).trim().slice(0, 50)
+    if (updates.icon !== undefined) tpl.icon = updates.icon
+    if (updates.color !== undefined && isValidHexColor(updates.color)) tpl.color = updates.color
+    if (updates.category !== undefined) tpl.category = updates.category
+    if (updates.priority !== undefined) tpl.priority = updates.priority
+    if (updates.tags !== undefined && Array.isArray(updates.tags)) tpl.tags = [...updates.tags]
+    if (updates.subTasks !== undefined && Array.isArray(updates.subTasks)) {
+      tpl.subTasks = updates.subTasks.map((st, i) => ({
+        id: st.id || generateId('sub_'),
+        title: st.title || '',
+        completed: !!st.completed,
+        order: i
+      }))
+    }
+    if (updates.notes !== undefined) tpl.notes = String(updates.notes || '').slice(0, 2000)
+    if (updates.repeat !== undefined) {
+      tpl.repeat = isValidRepeatConfig(updates.repeat) ? updates.repeat : null
+    }
+    if (updates.reminder !== undefined) tpl.reminder = !!updates.reminder
+    if (updates.important !== undefined) tpl.important = !!updates.important
+    debouncedSave()
+    return true
+  }
+
+  const deleteTemplate = (id) => {
+    if (!id) return false
+    const index = templates.value.findIndex((t) => t.id === id)
+    if (index === -1) return false
+    templates.value.splice(index, 1)
+    debouncedSave()
+    return true
+  }
+
+  const applyTemplate = (templateId, overrides = {}) => {
+    const tpl = templates.value.find((t) => t.id === templateId)
+    if (!tpl) return null
+    const taskData = {
+      title: overrides.title || tpl.name,
+      category: overrides.category || tpl.category,
+      priority: overrides.priority !== undefined ? overrides.priority : tpl.priority,
+      tags: overrides.tags || [...tpl.tags],
+      subTasks: tpl.subTasks.map((st) => ({ title: st.title, order: st.order })),
+      notes: overrides.notes !== undefined ? overrides.notes : tpl.notes,
+      repeat: overrides.repeat !== undefined ? overrides.repeat : tpl.repeat,
+      reminder: overrides.reminder !== undefined ? overrides.reminder : tpl.reminder,
+      important: overrides.important !== undefined ? overrides.important : tpl.important,
+      date: overrides.date || undefined,
+      time: overrides.time || undefined
+    }
+    return addTask(taskData)
+  }
+
+  const createTemplateFromTask = (taskId) => {
+    const task = getTaskById(taskId)
+    if (!task) return null
+    return addTemplate({
+      name: task.title,
+      category: task.category,
+      priority: task.priority,
+      tags: [...task.tags],
+      subTasks: task.subTasks.map((st) => ({ title: st.title })),
+      notes: task.notes,
+      repeat: task.repeat ? { ...task.repeat } : null,
+      reminder: task.reminder,
+      important: task.important
+    })
+  }
+
+  // ========== 收件箱 ==========
+  const addToInbox = (title) => {
+    if (!title || !title.trim()) return null
+    return addTask({
+      title: title.trim(),
+      category: UNDELETABLE_CATEGORY,
+      date: getTodayStr(),
+      isInbox: true,
+      priority: 4
+    })
+  }
+
+  const organizeInboxTask = (taskId, updates) => {
+    const task = getTaskById(taskId)
+    if (!task || !task.isInbox) return false
+
+    const success = updateTask(taskId, {
+      ...updates,
+      isInbox: false
+    })
+
+    if (success) {
+      debouncedSave()
+    }
+    return success
+  }
+
+  const clearInbox = () => {
+    const inboxTasks = tasks.value.filter((t) => t.isInbox)
+    inboxTasks.forEach((t) => deleteTask(t.id))
+    return inboxTasks.length
+  }
+
   const cleanup = () => {
     if (saveTimeout) {
       clearTimeout(saveTimeout)
@@ -1447,17 +1662,47 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const exportData = () => {
-    return JSON.stringify(
-      {
-        version: 2,
-        exportedAt: new Date().toISOString(),
-        tasks: tasks.value,
-        categories: categories.value,
-        tags: tags.value
-      },
-      null,
-      2
-    )
+    return {
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      tasks: tasks.value,
+      categories: categories.value,
+      tags: tags.value,
+      templates: templates.value
+    }
+  }
+
+  const exportToCSV = () => {
+    const headers = [
+      'ID',
+      'Title',
+      'Category',
+      'Date',
+      'Time',
+      'Priority',
+      'Important',
+      'Completed',
+      'Created At',
+      'Completed At'
+    ]
+
+    const rows = tasks.value.map((task) => {
+      const category = categories.value.find((c) => c.id === task.category)?.name || 'Other'
+      return [
+        task.id,
+        `"${task.title.replace(/"/g, '""')}"`,
+        `"${category}"`,
+        task.date || '',
+        task.time || '',
+        task.priority || 3,
+        task.important ? 'Yes' : 'No',
+        task.completed ? 'Yes' : 'No',
+        new Date(task.createdAt).toISOString(),
+        task.completedAt ? new Date(task.completedAt).toISOString() : ''
+      ].join(',')
+    })
+
+    return [headers.join(','), ...rows].join('\n')
   }
 
   const importData = (jsonStr) => {
@@ -1569,6 +1814,7 @@ export const useTaskStore = defineStore('task', () => {
     tasks,
     categories,
     tags,
+    templates,
     searchQuery,
     currentView,
     currentCategory,
@@ -1605,6 +1851,14 @@ export const useTaskStore = defineStore('task', () => {
     addTag,
     updateTag,
     deleteTag,
+    addTemplate,
+    updateTemplate,
+    deleteTemplate,
+    applyTemplate,
+    createTemplateFromTask,
+    addToInbox,
+    organizeInboxTask,
+    clearInbox,
     getCategoryById,
     getTagById,
     getTasksByDate,
@@ -1615,6 +1869,7 @@ export const useTaskStore = defineStore('task', () => {
     clearCompleted,
     resetAll,
     exportData,
+    exportToCSV,
     importData,
     focusTask,
     unfocusTask,

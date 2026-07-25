@@ -142,6 +142,24 @@
           }}</span>
           <span class="nav-tooltip">{{ $t('nav.allTasks') }}</span>
         </button>
+
+        <button
+          class="nav-btn"
+          :class="{ active: isActive('inbox') }"
+          @click="navigateTo('inbox')"
+          :aria-label="
+            isActive('inbox')
+              ? `${$t('nav.inbox')}，${$t('common.currentlySelected')}`
+              : $t('nav.inbox')
+          "
+        >
+          <Inbox :size="20" />
+          <span class="nav-label">{{ $t('nav.inbox') }}</span>
+          <span class="nav-count" :key="'inbox-' + taskStore.getCount('inbox')">{{
+            taskStore.getCount('inbox')
+          }}</span>
+          <span class="nav-tooltip">{{ $t('nav.inbox') }}</span>
+        </button>
       </div>
 
       <div class="nav-section">
@@ -206,6 +224,81 @@
           <Timer :size="20" />
           <span class="nav-label">{{ $t('nav.pomodoro') }}</span>
           <span class="nav-tooltip">{{ $t('nav.pomodoro') }}</span>
+        </button>
+
+        <button
+          class="nav-btn"
+          :class="{ active: $route.name === 'Quadrant' }"
+          @click="$router.push('/quadrant')"
+          :aria-label="
+            $route.name === 'Quadrant'
+              ? `${$t('nav.quadrant')}，${$t('common.currentlySelected')}`
+              : $t('nav.quadrant')
+          "
+        >
+          <Grid2x2 :size="20" />
+          <span class="nav-label">{{ $t('nav.quadrant') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.quadrant') }}</span>
+        </button>
+
+        <button
+          class="nav-btn"
+          :class="{ active: $route.name === 'HabitTracker' }"
+          @click="$router.push('/habit-tracker')"
+          :aria-label="
+            $route.name === 'HabitTracker'
+              ? `${$t('nav.habitTracker')}，${$t('common.currentlySelected')}`
+              : $t('nav.habitTracker')
+          "
+        >
+          <Target :size="20" />
+          <span class="nav-label">{{ $t('nav.habitTracker') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.habitTracker') }}</span>
+        </button>
+
+        <button
+          class="nav-btn"
+          :class="{ active: $route.name === 'DailyReview' }"
+          @click="$router.push('/daily-review')"
+          :aria-label="
+            $route.name === 'DailyReview'
+              ? `${$t('nav.dailyReview')}，${$t('common.currentlySelected')}`
+              : $t('nav.dailyReview')
+          "
+        >
+          <ClipboardCheck :size="20" />
+          <span class="nav-label">{{ $t('nav.dailyReview') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.dailyReview') }}</span>
+        </button>
+
+        <button
+          class="nav-btn"
+          :class="{ active: $route.name === 'Achievement' }"
+          @click="$router.push('/achievement')"
+          :aria-label="
+            $route.name === 'Achievement'
+              ? `${$t('nav.achievement')}，${$t('common.currentlySelected')}`
+              : $t('nav.achievement')
+          "
+        >
+          <Award :size="20" />
+          <span class="nav-label">{{ $t('nav.achievement') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.achievement') }}</span>
+        </button>
+
+        <button
+          class="nav-btn"
+          :class="{ active: $route.name === 'Review' }"
+          @click="$router.push('/review')"
+          :aria-label="
+            $route.name === 'Review'
+              ? `${$t('nav.review')}，${$t('common.currentlySelected')}`
+              : $t('nav.review')
+          "
+        >
+          <BarChart2 :size="20" />
+          <span class="nav-label">{{ $t('nav.review') }}</span>
+          <span class="nav-tooltip">{{ $t('nav.review') }}</span>
         </button>
       </div>
 
@@ -379,8 +472,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Tag,
+  Inbox,
   Sunrise,
-  CalendarRange
+  CalendarRange,
+  Grid2x2,
+  Target,
+  ClipboardCheck,
+  Award,
+  BarChart2
 } from '@lucide/vue'
 
 const route = useRoute()

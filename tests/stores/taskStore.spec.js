@@ -251,16 +251,15 @@ describe('TaskStore', () => {
     test('导出数据', () => {
       const data = store.exportData()
       expect(data).toBeDefined()
-      const parsed = JSON.parse(data)
-      expect(parsed.tasks).toBeDefined()
-      expect(parsed.categories).toBeDefined()
+      expect(data.tasks).toBeDefined()
+      expect(data.categories).toBeDefined()
     })
 
     test('导入数据', () => {
       const exportData = store.exportData()
       store.resetAll()
       expect(store.tasks.length).toBe(0)
-      const result = store.importData(exportData)
+      const result = store.importData(JSON.stringify(exportData))
       expect(result.success).toBe(true)
       expect(store.tasks.length).toBeGreaterThan(0)
     })

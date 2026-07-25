@@ -17,6 +17,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "completed" */ '../views/CompletedView.vue')
   },
   {
+    path: '/inbox',
+    name: 'Inbox',
+    component: () => import(/* webpackChunkName: "inbox" */ '../views/InboxView.vue')
+  },
+  {
     path: '/stats',
     name: 'Stats',
     component: () => import(/* webpackChunkName: "stats" */ '../views/StatsView.vue')
@@ -56,6 +61,36 @@ const routes = [
     path: '/error-monitor',
     name: 'ErrorMonitor',
     component: () => import(/* webpackChunkName: "error-monitor" */ '../views/ErrorMonitorView.vue')
+  },
+  {
+    path: '/quadrant',
+    name: 'Quadrant',
+    component: () => import(/* webpackChunkName: "quadrant" */ '../views/QuadrantView.vue')
+  },
+  {
+    path: '/habit-tracker',
+    name: 'HabitTracker',
+    component: () => import(/* webpackChunkName: "habit-tracker" */ '../views/HabitTrackerView.vue')
+  },
+  {
+    path: '/daily-review',
+    name: 'DailyReview',
+    component: () => import(/* webpackChunkName: "daily-review" */ '../views/DailyReviewView.vue')
+  },
+  {
+    path: '/achievement',
+    name: 'Achievement',
+    component: () => import(/* webpackChunkName: "achievement" */ '../views/AchievementView.vue')
+  },
+  {
+    path: '/review',
+    name: 'Review',
+    component: () => import(/* webpackChunkName: "review" */ '../views/WeeklyMonthlyReviewView.vue')
+  },
+  {
+    path: '/quick-add',
+    name: 'QuickAdd',
+    component: () => import(/* webpackChunkName: "quick-add" */ '../views/QuickAddView.vue')
   },
   {
     path: '/:pathMatch(.*)*',
