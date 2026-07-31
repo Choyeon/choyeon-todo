@@ -1,5 +1,20 @@
 <template>
   <div class="achievement-view">
+    <!-- 打卡成功动画 -->
+    <Transition name="check-in">
+      <div v-if="showCheckInAnimation" class="check-in-celebration">
+        <div class="celebration-content">
+          <div class="celebration-icon">
+            <Check :size="48" />
+          </div>
+          <h3 class="celebration-title">{{ $t('achievement.checkInSuccess') }}</h3>
+          <p class="celebration-streak">
+            {{ $t('achievement.continuousDays', { days: currentStreak }) }}
+          </p>
+        </div>
+      </div>
+    </Transition>
+
     <div class="view-header">
       <div class="header-content">
         <h1>{{ $t('achievement.title') }}</h1>
@@ -148,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
@@ -177,9 +192,15 @@ const { t } = useI18n()
 const taskStore = useTaskStore()
 
 const unlockedAchievements = ref([])
+// 打卡记录：{ '2024-01-15': true, ... }
 const streakData = ref({})
+const showCheckInAnimation = ref(false)
+const previousStreak = ref(0)
 
-// 加载成就数据
+/**
+ * 从 localStorage 加载成就数据
+ * 数据结构：{ unlocked: string[], streak: Record<string, boolean> }
+ */
 const loadAchievementData = () => {
   try {
     const saved = localStorage.getItem('choyeon_achievements')
@@ -193,7 +214,10 @@ const loadAchievementData = () => {
   }
 }
 
-// 保存成就数据
+/**
+ * 持久化成就数据到 localStorage
+ * 在解锁成就或更新打卡记录时调用
+ */
 const saveAchievementData = () => {
   try {
     localStorage.setItem(
@@ -208,7 +232,11 @@ const saveAchievementData = () => {
   }
 }
 
-// 计算当前连续打卡天数
+/**
+ * 计算当前连续打卡天数
+ * 从今天开始向前遍历，遇到断档即停止
+ * 最多检查 365 天
+ */
 const currentStreak = computed(() => {
   let streak = 0
   const today = new Date()
@@ -225,28 +253,32 @@ const currentStreak = computed(() => {
   return streak
 })
 
-// 计算总完成任务数
+/** 已完成任务总数 */
 const totalCompleted = computed(() => {
   return taskStore.tasks.filter((t) => t.completed).length
 })
 
-// 计算等级
+/**
+ * 等级计算
+ * 经验值 = 完成任务数 × 10 + 连续打卡天数 × 5
+ * 每 100 经验值升一级
+ */
 const level = computed(() => {
   const xp = totalCompleted.value * 10 + currentStreak.value * 5
   return Math.floor(xp / 100) + 1
 })
 
-// 当前XP
+/** 当前经验值 */
 const currentXP = computed(() => {
   return totalCompleted.value * 10 + currentStreak.value * 5
 })
 
-// 下一级所需XP
+/** 升到下一级所需总经验值 */
 const nextLevelXP = computed(() => {
   return level.value * 100
 })
 
-// 等级进度百分比
+/** 当前等级进度百分比 (0-100) */
 const levelProgress = computed(() => {
   const currentLevelXP = (level.value - 1) * 100
   const progress = currentXP.value - currentLevelXP
@@ -254,12 +286,15 @@ const levelProgress = computed(() => {
   return Math.min(100, Math.max(0, (progress / needed) * 100))
 })
 
-// 已解锁成就数
+/** 已解锁成就数量 */
 const unlockedCount = computed(() => {
   return achievements.value.filter((a) => a.unlocked).length
 })
 
-// 最近30天
+/**
+ * 生成最近 30 天的日期数组
+ * 用于热力图展示，标记每天是否有完成任务
+ */
 const last30Days = computed(() => {
   const days = []
   const today = new Date()
@@ -269,6 +304,7 @@ const last30Days = computed(() => {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
     const dateStr = date.toISOString().split('T')[0]
+    // 检查当天是否有已完成的任务
     const hasCompleted = taskStore.tasks.some((t) => {
       if (!t.completed || !t.completedAt) return false
       const completedDate = new Date(t.completedAt).toISOString().split('T')[0]
@@ -286,7 +322,10 @@ const last30Days = computed(() => {
   return days
 })
 
-// 成就定义
+/**
+ * 成就列表定义
+ * 每个成就包含解锁条件和进度计算
+ */
 const achievements = computed(() => {
   const allAchievements = [
     {
@@ -390,7 +429,6 @@ const achievements = computed(() => {
   return allAchievements
 })
 
-// 检查早起成就
 const checkEarlyBird = () => {
   return taskStore.tasks.some((t) => {
     if (!t.completed || !t.completedAt) return false
@@ -399,7 +437,6 @@ const checkEarlyBird = () => {
   })
 }
 
-// 检查夜猫子成就
 const checkNightOwl = () => {
   return taskStore.tasks.some((t) => {
     if (!t.completed || !t.completedAt) return false
@@ -408,12 +445,14 @@ const checkNightOwl = () => {
   })
 }
 
-// 检查分类大师成就
 const checkCategoryMaster = (categoryId) => {
   return taskStore.tasks.filter((t) => t.completed && t.category === categoryId).length >= 20
 }
 
-// 获取等级名称
+/**
+ * 根据等级返回对应称号
+ * 等级体系：新手(1-4) → 中级(5-9) → 高级(10-19) → 专家(20-49) → 大师(50+)
+ */
 const getLevelName = (level) => {
   if (level < 5) return t('achievement.levelBeginner')
   if (level < 10) return t('achievement.levelIntermediate')
@@ -422,7 +461,7 @@ const getLevelName = (level) => {
   return t('achievement.levelMaster')
 }
 
-// 获取图标
+/** 成就图标映射 */
 const iconMap = {
   star: Star,
   target: Target,
@@ -436,17 +475,21 @@ const iconMap = {
   book: BookOpen
 }
 
+/** 获取成就图标组件 */
 const getIcon = (iconName) => {
   return iconMap[iconName] || Star
 }
 
-// 返回
+/** 返回首页 */
 const goBack = () => {
   router.push('/')
 }
 
-// 更新打卡记录
-const updateStreakData = () => {
+/**
+ * 更新打卡记录
+ * 如果今天有已完成任务且未打卡，则记录打卡并触发动画
+ */
+const updateStreakData = (triggerAnimation = false) => {
   const today = getTodayStr()
   const hasCompletedToday = taskStore.tasks.some((t) => {
     if (!t.completed || !t.completedAt) return false
@@ -457,12 +500,34 @@ const updateStreakData = () => {
   if (hasCompletedToday && !streakData.value[today]) {
     streakData.value[today] = true
     saveAchievementData()
+
+    // 触发打卡动画
+    if (triggerAnimation) {
+      showCheckInAnimation.value = true
+      setTimeout(() => {
+        showCheckInAnimation.value = false
+      }, 2000)
+    }
   }
 }
 
+// 监听任务完成状态变化
+watch(
+  () => taskStore.tasks.filter((t) => t.completed).length,
+  () => {
+    const oldStreak = currentStreak.value
+    updateStreakData(true)
+    const newStreak = currentStreak.value
+
+    if (newStreak > oldStreak) {
+      previousStreak.value = oldStreak
+    }
+  }
+)
+
 onMounted(() => {
   loadAchievementData()
-  updateStreakData()
+  updateStreakData(false)
 })
 </script>
 
@@ -471,6 +536,109 @@ onMounted(() => {
   min-height: 100%;
   padding: 32px;
   background: var(--color-bg);
+  position: relative;
+}
+
+/* 打卡成功动画 */
+.check-in-celebration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.celebration-content {
+  text-align: center;
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.celebration-icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.celebration-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.celebration-streak {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-weight: 500;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 25px 70px rgba(16, 185, 129, 0.6);
+  }
+}
+.check-in-enter-active,
+.check-in-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.check-in-enter-from {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.check-in-leave-to {
+  opacity: 0;
+  transform: scale(1.1);
 }
 
 .view-header {

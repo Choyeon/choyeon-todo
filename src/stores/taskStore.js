@@ -720,7 +720,7 @@ export const useTaskStore = defineStore('task', () => {
     if (index === -1) return false
     tasks.value.splice(index, 1)
     removeFromMyDay(id)
-    // 如果删除的是当前聚焦的任务，清除聚焦状态
+    // 删除聚焦任务时清空焦点，避免 UI 引用已删除的任务
     if (focusedTaskId.value === id) {
       focusedTaskId.value = null
     }
@@ -1492,6 +1492,10 @@ export const useTaskStore = defineStore('task', () => {
     return result
   }
 
+  /**
+   * 清除所有已完成任务
+   * @returns {number} 被清除的任务数量
+   */
   const clearCompleted = () => {
     const beforeCount = tasks.value.length
     tasks.value = tasks.value.filter((t) => !t.completed)
@@ -1514,7 +1518,6 @@ export const useTaskStore = defineStore('task', () => {
     currentCategory.value = null
     currentTag.value = null
     focusedTaskId.value = null
-    // 清理定时器并立即保存
     if (saveTimeout) clearTimeout(saveTimeout)
     saveToStorage()
   }

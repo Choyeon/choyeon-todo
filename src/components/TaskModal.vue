@@ -30,10 +30,11 @@
                 <input
                   type="text"
                   class="form-title-input"
-                  :placeholder="$t('task.titlePlaceholder')"
+                  :placeholder="$t('task.titlePlaceholder') + ' (支持：明天、下周一、12/25)'"
                   v-model="form.title"
                   ref="titleInput"
                   :aria-label="$t('task.taskTitle')"
+                  @input="parseSmartDate"
                 />
                 <button
                   v-if="speechRecognitionSupported"
@@ -44,6 +45,10 @@
                 >
                   <Mic :size="20" />
                 </button>
+              </div>
+              <div v-if="parsedDateHint" class="smart-date-hint">
+                <Calendar :size="14" />
+                <span>{{ parsedDateHint }}</span>
               </div>
 
               <div class="form-section-label">{{ $t('task.category') }}</div>
@@ -426,6 +431,105 @@ const newSubTaskTitle = ref('')
 const newTagName = ref('')
 const newTagColor = ref('#6B7280')
 const showAddTag = ref(false)
+const parsedDateHint = ref('')
+
+/**
+ * 智能日期解析 - 从任务标题中提取日期
+ * 支持：明天、后天、下周一、12/25、12月25日等
+ */
+const parseSmartDate = () => {
+  const title = form.title.trim()
+  if (!title) {
+    parsedDateHint.value = ''
+    return
+  }
+
+  const today = new Date()
+  let parsedDate = null
+
+  // 解析"今天"
+  if (/今天/.test(title)) {
+    parsedDate = new Date(today)
+  }
+  // 解析"明天"
+  else if (/明天/.test(title)) {
+    parsedDate = new Date(today)
+    parsedDate.setDate(today.getDate() + 1)
+  }
+  // 解析"后天"
+  else if (/后天/.test(title)) {
+    parsedDate = new Date(today)
+    parsedDate.setDate(today.getDate() + 2)
+  }
+  // 解析"下周一"到"下周日"
+  else if (/下周([一二三四五六日天])/.test(title)) {
+    const match = title.match(/下周([一二三四五六日天])/)
+    const dayMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
+    const targetDay = dayMap[match[1]]
+    const currentDay = today.getDay()
+    const daysUntilNextWeek = ((7 - currentDay + targetDay) % 7) + 7
+    parsedDate = new Date(today)
+    parsedDate.setDate(today.getDate() + daysUntilNextWeek)
+  }
+  // 解析"这周一"到"这周日"
+  else if (/这周([一二三四五六日天])/.test(title)) {
+    const match = title.match(/这周([一二三四五六日天])/)
+    const dayMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
+    const targetDay = dayMap[match[1]]
+    const currentDay = today.getDay()
+    const daysUntilThisWeek = (targetDay - currentDay + 7) % 7
+    parsedDate = new Date(today)
+    parsedDate.setDate(today.getDate() + daysUntilThisWeek)
+  }
+  // 解析"周X"或"星期X"（默认为下周）
+  else if (/(?:周|星期)([一二三四五六日天])/.test(title)) {
+    const match = title.match(/(?:周|星期)([一二三四五六日天])/)
+    const dayMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
+    const targetDay = dayMap[match[1]]
+    const currentDay = today.getDay()
+    const daysUntil = (targetDay - currentDay + 7) % 7 || 7
+    parsedDate = new Date(today)
+    parsedDate.setDate(today.getDate() + daysUntil)
+  }
+  // 解析"X天后"
+  else if (/(\d+)天后/.test(title)) {
+    const match = title.match(/(\d+)天后/)
+    const days = parseInt(match[1])
+    parsedDate = new Date(today)
+    parsedDate.setDate(today.getDate() + days)
+  }
+  // 解析"12/25"或"12-25"格式
+  else if (/(\d{1,2})[/-](\d{1,2})(?:\s|$|[^\d])/.test(title)) {
+    const match = title.match(/(\d{1,2})[/-](\d{1,2})/)
+    const month = parseInt(match[1]) - 1
+    const day = parseInt(match[2])
+    parsedDate = new Date(today.getFullYear(), month, day)
+    // 如果日期已过，则设为明年
+    if (parsedDate < today) {
+      parsedDate.setFullYear(today.getFullYear() + 1)
+    }
+  }
+  // 解析"X月X日"格式
+  else if (/(\d{1,2})月(\d{1,2})[日号]/.test(title)) {
+    const match = title.match(/(\d{1,2})月(\d{1,2})[日号]/)
+    const month = parseInt(match[1]) - 1
+    const day = parseInt(match[2])
+    parsedDate = new Date(today.getFullYear(), month, day)
+    if (parsedDate < today) {
+      parsedDate.setFullYear(today.getFullYear() + 1)
+    }
+  }
+
+  if (parsedDate) {
+    const dateStr = parsedDate.toISOString().split('T')[0]
+    form.date = dateStr
+    const month = parsedDate.getMonth() + 1
+    const day = parsedDate.getDate()
+    parsedDateHint.value = `已识别日期：${month}月${day}日`
+  } else {
+    parsedDateHint.value = ''
+  }
+}
 
 const speechRecognitionSupported = ref(false)
 const isRecording = ref(false)
@@ -877,6 +981,36 @@ const handleSave = () => {
   margin-top: 16px;
   margin-bottom: 20px;
   position: relative;
+}
+
+.smart-date-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  animation: slideInDown 0.3s ease-out;
+}
+
+.smart-date-hint svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mic-btn {

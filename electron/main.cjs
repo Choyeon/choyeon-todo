@@ -24,17 +24,17 @@ let quickAddWindow = null
 let tray = null
 let isQuitting = false
 let updateDownloaded = false
+let isCheckingUpdate = false
+let updateCheckInterval = null
+const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000
 
-// 安全：允许在系统浏览器中打开的外部域名白名单
 const ALLOWED_EXTERNAL_DOMAINS = ['github.com', 'www.github.com', 'chuyuchoyeon.github.io']
 
-// 渲染进程崩溃追踪（用于退避机制）
 let renderCrashCount = 0
 let lastCrashTime = 0
 const MAX_CRASH_BEFORE_SAFE_MODE = 3
 const CRASH_BACKOFF_BASE_MS = 2000
 
-// 应用设置（主进程维护一份，用于窗口关闭行为等）
 let appSettings = {
   closeToQuit: true,
   autoStart: false,
@@ -42,7 +42,6 @@ let appSettings = {
   globalShortcutEnabled: true
 }
 
-// 番茄钟状态
 let pomodoroState = {
   currentMode: 'work',
   timeLeft: 25 * 60,
@@ -56,7 +55,6 @@ let pomodoroState = {
   syncTimestamp: null
 }
 
-// 精确计时相关变量
 let pomodoroTimer = null
 let pomodoroEndTime = null
 let pomodoroPauseTimeLeft = 25 * 60
@@ -364,15 +362,20 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
+      sandbox: true,
+      // 启用硬件加速
+      enableBlinkFeatures: 'CSSBackdropFilter'
     },
     frame: false,
-    show: false
+    show: false,
+    // 启用透明以支持毛玻璃效果
+    transparent: process.platform === 'win32'
   }
 
-  // Windows 11 使用原生 Acrylic 亚克力毛玻璃材质（不能同时设置 backgroundColor）
+  // Windows 11 使用原生 Acrylic 亚克力毛玻璃材质
   if (process.platform === 'win32') {
     windowOptions.backgroundMaterial = 'acrylic'
+    windowOptions.backgroundColor = '#00000000'
   } else {
     windowOptions.backgroundColor = getBgColor()
   }
@@ -387,45 +390,58 @@ function createWindow() {
 
   Menu.setApplicationMenu(null)
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist-web/index.html'))
+  // 使用异步加载避免阻塞
+  const loadPromise = process.env.VITE_DEV_SERVER_URL
+    ? mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+    : mainWindow.loadFile(path.join(__dirname, '../dist-web/index.html'))
+
+  loadPromise.catch((err) => {
+    console.error('[Main] Failed to load window:', err)
+  })
+
+  // 优化 ready-to-show 逻辑
+  mainWindow.once('ready-to-show', () => {
+    // 使用 requestAnimationFrame 确保渲染完成后再显示
+    setImmediate(() => {
+      if (windowState.isMaximized) {
+        mainWindow.maximize()
+      }
+      mainWindow.show()
+    })
+  })
+
+  // 通知渲染进程最大化状态变化（使用防抖避免频繁触发）
+  let maximizeNotifyTimer = null
+  const notifyMaximizeChange = (isMaximized) => {
+    if (maximizeNotifyTimer) clearTimeout(maximizeNotifyTimer)
+    maximizeNotifyTimer = setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('window:maximizeChanged', isMaximized)
+      }
+    }, 50)
   }
 
-  mainWindow.once('ready-to-show', () => {
-    if (windowState.isMaximized) {
-      mainWindow.maximize()
-    }
-    mainWindow.show()
-  })
+  mainWindow.on('maximize', () => notifyMaximizeChange(true))
+  mainWindow.on('unmaximize', () => notifyMaximizeChange(false))
 
-  // 通知渲染进程最大化状态变化
-  mainWindow.on('maximize', () => {
-    if (!mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('window:maximizeChanged', true)
-    }
-  })
-  mainWindow.on('unmaximize', () => {
-    if (!mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('window:maximizeChanged', false)
-    }
-  })
-
-  // 保存窗口状态
+  // 保存窗口状态（优化防抖时间）
   let saveStateTimer = null
   const debouncedSaveWindowState = () => {
     if (saveStateTimer) clearTimeout(saveStateTimer)
-    saveStateTimer = setTimeout(() => saveWindowState(), 300)
+    saveStateTimer = setTimeout(() => saveWindowState(), 500)
   }
   mainWindow.on('resize', debouncedSaveWindowState)
   mainWindow.on('move', debouncedSaveWindowState)
 
-  // 窗口关闭时清理防抖定时器
+  // 窗口关闭时清理所有定时器
   mainWindow.on('closed', () => {
     if (saveStateTimer) {
       clearTimeout(saveStateTimer)
       saveStateTimer = null
+    }
+    if (maximizeNotifyTimer) {
+      clearTimeout(maximizeNotifyTimer)
+      maximizeNotifyTimer = null
     }
   })
 
@@ -527,11 +543,11 @@ function createWindow() {
 }
 
 function createDebugWindow() {
-  if (debugWindow) {
+  if (debugWindow && !debugWindow.isDestroyed()) {
     debugWindow.focus()
     return
   }
-  if (!mainWindow) return
+  if (!mainWindow || mainWindow.isDestroyed()) return
 
   const iconPath = getIconPath()
   const debugOptions = {
@@ -556,11 +572,13 @@ function createDebugWindow() {
 
   debugWindow = new BrowserWindow(debugOptions)
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    debugWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/debug')
-  } else {
-    debugWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), { hash: 'debug' })
-  }
+  const loadPromise = process.env.VITE_DEV_SERVER_URL
+    ? debugWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/debug')
+    : debugWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), { hash: 'debug' })
+
+  loadPromise.catch((err) => {
+    console.error('[Main] Failed to load debug window:', err)
+  })
 
   debugWindow.once('ready-to-show', () => {
     debugWindow.show()
@@ -579,7 +597,7 @@ function createDebugWindow() {
 }
 
 function createPomodoroWindow() {
-  if (pomodoroWindow) {
+  if (pomodoroWindow && !pomodoroWindow.isDestroyed()) {
     pomodoroWindow.focus()
     return
   }
@@ -618,14 +636,16 @@ function createPomodoroWindow() {
   pomodoroWindow.setAlwaysOnTop(true, 'screen-saver')
   pomodoroWindow.setVisibleOnAllWorkspaces(true)
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    pomodoroWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fullscreen?slave=1')
-  } else {
-    pomodoroWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
-      hash: 'pomodoro-fullscreen',
-      query: { slave: '1' }
-    })
-  }
+  const loadPromise = process.env.VITE_DEV_SERVER_URL
+    ? pomodoroWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fullscreen?slave=1')
+    : pomodoroWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
+        hash: 'pomodoro-fullscreen',
+        query: { slave: '1' }
+      })
+
+  loadPromise.catch((err) => {
+    console.error('[Main] Failed to load pomodoro window:', err)
+  })
 
   pomodoroWindow.once('ready-to-show', () => {
     pomodoroWindow.setFullScreen(true)
@@ -642,7 +662,7 @@ function createPomodoroWindow() {
 }
 
 function createPomodoroFabWindow() {
-  if (pomodoroFabWindow) {
+  if (pomodoroFabWindow && !pomodoroFabWindow.isDestroyed()) {
     pomodoroFabWindow.show()
     pomodoroFabWindow.focus()
     return
@@ -687,14 +707,16 @@ function createPomodoroFabWindow() {
   pomodoroFabWindow.setAlwaysOnTop(true, 'floating')
   pomodoroFabWindow.setVisibleOnAllWorkspaces(true)
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    pomodoroFabWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fab?slave=1')
-  } else {
-    pomodoroFabWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
-      hash: 'pomodoro-fab',
-      query: { slave: '1' }
-    })
-  }
+  const loadPromise = process.env.VITE_DEV_SERVER_URL
+    ? pomodoroFabWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fab?slave=1')
+    : pomodoroFabWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
+        hash: 'pomodoro-fab',
+        query: { slave: '1' }
+      })
+
+  loadPromise.catch((err) => {
+    console.error('[Main] Failed to load pomodoro fab window:', err)
+  })
 
   pomodoroFabWindow.once('ready-to-show', () => {
     pomodoroFabWindow.show()
@@ -706,7 +728,7 @@ function createPomodoroFabWindow() {
 }
 
 function togglePomodoroFab() {
-  if (pomodoroFabWindow) {
+  if (pomodoroFabWindow && !pomodoroFabWindow.isDestroyed()) {
     if (pomodoroFabWindow.isVisible()) {
       pomodoroFabWindow.hide()
     } else {
@@ -718,6 +740,12 @@ function togglePomodoroFab() {
 }
 
 function createMiniWindow() {
+  if (miniWindow && !miniWindow.isDestroyed()) {
+    miniWindow.show()
+    miniWindow.focus()
+    return
+  }
+
   const primaryDisplay = screen.getPrimaryDisplay()
   const { workArea } = primaryDisplay
   const windowWidth = 280
@@ -750,14 +778,16 @@ function createMiniWindow() {
   miniWindow.setAlwaysOnTop(true, 'floating')
   miniWindow.setVisibleOnAllWorkspaces(true)
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    miniWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/mini-window?slave=1')
-  } else {
-    miniWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
-      hash: 'mini-window',
-      query: { slave: '1' }
-    })
-  }
+  const loadPromise = process.env.VITE_DEV_SERVER_URL
+    ? miniWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/mini-window?slave=1')
+    : miniWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
+        hash: 'mini-window',
+        query: { slave: '1' }
+      })
+
+  loadPromise.catch((err) => {
+    console.error('[Main] Failed to load mini window:', err)
+  })
 
   miniWindow.once('ready-to-show', () => {
     miniWindow.show()
@@ -769,7 +799,7 @@ function createMiniWindow() {
 }
 
 function toggleMiniWindow() {
-  if (miniWindow) {
+  if (miniWindow && !miniWindow.isDestroyed()) {
     if (miniWindow.isVisible()) {
       miniWindow.hide()
     } else {
@@ -781,7 +811,7 @@ function toggleMiniWindow() {
 }
 
 function createQuickAddWindow() {
-  if (quickAddWindow) {
+  if (quickAddWindow && !quickAddWindow.isDestroyed()) {
     quickAddWindow.show()
     quickAddWindow.focus()
     return
@@ -822,13 +852,15 @@ function createQuickAddWindow() {
 
   quickAddWindow.setAlwaysOnTop(true, 'floating')
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    quickAddWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/quick-add')
-  } else {
-    quickAddWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
-      hash: 'quick-add'
-    })
-  }
+  const loadPromise = process.env.VITE_DEV_SERVER_URL
+    ? quickAddWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/quick-add')
+    : quickAddWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
+        hash: 'quick-add'
+      })
+
+  loadPromise.catch((err) => {
+    console.error('[Main] Failed to load quick add window:', err)
+  })
 
   quickAddWindow.once('ready-to-show', () => {
     quickAddWindow.show()
@@ -1257,7 +1289,7 @@ ipcMain.handle('bing:getWallpaper', async (event) => {
   if (!isFromMain(event)) return null
   try {
     const https = require('https')
-    const url = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN'
+    const url = 'https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1'
 
     return new Promise((resolve, reject) => {
       https
@@ -1270,7 +1302,7 @@ ipcMain.handle('bing:getWallpaper', async (event) => {
             try {
               const json = JSON.parse(data)
               if (json.images && json.images.length > 0) {
-                const imageUrl = `https://www.bing.com${json.images[0].url}`
+                const imageUrl = `https://cn.bing.com${json.images[0].url}`
                 resolve({ url: imageUrl, copyright: json.images[0].copyright })
               } else {
                 resolve(null)
@@ -1541,6 +1573,20 @@ ipcMain.handle('app:getVersion', () => {
 
 ipcMain.handle('updater:checkForUpdates', async (event) => {
   if (!isFromMain(event)) return { success: false, error: 'forbidden' }
+
+  // 防止重复检查
+  if (isCheckingUpdate) {
+    console.warn('[Updater] Already checking for updates, skipping...')
+    return { success: false, error: 'already_checking' }
+  }
+
+  // 开发模式下不调用真实更新
+  if (!app.isPackaged) {
+    console.warn('[Updater] Development mode, skipping real update check')
+    return { success: true, version: app.getVersion(), devMode: true }
+  }
+
+  isCheckingUpdate = true
   try {
     console.warn('[Updater] Checking for updates...')
     console.warn('[Updater] Current app version:', app.getVersion())
@@ -1557,13 +1603,29 @@ ipcMain.handle('updater:checkForUpdates', async (event) => {
     console.error('[Updater] Check failed:', err)
     sendToMainWindow('updater:error', { message: err.message })
     return { success: false, error: err.message }
+  } finally {
+    isCheckingUpdate = false
   }
 })
 
-ipcMain.handle('updater:downloadUpdate', (event) => {
-  if (!isFromMain(event)) return false
-  autoUpdater.downloadUpdate()
-  return true
+ipcMain.handle('updater:downloadUpdate', async (event) => {
+  if (!isFromMain(event)) return { success: false, error: 'forbidden' }
+
+  // 开发模式下不下载
+  if (!app.isPackaged) {
+    console.warn('[Updater] Development mode, skipping download')
+    return { success: false, error: 'dev_mode' }
+  }
+
+  try {
+    console.warn('[Updater] Starting download...')
+    await autoUpdater.downloadUpdate()
+    return { success: true }
+  } catch (err) {
+    console.error('[Updater] Download failed:', err)
+    sendToMainWindow('updater:error', { message: err.message })
+    return { success: false, error: err.message }
+  }
 })
 
 ipcMain.handle('updater:quitAndInstall', (event) => {
@@ -1583,58 +1645,9 @@ function setupAutoUpdater() {
   console.warn('[Updater] App version:', app.getVersion())
   console.warn('[Updater] AppId:', app.getAppUserModelId())
 
+  // 开发模式下不设置自动更新
   if (!app.isPackaged) {
-    console.warn('[Updater] Not in packaged mode, simulating auto-updater for testing')
-
-    const simulateUpdate = () => {
-      setTimeout(() => {
-        console.warn('[Updater] Simulating update available for testing')
-        sendToMainWindow('updater:update-available', {
-          version: '99.99.99',
-          releaseNotes: 'This is a test update notification',
-          releaseDate: new Date().toISOString()
-        })
-      }, 5000)
-    }
-
-    simulateUpdate()
-
-    autoUpdater.on('checking-for-update', () => {
-      console.warn('[Updater] Checking for update (simulated)...')
-      sendToMainWindow('updater:checking')
-    })
-
-    autoUpdater.on('update-not-available', (info) => {
-      console.warn('[Updater] No update available (simulated)')
-      sendToMainWindow('updater:update-not-available', {
-        version: info.version
-      })
-    })
-
-    autoUpdater.on('download-progress', (progressObj) => {
-      console.warn('[Updater] Download progress:', progressObj.percent, '%')
-      sendToMainWindow('updater:download-progress', {
-        percent: progressObj.percent,
-        speed: progressObj.bytesPerSecond,
-        transferred: progressObj.transferred,
-        total: progressObj.total
-      })
-    })
-
-    autoUpdater.on('update-downloaded', () => {
-      console.warn('[Updater] Update downloaded')
-      updateDownloaded = true
-      sendToMainWindow('updater:update-downloaded')
-    })
-
-    autoUpdater.on('error', (err) => {
-      console.error('[Updater] Error:', err)
-      sendToMainWindow('updater:error', {
-        message: err.message
-      })
-    })
-
-    console.warn('[Updater] Simulated auto updater setup complete')
+    console.warn('[Updater] Development mode, auto updater disabled')
     return
   }
 
@@ -1681,6 +1694,17 @@ function setupAutoUpdater() {
       message: err.message
     })
   })
+
+  // 启动定期检查更新（每小时一次）
+  if (!updateCheckInterval) {
+    updateCheckInterval = setInterval(() => {
+      console.warn('[Updater] Periodic update check...')
+      autoUpdater.checkForUpdates().catch((err) => {
+        console.error('[Updater] Periodic check failed:', err)
+      })
+    }, UPDATE_CHECK_INTERVAL_MS)
+    console.warn('[Updater] Periodic update check enabled (every hour)')
+  }
 
   console.warn('[Updater] Auto updater setup complete')
 }
@@ -1768,7 +1792,7 @@ if (!gotLock) {
     // 注入 CSP 响应头
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
       // Bing wallpaper fallback URL (renderer may fetch directly when IPC is unavailable)
-      const bingWallpaperSrc = 'https://www.bing.com'
+      const bingWallpaperSrc = 'https://www.bing.com https://cn.bing.com'
       let connectSrc = `connect-src 'self' ${bingWallpaperSrc}; `
       if (process.env.VITE_DEV_SERVER_URL) {
         try {
@@ -1788,7 +1812,7 @@ if (!gotLock) {
             "default-src 'self'; " +
               "script-src 'self'; " +
               "style-src 'self' 'unsafe-inline'; " +
-              "img-src 'self' data:; " +
+              `img-src 'self' data: ${bingWallpaperSrc} https://cn.bing.com; ` +
               connectSrc +
               "font-src 'self'; " +
               "object-src 'none'; " +

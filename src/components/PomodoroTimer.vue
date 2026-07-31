@@ -366,7 +366,6 @@ const handleToggleTimer = () => {
   pomodoroStore.toggleTimer()
 }
 
-// 计算每个爆发粒子的飞散方向和距离
 const getBurstParticleStyle = (i) => {
   const angle = (i - 1) * 30
   const distance = 80 + Math.random() * 40

@@ -218,7 +218,13 @@ const taskStore = useTaskStore()
 
 const period = ref('week')
 
-// 获取时间范围
+/**
+ * 根据当前周期返回日期范围
+ * - week: 本周（周日到周六）
+ * - month: 本月（1号到月末）
+ * - lastWeek: 上周
+ * - lastMonth: 上月
+ */
 const getDateRange = () => {
   const today = new Date()
   const todayStr = getTodayStr()
@@ -244,7 +250,7 @@ const getDateRange = () => {
   return { start: todayStr, end: todayStr }
 }
 
-// 获取时间范围内的任务
+/** 筛选当前周期内的任务 */
 const periodTasks = computed(() => {
   const { start, end } = getDateRange()
   return taskStore.tasks.filter((task) => {
@@ -253,7 +259,7 @@ const periodTasks = computed(() => {
   })
 })
 
-// 统计计算
+/** 已完成任务数 */
 const completedCount = computed(() => periodTasks.value.filter((t) => t.completed).length)
 const pendingCount = computed(() => periodTasks.value.filter((t) => !t.completed).length)
 const totalTasks = computed(() => periodTasks.value.length)

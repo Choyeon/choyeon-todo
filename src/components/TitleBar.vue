@@ -224,7 +224,7 @@ const handleClose = () => {
 }
 
 const handleMenu = () => {
-  // Menu button handler - no action needed for now
+  // Linux 菜单按钮，暂未实现功能
 }
 
 const onStyleChange = (e) => {
@@ -240,16 +240,17 @@ const onStorageChange = (e) => {
 }
 
 onMounted(() => {
-  // 读取localStorage中保存的调试标题栏风格
-  const savedStyle = localStorage.getItem('choyeon_debug_titlebar')
-  if (savedStyle && savedStyle !== 'auto') {
-    debugPlatform.value = savedStyle
-  }
+  const isDebugRoute =
+    window.location.hash === '#/debug' || window.location.pathname.includes('/debug')
+  if (isDebugRoute) {
+    const savedStyle = localStorage.getItem('choyeon_debug_titlebar')
+    if (savedStyle && savedStyle !== 'auto') {
+      debugPlatform.value = savedStyle
+    }
 
-  // 监听同页面自定义事件（浏览器直接访问debug路由时）
-  window.addEventListener('titlebar-style-change', onStyleChange)
-  // 监听跨窗口storage事件（Electron debug窗口切换时）
-  window.addEventListener('storage', onStorageChange)
+    window.addEventListener('titlebar-style-change', onStyleChange)
+    window.addEventListener('storage', onStorageChange)
+  }
 
   let cancelled = false
   if (window.electronAPI?.isMaximized) {
