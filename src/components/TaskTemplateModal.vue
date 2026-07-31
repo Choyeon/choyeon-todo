@@ -656,7 +656,8 @@ watch(
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1236,7 +1237,8 @@ watch(
   padding: 24px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }

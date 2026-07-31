@@ -146,9 +146,8 @@ const formatDate = (timestamp) => {
   return formatDateStr(date)
 }
 
+/** 打开任务整理对话框，复用现有的整理功能 */
 const editTask = (task) => {
-  // 打开任务编辑对话框
-  // 这里可以复用现有的任务编辑功能
   openOrganizeDialog(task)
 }
 

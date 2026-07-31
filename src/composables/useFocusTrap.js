@@ -1,6 +1,9 @@
 import { nextTick, onUnmounted } from 'vue'
 
-// 焦点陷阱 composable — 用于模态框，将 Tab 键焦点限制在模态内
+/**
+ * 焦点陷阱 composable — 将 Tab 键焦点限制在模态框内
+ * 符合 WAI-ARIA Dialog 规范：打开时聚焦首个可交互元素，关闭时归还焦点
+ */
 export const useFocusTrap = (containerRef, options = {}) => {
   const { initialFocusSelector = 'input, textarea, button' } = options
   let previouslyFocused = null
@@ -8,29 +11,27 @@ export const useFocusTrap = (containerRef, options = {}) => {
   let isActive = false
 
   const activate = async () => {
-    // 防重入：已激活时先清理
     if (isActive) {
       deactivate()
     }
 
-    // 保存之前焦点元素
+    // 记录触发焦点，关闭模态后归还
     previouslyFocused = document.activeElement
 
     await nextTick()
 
-    // 聚焦到模态内第一个可聚焦元素
     if (containerRef.value) {
       const focusable = containerRef.value.querySelector(initialFocusSelector)
       if (focusable) {
         focusable.focus()
       } else if (containerRef.value.setAttribute) {
-        // 无可聚焦元素时，聚焦容器本身
+        // 无可聚焦子元素时，聚焦容器本身以满足键盘可达性
         containerRef.value.setAttribute('tabindex', '-1')
         containerRef.value.focus()
       }
     }
 
-    // 监听 Tab 键循环焦点
+    // Tab/Shift+Tab 循环焦点
     keydownHandler = (e) => {
       if (e.key !== 'Tab') return
       if (!containerRef.value) return
@@ -65,7 +66,7 @@ export const useFocusTrap = (containerRef, options = {}) => {
       document.removeEventListener('keydown', keydownHandler)
       keydownHandler = null
     }
-    // 焦点返回触发元素（检查是否仍在 DOM 中）
+    // 归还焦点到触发元素（检查是否仍在 DOM 中）
     if (previouslyFocused && previouslyFocused.focus && previouslyFocused.isConnected) {
       previouslyFocused.focus()
     }

@@ -685,6 +685,8 @@ loadHabits()
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.2s;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 @keyframes fadeIn {

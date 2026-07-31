@@ -42,10 +42,13 @@ export default {
       }
     })
 
+    /**
+     * 添加任务到收件箱
+     * 快速添加模式：无日期、收件箱分类、默认优先级
+     */
     const addTask = async () => {
       if (!taskTitle.value.trim()) return
 
-      // 添加任务到收件箱
       await taskStore.addTask({
         title: taskTitle.value.trim(),
         date: '',
@@ -54,7 +57,6 @@ export default {
         completed: false
       })
 
-      // 关闭窗口
       closeWindow()
     }
 
@@ -90,9 +92,9 @@ export default {
 .quick-add-card {
   width: 100%;
   max-width: 368px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);

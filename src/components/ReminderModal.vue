@@ -130,8 +130,8 @@ const playReminderSound = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .reminder-modal {

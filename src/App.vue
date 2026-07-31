@@ -205,7 +205,7 @@ const fetchBingWallpaper = async () => {
           bingWallpaperLoaded.value = true
         }
         img.onerror = () => {
-          // 缓存图片加载失败，重新获取
+          // 缓存图片加载失败，清除缓存并重新获取
           localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
         }
         img.src = cachedUrl
@@ -223,20 +223,17 @@ const fetchBingWallpaper = async () => {
     }
 
     if (!imageUrl) {
-      const response = await fetch(
-        'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN'
-      )
+      const response = await fetch('https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1')
       if (!response.ok) throw new Error('Failed to fetch Bing wallpaper')
 
       const data = await response.json()
       if (data.images && data.images.length > 0) {
-        imageUrl = `https://www.bing.com${data.images[0].url}`
+        imageUrl = `https://cn.bing.com${data.images[0].url}`
       }
     }
 
     if (imageUrl) {
       bingWallpaperLoaded.value = false
-      // 预加载图片，加载完成后再显示，避免闪烁
       const img = new Image()
       img.onload = () => {
         bingWallpaperUrl.value = imageUrl

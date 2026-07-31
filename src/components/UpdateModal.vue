@@ -116,12 +116,23 @@ const handleLater = () => {
   hide()
 }
 
-const handleUpdate = () => {
+const handleUpdate = async () => {
   if (isDownloading.value) return
   isDownloading.value = true
   isDownloaded.value = false
   downloadPercent.value = 0
-  window.electronAPI?.downloadUpdate?.()
+
+  try {
+    const result = await window.electronAPI?.downloadUpdate?.()
+    if (result?.error) {
+      throw new Error(result.error)
+    }
+  } catch (err) {
+    console.error('[UpdateModal] Download failed:', err)
+    isDownloading.value = false
+    isDownloaded.value = false
+    downloadPercent.value = -1
+  }
 }
 
 const handleInstall = () => {

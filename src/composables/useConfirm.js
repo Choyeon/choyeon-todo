@@ -1,8 +1,10 @@
 import { ref } from 'vue'
 import { i18n } from '../i18n'
 
-// 全局确认弹窗状态管理
-// 替代原生 confirm()，避免在 Electron 中阻塞主进程
+/**
+ * 全局确认弹窗状态管理
+ * 替代原生 confirm()，避免在 Electron 中阻塞主进程
+ */
 const visible = ref(false)
 const title = ref('')
 const message = ref('')
