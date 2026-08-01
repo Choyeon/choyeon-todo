@@ -198,7 +198,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
-import { getTodayStr } from '../utils/date'
+import { getTodayStr, formatDateStr } from '../utils/date'
 import {
   CheckCircle,
   Clock,
@@ -232,20 +232,20 @@ const getDateRange = () => {
   if (period.value === 'week') {
     const start = new Date(today)
     start.setDate(start.getDate() - start.getDay())
-    return { start: start.toISOString().split('T')[0], end: todayStr }
+    return { start: formatDateStr(start), end: todayStr }
   } else if (period.value === 'month') {
     const start = new Date(today.getFullYear(), today.getMonth(), 1)
-    return { start: start.toISOString().split('T')[0], end: todayStr }
+    return { start: formatDateStr(start), end: todayStr }
   } else if (period.value === 'lastWeek') {
     const end = new Date(today)
     end.setDate(end.getDate() - end.getDay() - 1)
     const start = new Date(end)
     start.setDate(start.getDate() - 6)
-    return { start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0] }
+    return { start: formatDateStr(start), end: formatDateStr(end) }
   } else if (period.value === 'lastMonth') {
     const start = new Date(today.getFullYear(), today.getMonth() - 1, 1)
     const end = new Date(today.getFullYear(), today.getMonth(), 0)
-    return { start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0] }
+    return { start: formatDateStr(start), end: formatDateStr(end) }
   }
   return { start: todayStr, end: todayStr }
 }
@@ -303,7 +303,7 @@ const dailyStats = computed(() => {
   const endDate = new Date(end)
 
   for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().split('T')[0]
+    const dateStr = formatDateStr(d)
     const dayTasks = periodTasks.value.filter((t) => t.date === dateStr)
     const completed = dayTasks.filter((t) => t.completed).length
     const total = dayTasks.length
@@ -351,7 +351,7 @@ const getCategoryColor = (categoryId) => {
 const toggleTaskComplete = (task) => {
   taskStore.updateTask(task.id, {
     completed: !task.completed,
-    completedAt: !task.completed ? new Date().toISOString() : null
+    completedAt: !task.completed ? new Date().toISOString() : null // 时间戳使用UTC格式，便于跨时区转换
   })
 }
 
@@ -375,7 +375,7 @@ const exportReport = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `choyeon-todo-review-${period.value}-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `choyeon-todo-review-${period.value}-${getTodayStr()}.json`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

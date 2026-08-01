@@ -195,6 +195,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useTaskStore } from '../stores/taskStore'
+import { getTodayStr } from '../utils/date'
 import { AlertCircle, Target, Clock, Archive, Calendar } from '@lucide/vue'
 
 const taskStore = useTaskStore()
@@ -210,7 +211,7 @@ const isTaskOverdue = (task) => {
 
 const isTaskDueToday = (task) => {
   if (!task.date) return false
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
   return task.date === today
 }
 

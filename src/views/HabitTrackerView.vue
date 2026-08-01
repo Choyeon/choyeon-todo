@@ -177,6 +177,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { formatDateStr, getTodayStr } from '../utils/date'
 import {
   Plus,
   Check,
@@ -248,13 +249,13 @@ const getLast30Days = () => {
   for (let i = 29; i >= 0; i--) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    days.push(date.toISOString().split('T')[0])
+    days.push(formatDateStr(date))
   }
   return days
 }
 
 const isToday = (dateStr) => {
-  return dateStr === new Date().toISOString().split('T')[0]
+  return dateStr === getTodayStr()
 }
 
 const isCompletedOn = (habit, dateStr) => {
@@ -262,7 +263,7 @@ const isCompletedOn = (habit, dateStr) => {
 }
 
 const isCompletedToday = (habit) => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
   return isCompletedOn(habit, today)
 }
 
@@ -279,12 +280,12 @@ const getCurrentStreak = (habit) => {
   if (!habit.completions || habit.completions.length === 0) return 0
 
   const sorted = [...habit.completions].sort().reverse()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
 
   if (sorted[0] !== today) {
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
-    if (sorted[0] !== yesterday.toISOString().split('T')[0]) {
+    if (sorted[0] !== formatDateStr(yesterday)) {
       return 0
     }
   }
@@ -304,7 +305,7 @@ const getCurrentStreak = (habit) => {
 }
 
 const toggleTodayCompletion = (habit) => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayStr()
   toggleCompletion(habit, today)
 }
 

@@ -119,7 +119,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useConfirm } from '../composables/useConfirm'
-import { formatDateStr } from '../utils/date'
+import { formatDateStr, getTodayStr } from '../utils/date'
 import { Inbox, Calendar, Edit2, Trash2, FolderInput, X } from '@lucide/vue'
 
 const { t } = useI18n()
@@ -155,7 +155,7 @@ const openOrganizeDialog = (task) => {
   currentTask.value = task
   organizeForm.value = {
     category: task.category || 'other',
-    date: task.date || new Date().toISOString().split('T')[0],
+    date: task.date || getTodayStr(),
     priority: task.priority || 3,
     important: task.important || false,
     reminder: task.reminder || false

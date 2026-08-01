@@ -389,7 +389,7 @@ import { useI18n } from 'vue-i18n'
 import { useTaskStore, generateId } from '../stores/taskStore'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { useSnackbar } from '../composables/useSnackbar'
-import { getTodayStr } from '../utils/date'
+import { getTodayStr, formatDateStr } from '../utils/date'
 import { X, Calendar, Clock, Bell, Star, Plus, Trash2, Check, RotateCcw, Mic } from '@lucide/vue'
 
 const props = defineProps({
@@ -521,7 +521,7 @@ const parseSmartDate = () => {
   }
 
   if (parsedDate) {
-    const dateStr = parsedDate.toISOString().split('T')[0]
+    const dateStr = formatDateStr(parsedDate)
     form.date = dateStr
     const month = parsedDate.getMonth() + 1
     const day = parsedDate.getDate()
@@ -702,7 +702,7 @@ const setRepeatEndType = (type) => {
     if (!form.repeat.endDate) {
       const today = new Date()
       const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate())
-      form.repeat.endDate = nextMonth.toISOString().split('T')[0]
+      form.repeat.endDate = formatDateStr(nextMonth)
     }
   } else if (type === 'count') {
     delete form.repeat.endDate

@@ -311,6 +311,7 @@ import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useSnackbar } from '../composables/useSnackbar'
+import { getTodayStr } from '../utils/date'
 import {
   X,
   ArrowLeft,
@@ -533,7 +534,7 @@ const resetEditForm = () => {
 const resetUseForm = () => {
   useForm.value = {
     title: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getTodayStr(),
     time: ''
   }
   selectedTemplate.value = null
@@ -564,7 +565,7 @@ const editTemplate = (template) => {
 const selectTemplate = (template) => {
   selectedTemplate.value = template
   useForm.value.title = template.name
-  useForm.value.date = new Date().toISOString().split('T')[0]
+  useForm.value.date = getTodayStr()
   currentView.value = 'use'
 }
 
