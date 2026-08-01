@@ -167,7 +167,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
-import { getTodayStr } from '../utils/date'
+import { getTodayStr, formatDateStr } from '../utils/date'
 import {
   Trophy,
   Flame,
@@ -243,7 +243,7 @@ const currentStreak = computed(() => {
   for (let i = 0; i < 365; i++) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = formatDateStr(date)
     if (streakData.value[dateStr]) {
       streak++
     } else if (i > 0) {
@@ -303,11 +303,11 @@ const last30Days = computed(() => {
   for (let i = 29; i >= 0; i--) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = formatDateStr(date)
     // 检查当天是否有已完成的任务
     const hasCompleted = taskStore.tasks.some((t) => {
       if (!t.completed || !t.completedAt) return false
-      const completedDate = new Date(t.completedAt).toISOString().split('T')[0]
+      const completedDate = formatDateStr(new Date(t.completedAt))
       return completedDate === dateStr
     })
 
@@ -493,7 +493,7 @@ const updateStreakData = (triggerAnimation = false) => {
   const today = getTodayStr()
   const hasCompletedToday = taskStore.tasks.some((t) => {
     if (!t.completed || !t.completedAt) return false
-    const completedDate = new Date(t.completedAt).toISOString().split('T')[0]
+    const completedDate = formatDateStr(new Date(t.completedAt))
     return completedDate === today
   })
 

@@ -87,6 +87,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../../stores/taskStore'
 import { useSnackbar } from '../../composables/useSnackbar'
+import { getTodayStr } from '../../utils/date'
 import {
   Database,
   Download,
@@ -111,7 +112,7 @@ const exportData = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `choyeon-todo-backup-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `choyeon-todo-backup-${getTodayStr()}.json`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -125,7 +126,7 @@ const exportCSV = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `choyeon-todo-tasks-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `choyeon-todo-tasks-${getTodayStr()}.csv`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
