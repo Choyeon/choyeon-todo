@@ -5,6 +5,7 @@
         <div
           v-for="task in tasks"
           :key="task.id"
+          v-memo="getTaskMemoDeps(task)"
           :data-task-id="task.id"
           class="task-row"
           :class="[
@@ -188,7 +189,7 @@
 </template>
 
 <script setup>
-import { inject, computed, ref, onUnmounted } from 'vue'
+import { inject, computed, ref, shallowRef, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
@@ -288,16 +289,45 @@ const playCompletionSound = () => {
     console.warn('[TaskList] Audio not available:', e)
   }
 }
+
 const highlightedTaskId = inject(
   'highlightedTaskId',
   computed(() => null)
 )
 
-const expandedTaskIds = ref(new Set())
+const expandedTaskIds = shallowRef(new Set())
 const draggedTaskId = ref(null)
 const dragOverTaskId = ref(null)
 const completingTaskId = ref(null)
 const confettiTaskId = ref(null)
+
+const categoryStyleCache = new Map()
+const tagStyleCache = new Map()
+
+const getTaskMemoDeps = (task) => {
+  return [
+    task.id,
+    task.completed,
+    task.title,
+    task.priority,
+    task.important,
+    task.reminder,
+    task.repeat,
+    task.date,
+    task.time,
+    task.category,
+    task.subTasks?.length || 0,
+    task.tags?.length || 0,
+    expandedTaskIds.value.has(task.id),
+    draggedTaskId.value === task.id,
+    dragOverTaskId.value === task.id,
+    completingTaskId.value === task.id,
+    confettiTaskId.value === task.id,
+    highlightedTaskId.value === task.id,
+    taskStore.focusedTaskId === task.id,
+    taskStore.isInMyDay(task.id)
+  ]
+}
 
 const isHighlighted = (taskId) => {
   return highlightedTaskId.value === taskId
@@ -350,7 +380,7 @@ const emptyActionLabel = computed(() => {
 })
 
 const toggleComplete = (id) => {
-  const task = taskStore.tasks.find((t) => t.id === id)
+  const task = taskStore.getTaskById(id)
   if (!task) return
 
   if (!task.completed) {
@@ -374,10 +404,14 @@ const toggleComplete = (id) => {
 }
 
 const deleteTask = (id, title) => {
-  const taskIndex = taskStore.tasks.findIndex((t) => t.id === id)
+  const taskIndex = taskStore.getTaskIndexById(id)
   if (taskIndex === -1) return
-  const taskSnapshot = structuredClone(taskStore.tasks[taskIndex])
+  const task = taskStore.getTaskById(id)
+  if (!task) return
+  const taskSnapshot = structuredClone(task)
   expandedTaskIds.value.delete(id)
+  categoryStyleCache.clear()
+  tagStyleCache.clear()
   taskStore.deleteTask(id)
   showSnackbar(t('task.deletedMessage', { title }), {
     actionLabel: t('task.undo'),
@@ -401,52 +435,67 @@ const getCategoryName = (catId) => {
 }
 
 const getCategoryStyle = (catId) => {
+  const cached = categoryStyleCache.get(catId)
+  if (cached) return cached
   const cat = taskStore.getCategoryById(catId)
-  if (!cat) {
-    return {
-      background: 'var(--color-bg-secondary)',
-      color: 'var(--color-text-secondary)'
-    }
-  }
-  return {
-    background: cat.color + '15',
-    color: cat.color
-  }
+  const style = cat
+    ? {
+        background: cat.color + '15',
+        color: cat.color
+      }
+    : {
+        background: 'var(--color-bg-secondary)',
+        color: 'var(--color-text-secondary)'
+      }
+  categoryStyleCache.set(catId, style)
+  return style
 }
 
 const isOverdue = (task) => {
   return isTaskOverdue(task)
 }
 
+const formatDateCache = new Map()
+let formatDateCacheKey = ''
+
 const formatDate = (task) => {
+  const cacheKey = `${task.date}-${task.time}-${getTodayStr()}`
+  if (formatDateCacheKey !== cacheKey) {
+    formatDateCache.clear()
+    formatDateCacheKey = cacheKey
+  }
+  const cached = formatDateCache.get(task.date + (task.time || ''))
+  if (cached) return cached
+
   const today = getTodayStr()
   const tomorrow = getTomorrowStr()
+  let result
 
   if (task.date === today) {
-    return task.time || t('task.today')
-  }
-  if (task.date === tomorrow) {
-    return t('task.tomorrowLabel')
-  }
-  if (task.date < today) {
+    result = task.time || t('task.today')
+  } else if (task.date === tomorrow) {
+    result = t('task.tomorrowLabel')
+  } else if (task.date < today) {
     const date = parseDateStr(task.date)
     const monthDay = t('date.monthDayFormat', { month: date.getMonth() + 1, day: date.getDate() })
-    return t('date.overdueFormat', { date: monthDay })
+    result = t('date.overdueFormat', { date: monthDay })
+  } else {
+    const date = parseDateStr(task.date)
+    const weekdays = tm('date.weekdays')
+    const dayName = weekdays[date.getDay()]
+    const todayDate = parseDateStr(today)
+    const diffDays = Math.round((date - todayDate) / (1000 * 60 * 60 * 24))
+
+    if (diffDays < 7) {
+      result = task.time ? `${dayName} ${task.time}` : dayName
+    } else {
+      const monthDay = t('date.monthDayFormat', { month: date.getMonth() + 1, day: date.getDate() })
+      result = task.time ? `${monthDay} ${task.time}` : monthDay
+    }
   }
 
-  const date = parseDateStr(task.date)
-  const weekdays = tm('date.weekdays')
-  const dayName = weekdays[date.getDay()]
-
-  const todayDate = parseDateStr(today)
-  const diffDays = Math.round((date - todayDate) / (1000 * 60 * 60 * 24))
-
-  if (diffDays < 7) {
-    return task.time ? `${dayName} ${task.time}` : dayName
-  }
-
-  const monthDay = t('date.monthDayFormat', { month: date.getMonth() + 1, day: date.getDate() })
-  return task.time ? `${monthDay} ${task.time}` : monthDay
+  formatDateCache.set(task.date + (task.time || ''), result)
+  return result
 }
 
 const toggleSubTasks = (taskId) => {
@@ -459,7 +508,11 @@ const toggleSubTasks = (taskId) => {
 
 const getCompletedSubTasks = (task) => {
   if (!task.subTasks || task.subTasks.length === 0) return 0
-  return task.subTasks.filter((st) => st.completed).length
+  let count = 0
+  for (let i = 0; i < task.subTasks.length; i++) {
+    if (task.subTasks[i].completed) count++
+  }
+  return count
 }
 
 const sortSubTasks = (subTasks) => {
@@ -480,17 +533,20 @@ const getTagName = (tagId) => {
 }
 
 const getTagStyle = (tagId) => {
+  const cached = tagStyleCache.get(tagId)
+  if (cached) return cached
   const tag = taskStore.getTagById(tagId)
-  if (!tag) {
-    return {
-      background: 'var(--color-bg-secondary)',
-      color: 'var(--color-text-secondary)'
-    }
-  }
-  return {
-    background: tag.color + '20',
-    color: tag.color
-  }
+  const style = tag
+    ? {
+        background: tag.color + '20',
+        color: tag.color
+      }
+    : {
+        background: 'var(--color-bg-secondary)',
+        color: 'var(--color-text-secondary)'
+      }
+  tagStyleCache.set(tagId, style)
+  return style
 }
 
 const onDragStart = (event, taskId) => {
@@ -536,7 +592,12 @@ const onToggleMyDay = (taskId) => {
   taskStore.toggleMyDay(taskId)
 }
 
+const confettiStyleCache = new Map()
+
 const getConfettiStyle = (n) => {
+  const cached = confettiStyleCache.get(n)
+  if (cached) return cached
+
   const colors = ['#4A90D9', '#E91E8C', '#A855F7', '#22C55E', '#EF4444', '#F59E0B', '#3B82F6']
   const left = Math.random() * 100
   const delay = Math.random() * 0.3
@@ -545,7 +606,7 @@ const getConfettiStyle = (n) => {
   const size = 4 + Math.random() * 6
   const rotation = Math.random() * 360
 
-  return {
+  const style = {
     left: `${left}%`,
     animationDelay: `${delay}s`,
     animationDuration: `${duration}s`,
@@ -554,6 +615,9 @@ const getConfettiStyle = (n) => {
     height: `${size}px`,
     transform: `rotate(${rotation}deg)`
   }
+
+  confettiStyleCache.set(n, style)
+  return style
 }
 </script>
 
@@ -569,10 +633,13 @@ const getConfettiStyle = (n) => {
   -webkit-backdrop-filter: blur(var(--sidebar-search-blur)) saturate(var(--sidebar-search-saturate));
   border-radius: 16px;
   overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--card-border);
   box-shadow: var(--card-shadow);
   opacity: 0;
   animation: list-appear var(--duration-fluid) var(--ease-out-expo) forwards;
+  overscroll-behavior: contain;
 }
 
 @keyframes list-appear {
@@ -643,6 +710,8 @@ const getConfettiStyle = (n) => {
     transform var(--transition-smooth),
     box-shadow var(--transition-smooth),
     background var(--transition-smooth);
+  will-change: transform, opacity;
+  z-index: 100;
 }
 
 .task-row.drag-over::before {

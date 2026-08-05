@@ -6,7 +6,6 @@ import './styles/global.css'
 import { useTaskStore } from './stores/taskStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { usePomodoroStore } from './stores/pomodoroStore'
-import { useReminderScheduler } from './composables/useReminderScheduler'
 import { registerSW } from 'virtual:pwa-register'
 import { i18n } from './i18n'
 import { setupErrorMonitoring } from './utils/errorMonitor'
@@ -144,13 +143,4 @@ if (!isElectron) {
       console.warn('[PWA] Service Worker registration failed:', error)
     }
   })
-}
-
-if (isElectron && window.electronAPI?.sendNotification) {
-  try {
-    const { start } = useReminderScheduler()
-    start()
-  } catch (e) {
-    console.warn('[Main] Failed to start reminder scheduler:', e)
-  }
 }

@@ -174,7 +174,7 @@ const currentAppVersion = ref(__APP_VERSION__)
 let updateCheckTimer = null
 let updateCleanupListeners = []
 
-const { start: startReminderScheduler } = useReminderScheduler()
+const { start: startReminderScheduler, stop: stopReminderScheduler } = useReminderScheduler()
 
 const bingWallpaperUrl = ref('')
 const bingWallpaperLoaded = ref(false)
@@ -658,6 +658,7 @@ onUnmounted(() => {
   cleanupFns = []
   updateCleanupListeners.forEach((fn) => fn?.())
   updateCleanupListeners = []
+  stopReminderScheduler()
   // Cleanup store resources (timers, listeners, etc.)
   pomodoroStore.cleanup?.()
   settingsStore.cleanup?.()
