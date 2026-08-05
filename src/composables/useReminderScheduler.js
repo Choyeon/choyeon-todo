@@ -4,6 +4,7 @@ import { useReminderModal } from './useReminderModal'
 import { getTodayStr, addDays, isValidDateStr } from '../utils/date'
 
 let checkInterval = null
+let instanceCount = 0
 const triggeredReminders = new Set()
 const snoozedReminders = new Map()
 const OVERDUE_SUFFIX = '-overdue'
@@ -15,22 +16,29 @@ const getReminderTaskId = (key) =>
     ? key.slice(0, -OVERDUE_SUFFIX.length)
     : key
 
+let boundCheckReminders = null
+
 export const useReminderScheduler = () => {
   const start = () => {
+    instanceCount++
     if (checkInterval) return
 
-    checkInterval = setInterval(() => {
-      checkReminders()
-    }, 60000)
+    boundCheckReminders = () => checkReminders()
+
+    checkInterval = setInterval(boundCheckReminders, 60000)
 
     checkReminders()
   }
 
   const stop = () => {
+    instanceCount = Math.max(0, instanceCount - 1)
+    if (instanceCount > 0) return
+
     if (checkInterval) {
       clearInterval(checkInterval)
       checkInterval = null
     }
+    boundCheckReminders = null
     triggeredReminders.clear()
     snoozedReminders.clear()
   }

@@ -26,7 +26,10 @@ let isQuitting = false
 let updateDownloaded = false
 let isCheckingUpdate = false
 let updateCheckInterval = null
+let crashReloadTimeout = null
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000
+
+const autoUpdaterListeners = []
 
 const ALLOWED_EXTERNAL_DOMAINS = ['github.com', 'www.github.com', 'chuyuchoyeon.github.io']
 
@@ -401,7 +404,6 @@ function createWindow() {
 
   // 优化 ready-to-show 逻辑
   mainWindow.once('ready-to-show', () => {
-    // 使用 requestAnimationFrame 确保渲染完成后再显示
     setImmediate(() => {
       if (windowState.isMaximized) {
         mainWindow.maximize()
@@ -410,8 +412,9 @@ function createWindow() {
     })
   })
 
-  // 通知渲染进程最大化状态变化（使用防抖避免频繁触发）
   let maximizeNotifyTimer = null
+  let saveStateTimer = null
+
   const notifyMaximizeChange = (isMaximized) => {
     if (maximizeNotifyTimer) clearTimeout(maximizeNotifyTimer)
     maximizeNotifyTimer = setTimeout(() => {
@@ -421,29 +424,15 @@ function createWindow() {
     }, 50)
   }
 
-  mainWindow.on('maximize', () => notifyMaximizeChange(true))
-  mainWindow.on('unmaximize', () => notifyMaximizeChange(false))
-
-  // 保存窗口状态（优化防抖时间）
-  let saveStateTimer = null
   const debouncedSaveWindowState = () => {
     if (saveStateTimer) clearTimeout(saveStateTimer)
     saveStateTimer = setTimeout(() => saveWindowState(), 500)
   }
+
+  mainWindow.on('maximize', () => notifyMaximizeChange(true))
+  mainWindow.on('unmaximize', () => notifyMaximizeChange(false))
   mainWindow.on('resize', debouncedSaveWindowState)
   mainWindow.on('move', debouncedSaveWindowState)
-
-  // 窗口关闭时清理所有定时器
-  mainWindow.on('closed', () => {
-    if (saveStateTimer) {
-      clearTimeout(saveStateTimer)
-      saveStateTimer = null
-    }
-    if (maximizeNotifyTimer) {
-      clearTimeout(maximizeNotifyTimer)
-      maximizeNotifyTimer = null
-    }
-  })
 
   mainWindow.on('minimize', (e) => {
     if (!appSettings.closeToQuit) {
@@ -472,6 +461,14 @@ function createWindow() {
   })
 
   mainWindow.on('closed', () => {
+    if (saveStateTimer) {
+      clearTimeout(saveStateTimer)
+      saveStateTimer = null
+    }
+    if (maximizeNotifyTimer) {
+      clearTimeout(maximizeNotifyTimer)
+      maximizeNotifyTimer = null
+    }
     mainWindow = null
   })
 
@@ -504,13 +501,16 @@ function createWindow() {
     return { action: 'deny' }
   })
 
-  // 渲染进程崩溃处理 - 带指数退避和安全模式
   mainWindow.webContents.on('render-process-gone', (event, details) => {
     console.error('[Main] Render process gone:', details.reason)
     if (!mainWindow || mainWindow.isDestroyed()) return
 
+    if (crashReloadTimeout) {
+      clearTimeout(crashReloadTimeout)
+      crashReloadTimeout = null
+    }
+
     const now = Date.now()
-    // 如果距离上次崩溃超过 30 秒，重置计数器
     if (now - lastCrashTime > 30000) {
       renderCrashCount = 0
     }
@@ -518,7 +518,6 @@ function createWindow() {
     renderCrashCount++
     lastCrashTime = now
 
-    // 连续崩溃超过阈值，进入安全模式（不 reload，避免死循环）
     if (renderCrashCount >= MAX_CRASH_BEFORE_SAFE_MODE) {
       console.error(
         `[Main] Render process crashed ${renderCrashCount} times consecutively, entering safe mode`
@@ -526,11 +525,11 @@ function createWindow() {
       return
     }
 
-    // 指数退避：2s → 4s → 8s
     const backoffMs = CRASH_BACKOFF_BASE_MS * Math.pow(2, renderCrashCount - 1)
     console.warn(`[Main] Reloading in ${backoffMs}ms (attempt ${renderCrashCount})`)
 
-    setTimeout(() => {
+    crashReloadTimeout = setTimeout(() => {
+      crashReloadTimeout = null
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.reload()
       }
@@ -872,6 +871,9 @@ function createQuickAddWindow() {
   })
 }
 
+// 注意：此函数逻辑与 src/utils/date.js 中的 getTodayStr 重复。
+// 由于 main.cjs 是 CommonJS 格式，而项目 package.json 设置 "type": "module"，
+// 主进程无法直接 require ES module 文件，因此在此保留一份实现用于托盘菜单统计。
 function getTodayStr() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -1637,6 +1639,18 @@ ipcMain.handle('updater:quitAndInstall', (event) => {
   return updateDownloaded
 })
 
+function addAutoUpdaterListener(event, handler) {
+  autoUpdater.on(event, handler)
+  autoUpdaterListeners.push({ event, handler })
+}
+
+function removeAllAutoUpdaterListeners() {
+  for (const { event, handler } of autoUpdaterListeners) {
+    autoUpdater.removeListener(event, handler)
+  }
+  autoUpdaterListeners.length = 0
+}
+
 function setupAutoUpdater() {
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = true
@@ -1645,18 +1659,17 @@ function setupAutoUpdater() {
   console.warn('[Updater] App version:', app.getVersion())
   console.warn('[Updater] AppId:', app.getAppUserModelId())
 
-  // 开发模式下不设置自动更新
   if (!app.isPackaged) {
     console.warn('[Updater] Development mode, auto updater disabled')
     return
   }
 
-  autoUpdater.on('checking-for-update', () => {
+  addAutoUpdaterListener('checking-for-update', () => {
     console.warn('[Updater] Checking for update...')
     sendToMainWindow('updater:checking')
   })
 
-  autoUpdater.on('update-available', (info) => {
+  addAutoUpdaterListener('update-available', (info) => {
     console.warn('[Updater] Update available:', info)
     sendToMainWindow('updater:update-available', {
       version: info.version,
@@ -1665,14 +1678,14 @@ function setupAutoUpdater() {
     })
   })
 
-  autoUpdater.on('update-not-available', (info) => {
+  addAutoUpdaterListener('update-not-available', (info) => {
     console.warn('[Updater] No update available, current version:', info.version)
     sendToMainWindow('updater:update-not-available', {
       version: info.version
     })
   })
 
-  autoUpdater.on('download-progress', (progressObj) => {
+  addAutoUpdaterListener('download-progress', (progressObj) => {
     console.warn('[Updater] Download progress:', progressObj.percent, '%')
     sendToMainWindow('updater:download-progress', {
       percent: progressObj.percent,
@@ -1682,26 +1695,27 @@ function setupAutoUpdater() {
     })
   })
 
-  autoUpdater.on('update-downloaded', () => {
+  addAutoUpdaterListener('update-downloaded', () => {
     console.warn('[Updater] Update downloaded')
     updateDownloaded = true
     sendToMainWindow('updater:update-downloaded')
   })
 
-  autoUpdater.on('error', (err) => {
+  addAutoUpdaterListener('error', (err) => {
     console.error('[Updater] Error:', err)
     sendToMainWindow('updater:error', {
       message: err.message
     })
   })
 
-  // 启动定期检查更新（每小时一次）
   if (!updateCheckInterval) {
     updateCheckInterval = setInterval(() => {
-      console.warn('[Updater] Periodic update check...')
-      autoUpdater.checkForUpdates().catch((err) => {
-        console.error('[Updater] Periodic check failed:', err)
-      })
+      if (!isQuitting) {
+        console.warn('[Updater] Periodic update check...')
+        autoUpdater.checkForUpdates().catch((err) => {
+          console.error('[Updater] Periodic check failed:', err)
+        })
+      }
     }, UPDATE_CHECK_INTERVAL_MS)
     console.warn('[Updater] Periodic update check enabled (every hour)')
   }
@@ -1851,26 +1865,61 @@ if (!gotLock) {
   })
 }
 
+function cleanupAllResources() {
+  if (pomodoroTimer) {
+    clearInterval(pomodoroTimer)
+    pomodoroTimer = null
+  }
+
+  if (updateCheckInterval) {
+    clearInterval(updateCheckInterval)
+    updateCheckInterval = null
+  }
+
+  if (crashReloadTimeout) {
+    clearTimeout(crashReloadTimeout)
+    crashReloadTimeout = null
+  }
+
+  removeAllAutoUpdaterListeners()
+
+  unregisterGlobalShortcuts()
+
+  if (tray) {
+    tray.destroy()
+    tray = null
+  }
+}
+
+function closeAllChildWindows() {
+  const windows = [debugWindow, pomodoroWindow, pomodoroFabWindow, miniWindow, quickAddWindow]
+  for (const win of windows) {
+    if (win && !win.isDestroyed()) {
+      win.removeAllListeners()
+      win.close()
+    }
+  }
+  debugWindow = null
+  pomodoroWindow = null
+  pomodoroFabWindow = null
+  miniWindow = null
+  quickAddWindow = null
+}
+
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
-app.on('will-quit', () => {
-  unregisterGlobalShortcuts()
-})
-
 app.on('before-quit', () => {
   isQuitting = true
   saveWindowState()
-  if (miniWindow && !miniWindow.isDestroyed()) {
-    miniWindow.close()
-  }
-  if (tray) {
-    tray.destroy()
-    tray = null
-  }
+  closeAllChildWindows()
+})
+
+app.on('will-quit', () => {
+  cleanupAllResources()
 })
 
 app.on('child-process-gone', (event, details) => {

@@ -28,7 +28,6 @@
   "dependencies": {
     "@lucide/vue": "^1.23.0",
     "electron-updater": "^6.8.9",
-    "idb": "^8.0.3",
     "pinia": "^3.0.4",
     "vue": "^3.5.39",
     "vue-i18n": "^11.4.6",
@@ -61,8 +60,9 @@
     "productName": "Choyeon To Do",
     "copyright": "Copyright © 2026 Choyeon",
     "asar": true,
+    "generateUpdatesFilesForAllChannels": true,
     "directories": {
-      "output": "C:/todolist-app/2.0.0",
+      "output": "C:/choyeon-todo/${version}",
       "buildResources": "build"
     },
     "files": [

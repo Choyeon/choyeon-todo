@@ -1,11 +1,11 @@
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, shallowRef } from 'vue'
 
 export function useVirtualScroll(options = {}) {
-  const { itemHeight = 60, buffer = 5, getScrollContainer } = options
+  const { itemHeight = 60, buffer = 5, getScrollContainer, threshold = 100 } = options
 
   const scrollTop = ref(0)
   const containerHeight = ref(0)
-  const items = ref([])
+  const items = shallowRef([])
 
   const totalHeight = computed(() => items.value.length * itemHeight)
 
@@ -29,10 +29,20 @@ export function useVirtualScroll(options = {}) {
   let container = null
   let onScroll = null
   let ro = null
+  let scrollTicking = false
 
   const updateContainer = () => {
     if (!container) return
     containerHeight.value = container.clientHeight
+  }
+
+  const handleScroll = () => {
+    if (scrollTicking) return
+    scrollTicking = true
+    requestAnimationFrame(() => {
+      scrollTop.value = container.scrollTop
+      scrollTicking = false
+    })
   }
 
   const init = async () => {
@@ -45,10 +55,7 @@ export function useVirtualScroll(options = {}) {
 
     updateContainer()
 
-    onScroll = () => {
-      scrollTop.value = container.scrollTop
-    }
-
+    onScroll = handleScroll
     container.addEventListener('scroll', onScroll, { passive: true })
 
     if (typeof ResizeObserver !== 'undefined') {
@@ -59,11 +66,26 @@ export function useVirtualScroll(options = {}) {
 
   const scrollToIndex = (index) => {
     if (!container) return
-    container.scrollTop = index * itemHeight
+    const targetTop = index * itemHeight
+    container.scrollTo({
+      top: targetTop,
+      behavior: 'smooth'
+    })
+  }
+
+  const scrollToItem = (id, getId = (item) => item.id) => {
+    const idx = items.value.findIndex((item) => getId(item) === id)
+    if (idx >= 0) {
+      scrollToIndex(idx)
+    }
   }
 
   const setItems = (newItems) => {
     items.value = newItems
+  }
+
+  const isItemVisible = (index) => {
+    return index >= startIndex.value - threshold && index <= endIndex.value + threshold
   }
 
   onMounted(() => {
@@ -77,6 +99,9 @@ export function useVirtualScroll(options = {}) {
     if (ro) {
       ro.disconnect()
     }
+    container = null
+    onScroll = null
+    ro = null
   })
 
   return {
@@ -86,6 +111,10 @@ export function useVirtualScroll(options = {}) {
     startIndex,
     endIndex,
     scrollToIndex,
-    setItems
+    scrollToItem,
+    setItems,
+    isItemVisible,
+    containerHeight,
+    scrollTop
   }
 }
