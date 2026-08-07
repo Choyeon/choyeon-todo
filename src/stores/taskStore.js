@@ -105,6 +105,7 @@ const getCurrentHM = () => {
 
 const isTaskOverdueFast = (task, todayStr, currentHM) => {
   if (task.completed) return false
+  if (!task.date) return false
   if (task.date < todayStr) return true
   if (task.date === todayStr && task.time && task.time < currentHM) return true
   return false
@@ -313,23 +314,26 @@ export const useTaskStore = defineStore('task', () => {
   const initSampleData = () => {
     if (tasks.value.length > 0) return
     const today = new Date()
-    const addDaysFn = (d, n) => {
-      const nd = new Date(d)
-      nd.setDate(nd.getDate() + n)
-      return formatDateStr(nd)
+
+    const getNextWeekday = (weekday) => {
+      const d = new Date(today)
+      const currentDay = d.getDay()
+      let diff = weekday - currentDay
+      if (diff <= 0) diff += 7
+      d.setDate(d.getDate() + diff)
+      return formatDateStr(d)
     }
 
     const now = Date.now()
     const todayStr = formatDateStr(today)
-    const tomorrowStr = addDaysFn(today, 1)
-    const dayAfterStr = addDaysFn(today, 2)
+    const nextMonWedFri = getNextWeekday(1)
 
     tasks.value = [
       {
         id: generateId('task_'),
         title: '欢迎使用 Choyeon To Do',
         category: 'personal',
-        date: todayStr,
+        date: null,
         time: null,
         completed: false,
         important: true,
@@ -401,7 +405,7 @@ export const useTaskStore = defineStore('task', () => {
         id: generateId('task_'),
         title: '运动健身',
         category: 'health',
-        date: tomorrowStr,
+        date: nextMonWedFri,
         time: '19:00',
         completed: false,
         important: false,
@@ -420,7 +424,7 @@ export const useTaskStore = defineStore('task', () => {
         id: generateId('task_'),
         title: '周工作总结',
         category: 'work',
-        date: dayAfterStr,
+        date: getNextWeekday(5),
         time: '17:00',
         completed: false,
         important: false,
@@ -452,7 +456,7 @@ export const useTaskStore = defineStore('task', () => {
             .filter((t) => t && t.id && t.title && typeof t.title === 'string')
             .map((t) => ({
               ...t,
-              date: t.date && isValidDateStr(t.date) ? t.date : getTodayStr(),
+              date: t.date && isValidDateStr(t.date) ? t.date : null,
               completed: !!t.completed,
               important: !!t.important,
               reminder: !!t.reminder,
@@ -1210,8 +1214,8 @@ export const useTaskStore = defineStore('task', () => {
         if (t.date === tomorrow) tomorrowCount++
         if (t.date >= nextWeek.start && t.date <= nextWeek.end) weekCount++
         if (t.important) importantCount++
-        if (t.date >= today) plannedCount++
-        if (t.date < today) overdueCount++
+        if (t.date && t.date >= today) plannedCount++
+        if (t.date && t.date < today) overdueCount++
         catCounts[t.category] = (catCounts[t.category] || 0) + 1
         for (const tagId of t.tags) {
           tagCounts[tagId] = (tagCounts[tagId] || 0) + 1

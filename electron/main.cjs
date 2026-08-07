@@ -1291,33 +1291,80 @@ ipcMain.handle('bing:getWallpaper', async (event) => {
   if (!isFromMain(event)) return null
   try {
     const https = require('https')
-    const url = 'https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1'
+    const http = require('http')
 
-    return new Promise((resolve, reject) => {
-      https
-        .get(url, (res) => {
-          let data = ''
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-          res.on('end', () => {
-            try {
-              const json = JSON.parse(data)
-              if (json.images && json.images.length > 0) {
-                const imageUrl = `https://cn.bing.com${json.images[0].url}`
-                resolve({ url: imageUrl, copyright: json.images[0].copyright })
-              } else {
-                resolve(null)
-              }
-            } catch (e) {
-              reject(e)
+    const endpoints = [
+      'https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN',
+      'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US'
+    ]
+
+    const fetchUrl = (urlStr) => {
+      return new Promise((resolve, reject) => {
+        const urlObj = new URL(urlStr)
+        const lib = urlObj.protocol === 'https:' ? https : http
+        const req = lib.get(
+          urlStr,
+          {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              Accept: 'application/json, text/plain, */*',
+              'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+            },
+            timeout: 10000
+          },
+          (res) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              fetchUrl(new URL(res.headers.location, urlStr).href).then(resolve).catch(reject)
+              return
             }
-          })
+            if (res.statusCode !== 200) {
+              reject(new Error(`HTTP ${res.statusCode}`))
+              return
+            }
+            let data = ''
+            res.on('data', (chunk) => {
+              data += chunk
+            })
+            res.on('end', () => {
+              try {
+                const json = JSON.parse(data)
+                if (json.images && json.images.length > 0) {
+                  const img = json.images[0]
+                  let imageUrl = img.url
+                  if (imageUrl.startsWith('/')) {
+                    imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`
+                  }
+                  if (!imageUrl.includes('_1920x1080') && imageUrl.includes('UHD')) {
+                    imageUrl = imageUrl.replace('UHD', '1920x1080')
+                  }
+                  resolve({ url: imageUrl, copyright: img.copyright || '', title: img.title || '' })
+                } else {
+                  resolve(null)
+                }
+              } catch (e) {
+                reject(e)
+              }
+            })
+          }
+        )
+        req.on('error', reject)
+        req.on('timeout', () => {
+          req.destroy()
+          reject(new Error('timeout'))
         })
-        .on('error', (e) => {
-          reject(e)
-        })
-    })
+      })
+    }
+
+    for (const endpoint of endpoints) {
+      try {
+        const result = await fetchUrl(endpoint)
+        if (result?.url) return result
+      } catch (e) {
+        console.warn(`[Main] Bing endpoint ${endpoint} failed:`, e.message)
+      }
+    }
+    return null
   } catch (e) {
     console.error('[Main] Failed to get Bing wallpaper:', e)
     return null

@@ -447,11 +447,11 @@ html.platform-win32 #app {
 
 /* Bing 每日壁纸模式 */
 html.bing-wallpaper body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f5f5f4;
 }
 
 html.bing-wallpaper[data-theme='dark'] body {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: #1c1c1e;
 }
 
 html.bing-wallpaper #app {

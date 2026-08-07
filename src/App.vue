@@ -195,56 +195,76 @@ const fetchBingWallpaper = async () => {
     const today = new Date().toDateString()
     const cached = localStorage.getItem(BING_WALLPAPER_STORAGE_KEY)
     if (cached) {
-      const parsed = JSON.parse(cached)
-      if (parsed.date === today && parsed.url) {
-        const cachedUrl = parsed.url
-        bingWallpaperLoaded.value = false
-        const img = new Image()
-        img.onload = () => {
-          bingWallpaperUrl.value = cachedUrl
-          bingWallpaperLoaded.value = true
+      try {
+        const parsed = JSON.parse(cached)
+        if (parsed.date === today && parsed.url) {
+          const cachedUrl = parsed.url
+          bingWallpaperLoaded.value = false
+          const img = new Image()
+          img.onload = () => {
+            bingWallpaperUrl.value = cachedUrl
+            bingWallpaperLoaded.value = true
+          }
+          img.onerror = () => {
+            localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
+            fetchBingWallpaper()
+          }
+          img.src = cachedUrl
+          return
         }
-        img.onerror = () => {
-          // 缓存图片加载失败，清除缓存并重新获取
-          localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
-        }
-        img.src = cachedUrl
-        return
+      } catch (e) {
+        localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
       }
     }
 
     let imageUrl = null
+    let imageCopyright = ''
 
     if (window.electronAPI?.getBingWallpaper) {
-      const result = await window.electronAPI.getBingWallpaper()
-      if (result?.url) {
-        imageUrl = result.url
+      try {
+        const result = await window.electronAPI.getBingWallpaper()
+        if (result?.url) {
+          imageUrl = result.url
+          imageCopyright = result.copyright || ''
+        }
+      } catch (e) {
+        console.warn('[App] Electron IPC getBingWallpaper failed:', e)
       }
     }
 
-    if (!imageUrl) {
-      const response = await fetch('https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1')
-      if (!response.ok) throw new Error('Failed to fetch Bing wallpaper')
-
-      const data = await response.json()
-      if (data.images && data.images.length > 0) {
-        imageUrl = `https://cn.bing.com${data.images[0].url}`
+    if (!imageUrl && !window.electronAPI) {
+      try {
+        const response = await fetch(
+          'https://bing.biturl.top/?resolution=1920&format=json&index=0&mkt=zh-CN'
+        )
+        if (response.ok) {
+          const data = await response.json()
+          if (data?.url) {
+            imageUrl = data.url
+          }
+        }
+      } catch (e) {
+        console.warn('[App] CORS proxy fetch failed:', e)
       }
     }
 
     if (imageUrl) {
       bingWallpaperLoaded.value = false
       const img = new Image()
+      img.crossOrigin = 'anonymous'
       img.onload = () => {
         bingWallpaperUrl.value = imageUrl
         bingWallpaperLoaded.value = true
-        localStorage.setItem(
-          BING_WALLPAPER_STORAGE_KEY,
-          JSON.stringify({ date: today, url: imageUrl })
-        )
+        try {
+          localStorage.setItem(
+            BING_WALLPAPER_STORAGE_KEY,
+            JSON.stringify({ date: today, url: imageUrl, copyright: imageCopyright })
+          )
+        } catch (e) {}
       }
       img.onerror = () => {
         console.warn('[App] Failed to load Bing wallpaper image:', imageUrl)
+        localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
       }
       img.src = imageUrl
     }
