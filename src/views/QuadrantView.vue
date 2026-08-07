@@ -244,7 +244,7 @@ const notUrgentNotImportantTasks = computed(() => {
 })
 
 const toggleTaskComplete = (task) => {
-  taskStore.toggleTask(task.id)
+  taskStore.toggleComplete(task.id)
 }
 
 const formatDate = (dateStr) => {

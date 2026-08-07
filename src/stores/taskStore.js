@@ -1864,6 +1864,8 @@ export const useTaskStore = defineStore('task', () => {
     clearInbox,
     getCategoryById,
     getTagById,
+    getTaskById,
+    getTaskIndexById,
     getTasksByDate,
     getCount,
     getCategoryCount,
