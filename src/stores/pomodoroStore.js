@@ -286,8 +286,22 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     }
   }
 
+  // ===== 会话完成去重：避免 handleTimerEnded (主进程广播) 与本地 completeSessionInternal 重复记账 =====
+  // Electron 模式下，主进程触发 timerEnded 后由 applyState 驱动状态切换，
+  // 此时 completeSessionInternal 不得再重复增加 completedPomodoros / 重复记账。
+  let sessionCompletedGuardKey = null
+  const buildSessionKey = (state) =>
+    `${state?.currentMode ?? currentMode.value}:${state?.syncTimestamp ?? 0}:${state?.timeLeft ?? timeLeft.value}`
+
   const handleTimerEnded = (data) => {
     if (isSlaveWindow) return
+    // 标记：本次会话完成已由主进程 timerEnded 事件统一处理，
+    // 后续 applyState 触发的 completeSessionInternal 跳过增量部分，仅做状态清理。
+    sessionCompletedGuardKey = buildSessionKey({
+      currentMode: data?.currentMode,
+      syncTimestamp: Date.now(),
+      timeLeft: 0
+    })
 
     const wasWorkMode = data?.currentMode === 'work'
 
@@ -295,7 +309,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
 
     if (wasWorkMode) {
       if (taskStore.focusedTaskId && hasStarted.value) {
-        const elapsed = totalTime.value - timeLeft.value
+        const elapsed = Math.max(0, totalTime.value - timeLeft.value)
         taskStore.addPomodoroSession(taskStore.focusedTaskId, elapsed)
       }
       completedPomodoros.value++
@@ -312,6 +326,13 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     } else {
       showNotification('休息结束！', '开始新的专注吧')
       sendAction('switchWork')
+    }
+
+    // 通知其他订阅者（例如悬浮/Fab 窗口）播放提示音
+    try {
+      handleSessionComplete({ wasWorkMode })
+    } catch (e) {
+      console.warn('[Pomodoro] handleSessionComplete error:', e)
     }
 
     saveToStorage()
@@ -378,13 +399,23 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
 
   const completeSessionInternal = () => {
     const wasRunning = hasStarted.value
+    const completedMode = currentMode.value
+    // Electron 模式下，若主进程 timerEnded 已先处理（通过 handleTimerEnded），
+    // 本函数只负责清理运行时状态，不再重复计数/通知/切换模式，防止双重互斥。
+    const handledByMain = isElectron && sessionCompletedGuardKey !== null
     pauseTimerInternal()
     hasStarted.value = false
+    // 清除一次性去重标志
+    if (handledByMain) {
+      sessionCompletedGuardKey = null
+      timeLeft.value = 0
+      return
+    }
     playBeep()
 
-    if (currentMode.value === 'work') {
+    if (completedMode === 'work') {
       if (taskStore.focusedTaskId && wasRunning) {
-        const elapsed = totalTime.value - timeLeft.value
+        const elapsed = Math.max(0, totalTime.value - timeLeft.value)
         taskStore.addPomodoroSession(taskStore.focusedTaskId, elapsed)
       }
       completedPomodoros.value++

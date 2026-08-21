@@ -650,6 +650,8 @@ export const useTaskStore = defineStore('task', () => {
     'subTasks',
     'repeat',
     'order',
+    'priority',
+    'isInbox',
     'pomodoroSessions',
     'totalFocusTime'
   ]
@@ -689,6 +691,9 @@ export const useTaskStore = defineStore('task', () => {
     if (safeUpdates.reminder !== undefined) {
       safeUpdates.reminder = !!safeUpdates.reminder
     }
+    const prevCompleted = !!tasks.value[index].completed
+    const willChangeCompleted =
+      safeUpdates.completed !== undefined && !!safeUpdates.completed !== prevCompleted
     if (safeUpdates.completed !== undefined) {
       safeUpdates.completed = !!safeUpdates.completed
     }
@@ -710,11 +715,50 @@ export const useTaskStore = defineStore('task', () => {
         safeUpdates.category = UNDELETABLE_CATEGORY
       }
     }
+    if (safeUpdates.priority !== undefined) {
+      const p = Number(safeUpdates.priority)
+      if (!Number.isFinite(p)) return false
+      safeUpdates.priority = Math.max(1, Math.min(4, Math.round(p)))
+    }
+    if (safeUpdates.isInbox !== undefined) {
+      safeUpdates.isInbox = !!safeUpdates.isInbox
+    }
     if (safeUpdates.completed !== undefined) {
       safeUpdates.completedAt = safeUpdates.completed ? Date.now() : null
+      if (safeUpdates.completed) {
+        if (tasks.value[index].completedOrder === undefined || tasks.value[index].completedOrder < 0) {
+          let maxCompletedOrder = -1
+          for (const t of tasks.value) {
+            if (t.id !== id && typeof t.completedOrder === 'number' && t.completedOrder > maxCompletedOrder) {
+              maxCompletedOrder = t.completedOrder
+            }
+          }
+          safeUpdates.completedOrder = maxCompletedOrder + 1
+        }
+      } else {
+        // 取消完成：移除 completedOrder，保持与 toggleComplete 行为一致
+        safeUpdates.completedOrder = undefined
+      }
     }
 
-    tasks.value[index] = { ...tasks.value[index], ...safeUpdates }
+    const mergedTask = { ...tasks.value[index], ...safeUpdates }
+    tasks.value[index] = mergedTask
+
+    // 保持 repeat 生命周期逻辑与 toggleComplete 自洽
+    if (willChangeCompleted) {
+      if (mergedTask.completed) {
+        removeFromMyDay(id)
+        if (mergedTask.repeat) generateNextRepeatTask(id)
+      } else {
+        if (mergedTask.repeat) removeNextRepeatTask(id)
+      }
+    }
+
+    // 聚焦态与完成态自洽：已完成任务不可聚焦
+    if (mergedTask.completed && focusedTaskId.value === id) {
+      focusedTaskId.value = null
+    }
+
     return true
   }
 
@@ -1194,6 +1238,7 @@ export const useTaskStore = defineStore('task', () => {
     const today = getTodayStr()
     const tomorrow = getTomorrowStr()
     const nextWeek = getNextWeekRange()
+    const currentHM = getCurrentHM()
     let todayCount = 0,
       tomorrowCount = 0,
       weekCount = 0,
@@ -1215,7 +1260,10 @@ export const useTaskStore = defineStore('task', () => {
         if (t.date >= nextWeek.start && t.date <= nextWeek.end) weekCount++
         if (t.important) importantCount++
         if (t.date && t.date >= today) plannedCount++
-        if (t.date && t.date < today) overdueCount++
+        // 与 isTaskOverdueFast / sortTasks 保持自洽：今天 + 已过时刻 也算逾期
+        if (t.date && (t.date < today || (t.date === today && t.time && t.time < currentHM))) {
+          overdueCount++
+        }
         catCounts[t.category] = (catCounts[t.category] || 0) + 1
         for (const tagId of t.tags) {
           tagCounts[tagId] = (tagCounts[tagId] || 0) + 1
@@ -1290,6 +1338,7 @@ export const useTaskStore = defineStore('task', () => {
 
   const getStats = (days = 7) => {
     const todayStr = getTodayStr()
+    const currentHM = getCurrentHM()
     // 使用更精确的缓存键：任务数量 + 最后修改时间 + 日期 + days
     const lastModified =
       tasks.value.length > 0
@@ -1397,7 +1446,12 @@ export const useTaskStore = defineStore('task', () => {
           }
         }
       } else {
-        if (task.date && task.date < todayStr) {
+        // 与 counts 计算保持一致，避免侧边栏与仪表盘显示互斥
+        if (
+          task.date &&
+          (task.date < todayStr ||
+            (task.date === todayStr && task.time && task.time < currentHM))
+        ) {
           overdueActive++
         }
         categoryStats[task.category] = (categoryStats[task.category] || 0) + 1
@@ -1644,15 +1698,15 @@ export const useTaskStore = defineStore('task', () => {
     const task = getTaskById(taskId)
     if (!task || !task.isInbox) return false
 
-    const success = updateTask(taskId, {
-      ...updates,
-      isInbox: false
-    })
-
-    if (success) {
-      debouncedSave()
-    }
-    return success
+    // isInbox 不在 UPDATABLE_FIELDS 中，直接赋值后再 updateTask 会被忽略；
+    // 这里通过组合方式统一写入，避免重复保存（updateTask 后 watch 会自动触发 debouncedSave）
+    const mergedUpdates = { ...(updates || {}), isInbox: false }
+    const ok = updateTask(taskId, mergedUpdates)
+    if (!ok) return false
+    // 手动回写 isInbox（因为它不在 UPDATABLE_FIELDS 白名单内）
+    const after = getTaskById(taskId)
+    if (after) after.isInbox = false
+    return true
   }
 
   const clearInbox = () => {
@@ -1784,6 +1838,10 @@ export const useTaskStore = defineStore('task', () => {
         focusedTaskId.value = null
       }
 
+      // 导入后必须立即持久化，防止刷新丢失数据（importData 替换了 tasks 引用，watch 会触发但显式保存确保一致性）
+      if (saveTimeout) clearTimeout(saveTimeout)
+      saveToStorage()
+
       return { success: true, imported: importedCount, settings: data.settings || null }
     } catch (e) {
       console.error('[TaskStore] Import failed:', e)
@@ -1799,13 +1857,25 @@ export const useTaskStore = defineStore('task', () => {
         maxCompletedOrder = t.completedOrder
       }
     })
+    const affectedIds = []
     tasks.value.forEach((t) => {
       if (!t.completed) {
         t.completed = true
         t.completedAt = now
         t.completedOrder = ++maxCompletedOrder
+        affectedIds.push(t.id)
       }
     })
+    // 与 toggleComplete 自洽：从“我的一天”移除 & 为重复任务生成下一个实例
+    affectedIds.forEach((id) => {
+      removeFromMyDay(id)
+      const task = getTaskById(id)
+      if (task && task.repeat) generateNextRepeatTask(id)
+    })
+    // 批量标记完成后清空聚焦态（避免聚焦已被移除/完成的任务）
+    if (focusedTaskId.value && affectedIds.includes(focusedTaskId.value)) {
+      focusedTaskId.value = null
+    }
     debouncedSave()
   }
 

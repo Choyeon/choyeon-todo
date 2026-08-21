@@ -100,6 +100,9 @@ const updatePomodoroState = () => {
 }
 
 const getPomodoroTotalTime = (mode) => {
+  // 使用来自模式表（若已经通过 setDuration 覆盖），否则回落到默认
+  const override = modeDurations && modeDurations[mode]
+  if (typeof override === 'number' && override > 0) return override
   // 使用默认值，实际值由渲染进程设置同步
   switch (mode) {
     case 'work':
@@ -113,13 +116,22 @@ const getPomodoroTotalTime = (mode) => {
   }
 }
 
+// 持久化各模式的总时长覆盖（由 pomodoro:setDuration 设置），
+// 保证 reset / switchMode 时不会回到硬编码默认值，避免 UI 与主进程总时间互斥
+const modeDurations = {
+  work: null,
+  shortBreak: null,
+  longBreak: null
+}
+
 const broadcastPomodoroState = (senderWebContents = null) => {
   updatePomodoroState()
 
-  const targets = [mainWindow, pomodoroWindow, pomodoroFabWindow]
+  const targets = [mainWindow, pomodoroWindow, pomodoroFabWindow, miniWindow]
   targets.forEach((win) => {
     if (!win || win.isDestroyed()) return
     if (senderWebContents && win.webContents.id === senderWebContents.id) return
+    if (!win.webContents || win.webContents.isDestroyed()) return
     win.webContents.send('pomodoro:stateUpdated', pomodoroState)
   })
 }
@@ -139,9 +151,18 @@ const pomodoroTick = () => {
 }
 
 const startPomodoroTimer = () => {
+  if (pomodoroState.isRunning) {
+    // 重复启动：无操作，防止重复 setInterval 造成 tick 叠加
+    return
+  }
   if (pomodoroTimer) {
     clearInterval(pomodoroTimer)
     pomodoroTimer = null
+  }
+
+  // 若暂停剩余时间为 0（例如刚刚完整结束一个会话），用当前模式总时间补齐，避免计时器永远无法再次启动
+  if (pomodoroPauseTimeLeft <= 0) {
+    pomodoroPauseTimeLeft = getPomodoroTotalTime(pomodoroState.currentMode)
   }
 
   if (pomodoroPauseTimeLeft <= 0) return
@@ -209,18 +230,34 @@ const completePomodoroSession = () => {
     pomodoroTimer = null
   }
 
+  const endedMode = pomodoroState.currentMode
+  const wasWorkMode = endedMode === 'work'
+
   pomodoroState.isRunning = false
   pomodoroState.hasStarted = false
   pomodoroEndTime = null
   pomodoroState.timeLeft = 0
+  // 关键：停止后也必须把暂停剩余时间归零，否则下一次 updatePomodoroState 会把 calculateTimeLeft 恢复成旧值，
+  // 造成主从窗口状态互斥（主端显示 00:00，从端又跳回剩余秒数）
+  pomodoroPauseTimeLeft = 0
 
   // 通知所有窗口计时结束，由渲染进程处理后续逻辑
-  const targets = [mainWindow, pomodoroWindow, pomodoroFabWindow]
+  const targets = [mainWindow, pomodoroWindow, pomodoroFabWindow, miniWindow]
   targets.forEach((win) => {
     if (!win || win.isDestroyed()) return
-    win.webContents.send('pomodoro:timerEnded', { currentMode: pomodoroState.currentMode })
+    win.webContents.send('pomodoro:timerEnded', {
+      currentMode: endedMode,
+      wasWorkMode
+    })
+    // 同步会话完成事件，保证 preload 暴露的 onPomodoroSessionComplete 有对应来源
+    win.webContents.send('pomodoro:sessionComplete', {
+      currentMode: endedMode,
+      wasWorkMode,
+      completedPomodoros: pomodoroState.completedPomodoros
+    })
   })
 
+  updatePomodoroState()
   broadcastPomodoroState()
   refreshTrayMenu()
 }
@@ -1570,12 +1607,20 @@ ipcMain.on('pomodoro:action', (event, action) => {
 })
 
 ipcMain.on('pomodoro:setDuration', (event, { mode, minutes }) => {
-  if (!isFromMain(event) && !isFromPomodoroFullscreen(event) && !isFromPomodoroFab(event)) return
-  // 更新模式对应的时长（仅在未运行时生效）
+  if (!isFromMain(event) && !isFromPomodoroFullscreen(event) && !isFromPomodoroFab(event) && !isFromMini(event)) return
+  if (!mode || typeof minutes !== 'number') return
+  if (!['work', 'shortBreak', 'longBreak'].includes(mode)) return
+  const clamped = Math.max(1, Math.min(180, minutes))
+  modeDurations[mode] = clamped * 60
+  // 更新模式对应的时长（仅在未运行时立即同步暂停剩余秒数，避免状态抖动）
   if (!pomodoroState.isRunning && pomodoroState.currentMode === mode) {
-    pomodoroPauseTimeLeft = Math.max(1, Math.min(180, minutes)) * 60
+    pomodoroPauseTimeLeft = clamped * 60
     updatePomodoroState()
     broadcastPomodoroState()
+  } else {
+    // 运行中也刷新 totalTime（只影响 totalTime 展示，不影响正在运行的倒计时）
+    updatePomodoroState()
+    broadcastPomodoroState(event.sender)
   }
 })
 

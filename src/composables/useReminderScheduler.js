@@ -121,19 +121,23 @@ export const useReminderScheduler = () => {
       const taskMinutes = taskHour * 60 + taskMin
       const nowMinutes = now.getHours() * 60 + now.getMinutes()
 
-      if (task.date !== today) {
+      let minutesUntilTrigger = 0
+      if (task.date === today) {
+        // 今天任务：在 (task.time - reminderLeadMinutes) 之前触发
+        minutesUntilTrigger = taskMinutes - reminderLeadMinutes - nowMinutes
+      } else {
+        // 明天任务：距离明天同一时刻的剩余分钟
         const minutesUntilMidnight = 1440 - nowMinutes
-        if (reminderLeadMinutes < minutesUntilMidnight) continue
-        const totalMinutesUntilTask = minutesUntilMidnight + taskMinutes
-        if (totalMinutesUntilTask > reminderLeadMinutes) continue
+        minutesUntilTrigger = minutesUntilMidnight + taskMinutes - reminderLeadMinutes
       }
 
-      if (nowMinutes >= taskMinutes - reminderLeadMinutes || task.date !== today) {
+      // 已经到达或过了触发窗口
+      if (minutesUntilTrigger <= 0) {
         triggeredReminders.add(task.id)
+        // 已到期判定：今天且当前时刻已超过任务时间，或明天的任务跨越了触发窗口（一般不会在此时到达）
         const isDue = task.date === today && nowMinutes >= taskMinutes
         const title = isDue ? '任务到期提醒' : '任务即将到期'
-        const minutesLeft =
-          task.date === today ? taskMinutes - nowMinutes : 1440 - nowMinutes + taskMinutes
+        const minutesLeft = Math.max(0, taskMinutes - nowMinutes + (task.date !== today ? 1440 - nowMinutes : 0))
         const body = isDue
           ? `"${task.title}" 已到期`
           : `"${task.title}" 将在 ${minutesLeft} 分钟后到期`
