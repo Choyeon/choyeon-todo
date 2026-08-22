@@ -1,5 +1,9 @@
 <template>
-  <div class="app-container" :class="{ standalone: isStandaloneRoute, 'web-mode': isWebMode }">
+  <div
+    class="app-container"
+    :class="{ standalone: isStandaloneRoute, 'web-mode': isWebMode }"
+    :lang="currentLocale"
+  >
     <template v-if="!isStandaloneRoute">
       <TitleBar v-if="!isWebMode" />
       <div class="main-body">
@@ -36,9 +40,15 @@
 
     <Teleport to="body">
       <div v-if="showShortcutsHelp" class="shortcuts-overlay" @click="showShortcutsHelp = false">
-        <div class="shortcuts-modal scale-in-center" @click.stop>
+        <div
+          class="shortcuts-modal scale-in-center"
+          @click.stop
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="shortcuts-title"
+        >
           <div class="shortcuts-header">
-            <h3>键盘快捷键</h3>
+            <h3 id="shortcuts-title">键盘快捷键</h3>
             <button class="shortcuts-close" @click="showShortcutsHelp = false" aria-label="关闭">
               <X :size="18" />
             </button>
@@ -122,10 +132,7 @@
 
     <!-- Task 6 C: 番茄钟 FAB（Web 模式和 Electron 主窗口非 slave 时挂载；独立 FAB 窗口不挂载） -->
     <Teleport to="body">
-      <PomodoroFAB
-        v-if="!isStandaloneRoute && !isSlaveWindow"
-        :preferSeparateWindow="false"
-      />
+      <PomodoroFAB v-if="!isStandaloneRoute && !isSlaveWindow" :prefer-separate-window="false" />
     </Teleport>
 
     <div
@@ -167,6 +174,9 @@ import OnboardingCarousel from './components/OnboardingCarousel.vue'
 import { useGlobalHotkeys } from './composables/useGlobalHotkeys'
 import { useCommandPalette } from './composables/useCommandPalette'
 import { useFocusDistractionDetector } from './composables/useFocusDistractionDetector'
+import { i18n } from './i18n'
+
+const currentLocale = computed(() => i18n.global.locale.value || 'zh-CN')
 
 const route = useRoute()
 const router = useRouter()

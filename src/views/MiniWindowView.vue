@@ -7,7 +7,12 @@
         <span class="mini-count">{{ taskStore.myDayCount }}</span>
       </div>
       <div class="mini-actions">
-        <button class="mini-btn" @click.stop="showMenu = !showMenu" :title="$t('common.more')">
+        <button
+          class="mini-btn"
+          @click.stop="showMenu = !showMenu"
+          :title="$t('common.more')"
+          :aria-label="$t('common.more')"
+        >
           <MoreHorizontal :size="14" />
         </button>
       </div>

@@ -10,6 +10,7 @@
               class="action-btn"
               @click="markAllCompleted"
               :disabled="allCompleted"
+              :aria-label="$t('task.markAllCompleted')"
               :class="{ disabled: allCompleted }"
             >
               <Check :size="14" />
@@ -25,6 +26,8 @@
           <PlusCircle class="add-icon" :size="20" />
           <input
             type="text"
+            name="quickAddTask"
+            :aria-label="$t('task.addTaskPlaceholder')"
             :placeholder="$t('task.addTaskPlaceholder')"
             v-model="quickAddTitle"
             @keyup.enter="quickAdd"
@@ -34,6 +37,7 @@
           <button
             class="add-task-btn"
             @click="quickAdd"
+            :aria-label="$t('task.addTaskPlaceholder')"
             :class="{ visible: inputFocused || quickAddTitle }"
           >
             <Plus :size="18" />

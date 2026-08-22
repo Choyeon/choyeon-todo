@@ -506,13 +506,13 @@ describe('TaskDrag.e2e — TaskCard HTML5 drag events', () => {
     }
   })
 
-  test('跨 list 迁移时 updatedAt 更新', () => {
+  test('跨 list 迁移时 updatedAt 更新', async () => {
     const t = store.tasks[0]
     if (t) {
       const before = t.updatedAt || 0
       const now0 = Date.now()
       store.reorderTasks([{ id: t.id, listId: 'other' }])
-      await nextTick && Promise.resolve()
+      await nextTick()
       expect((t.updatedAt || 0)).toBeGreaterThanOrEqual(before)
     }
   })

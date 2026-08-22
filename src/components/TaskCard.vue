@@ -179,11 +179,12 @@
         <button
           type="button"
           class="tc-sub-toggle"
+          :aria-label="subExpanded ? t('common.collapse') : t('common.expand')"
           @click.stop="subExpanded = !subExpanded"
           :aria-expanded="subExpanded"
           :aria-controls="`subs-${task.id}`"
         >
-          <ChevronDown :size="14" :class="{ 'tc-rot': subExpanded }" />
+          <ChevronDown :size="14" :class="{ 'tc-rot': subExpanded }" aria-hidden="true" />
         </button>
       </div>
 

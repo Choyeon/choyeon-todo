@@ -3,16 +3,34 @@
     <Transition name="modal-fade">
       <div v-if="visible" class="modal-overlay" @click.self="handleOverlayClick">
         <Transition name="modal-scale" mode="out-in">
-          <div v-if="visible" class="modal-container glass-panel" :class="{ 'dark-mode': isDark }">
+          <div
+            v-if="visible"
+            class="modal-container glass-panel"
+            :class="{ 'dark-mode': isDark }"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="modalTitle"
+            tabindex="-1"
+            @keydown.esc="closeModal"
+          >
             <!-- 头部 -->
             <div class="modal-header">
               <div class="header-left">
-                <button class="icon-btn back-btn" @click="goBack" v-if="currentView !== 'list'">
+                <button
+                  class="icon-btn back-btn"
+                  @click="goBack"
+                  v-if="currentView !== 'list'"
+                  :aria-label="$t('common.back')"
+                >
                   <ArrowLeft :size="18" />
                 </button>
-                <h2 class="modal-title">{{ modalTitle }}</h2>
+                <h2 class="modal-title" id="tpl-modal-title">{{ modalTitle }}</h2>
               </div>
-              <button class="icon-btn close-btn" @click="closeModal">
+              <button
+                class="icon-btn close-btn"
+                @click="closeModal"
+                :aria-label="$t('common.close')"
+              >
                 <X :size="18" />
               </button>
             </div>
@@ -23,18 +41,26 @@
               <div v-if="currentView === 'list'" class="template-list-view">
                 <div class="section-header">
                   <span class="section-title">{{ $t('template.myTemplates') }}</span>
-                  <button class="create-btn" @click="openCreateView">
+                  <button
+                    class="create-btn"
+                    @click="openCreateView"
+                    :aria-label="$t('template.create')"
+                  >
                     <Plus :size="16" />
                     <span>{{ $t('template.create') }}</span>
                   </button>
                 </div>
 
                 <div v-if="taskStore.templates.length === 0" class="empty-state">
-                  <div class="empty-icon">
+                  <div class="empty-icon" aria-hidden="true">
                     <FileText :size="48" />
                   </div>
                   <p class="empty-text">{{ $t('template.empty') }}</p>
-                  <button class="primary-btn" @click="openCreateView">
+                  <button
+                    class="primary-btn"
+                    @click="openCreateView"
+                    :aria-label="$t('template.createFirst')"
+                  >
                     <Plus :size="16" />
                     <span>{{ $t('template.createFirst') }}</span>
                   </button>
@@ -45,9 +71,14 @@
                     v-for="template in taskStore.templates"
                     :key="template.id"
                     class="template-card"
+                    role="button"
+                    tabindex="0"
+                    :aria-label="`${$t('template.useTemplate')}: ${template.name}`"
                     @click="selectTemplate(template)"
+                    @keydown.enter="selectTemplate(template)"
+                    @keydown.space.prevent="selectTemplate(template)"
                   >
-                    <div class="template-icon" :style="{ background: template.color }">
+                    <div class="template-icon" :style="{ background: template.color }" aria-hidden="true">
                       <component :is="getIcon(template.icon)" :size="20" />
                     </div>
                     <div class="template-info">
@@ -66,6 +97,7 @@
                         class="action-icon"
                         @click.stop="editTemplate(template)"
                         :title="$t('template.edit')"
+                        :aria-label="`${$t('template.edit')}: ${template.name}`"
                       >
                         <Edit2 :size="14" />
                       </button>
@@ -73,6 +105,7 @@
                         class="action-icon delete"
                         @click.stop="confirmDelete(template)"
                         :title="$t('template.delete')"
+                        :aria-label="`${$t('template.delete')}: ${template.name}`"
                       >
                         <Trash2 :size="14" />
                       </button>
@@ -84,12 +117,15 @@
               <!-- 创建/编辑模板视图 -->
               <div v-else-if="currentView === 'edit'" class="template-edit-view">
                 <div class="form-group">
-                  <label class="form-label">{{ $t('template.name') }}</label>
+                  <label class="form-label" for="tpl-name">{{ $t('template.name') }}</label>
                   <input
+                    id="tpl-name"
                     v-model="editForm.name"
                     type="text"
+                    name="templateName"
                     class="form-input"
                     :placeholder="$t('template.namePlaceholder')"
+                    :aria-label="$t('template.name')"
                     maxlength="50"
                   />
                 </div>
@@ -97,12 +133,16 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label class="form-label">{{ $t('template.icon') }}</label>
-                    <div class="icon-selector">
+                    <div class="icon-selector" role="radiogroup" :aria-label="$t('template.icon')">
                       <button
                         v-for="icon in availableIcons"
                         :key="icon"
+                        type="button"
                         class="icon-option"
                         :class="{ active: editForm.icon === icon }"
+                        role="radio"
+                        :aria-checked="editForm.icon === icon"
+                        :aria-label="`${$t('template.icon')} ${icon}`"
                         @click="editForm.icon = icon"
                       >
                         <component :is="getIcon(icon)" :size="18" />
@@ -112,13 +152,17 @@
 
                   <div class="form-group">
                     <label class="form-label">{{ $t('template.color') }}</label>
-                    <div class="color-selector">
+                    <div class="color-selector" role="radiogroup" :aria-label="$t('template.color')">
                       <button
                         v-for="color in availableColors"
                         :key="color"
+                        type="button"
                         class="color-option"
                         :class="{ active: editForm.color === color }"
                         :style="{ background: color }"
+                        role="radio"
+                        :aria-checked="editForm.color === color"
+                        :aria-label="`${$t('template.color')} ${color}`"
                         @click="editForm.color = color"
                       />
                     </div>
@@ -126,8 +170,14 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">{{ $t('template.category') }}</label>
-                  <select v-model="editForm.category" class="form-select">
+                  <label class="form-label" for="tpl-category">{{ $t('template.category') }}</label>
+                  <select
+                    id="tpl-category"
+                    v-model="editForm.category"
+                    name="templateCategory"
+                    class="form-select"
+                    :aria-label="$t('template.category')"
+                  >
                     <option v-for="cat in taskStore.categories" :key="cat.id" :value="cat.id">
                       {{ cat.name }}
                     </option>
@@ -136,13 +186,16 @@
 
                 <div class="form-group">
                   <label class="form-label">{{ $t('template.priority') }}</label>
-                  <div class="priority-selector">
+                  <div class="priority-selector" role="radiogroup" :aria-label="$t('template.priority')">
                     <button
                       v-for="p in [1, 2, 3, 4]"
                       :key="p"
+                      type="button"
                       class="priority-option"
-                      :class="`priority-${p}`"
-                      :class2="{ active: editForm.priority === p }"
+                      :class="[`priority-${p}`, { active: editForm.priority === p }]"
+                      role="radio"
+                      :aria-checked="editForm.priority === p"
+                      :aria-label="`${$t('template.priority')} P${p}`"
                       @click="editForm.priority = p"
                     >
                       P{{ p }}
@@ -161,15 +214,27 @@
                       <input
                         v-model="sub.title"
                         type="text"
+                        :name="`subtask-${index}`"
                         class="subtask-input"
+                        :aria-label="`${$t('template.subtasks')} ${index + 1}`"
                         :placeholder="$t('template.subtaskPlaceholder')"
                         maxlength="100"
                       />
-                      <button class="remove-btn" @click="removeSubTask(index)">
+                      <button
+                        class="remove-btn"
+                        type="button"
+                        :aria-label="`${$t('common.delete')} ${$t('template.subtasks')} ${index + 1}`"
+                        @click="removeSubTask(index)"
+                      >
                         <X :size="14" />
                       </button>
                     </div>
-                    <button class="add-subtask-btn" @click="addSubTask">
+                    <button
+                      class="add-subtask-btn"
+                      type="button"
+                      :aria-label="$t('template.addSubtask')"
+                      @click="addSubTask"
+                    >
                       <Plus :size="14" />
                       <span>{{ $t('template.addSubtask') }}</span>
                     </button>
@@ -177,10 +242,13 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">{{ $t('template.notes') }}</label>
+                  <label class="form-label" for="tpl-notes">{{ $t('template.notes') }}</label>
                   <textarea
+                    id="tpl-notes"
                     v-model="editForm.notes"
+                    name="templateNotes"
                     class="form-textarea"
+                    :aria-label="$t('template.notes')"
                     :placeholder="$t('template.notesPlaceholder')"
                     rows="3"
                     maxlength="2000"
@@ -189,21 +257,44 @@
 
                 <div class="form-group">
                   <label class="checkbox-label">
-                    <input type="checkbox" v-model="editForm.important" />
+                    <input
+                      type="checkbox"
+                      name="templateImportant"
+                      :aria-label="$t('template.important')"
+                      v-model="editForm.important"
+                    />
                     <span>{{ $t('template.important') }}</span>
                   </label>
                 </div>
 
                 <div class="form-group">
                   <label class="checkbox-label">
-                    <input type="checkbox" v-model="editForm.reminder" />
+                    <input
+                      type="checkbox"
+                      name="templateReminder"
+                      :aria-label="$t('template.reminder')"
+                      v-model="editForm.reminder"
+                    />
                     <span>{{ $t('template.reminder') }}</span>
                   </label>
                 </div>
 
                 <div class="form-actions">
-                  <button class="secondary-btn" @click="goBack">{{ $t('common.cancel') }}</button>
-                  <button class="primary-btn" @click="saveTemplate" :disabled="!canSave">
+                  <button
+                    class="secondary-btn"
+                    type="button"
+                    :aria-label="$t('common.cancel')"
+                    @click="goBack"
+                  >
+                    {{ $t('common.cancel') }}
+                  </button>
+                  <button
+                    class="primary-btn"
+                    type="button"
+                    @click="saveTemplate"
+                    :disabled="!canSave"
+                    :aria-label="isEditing ? $t('common.save') : $t('template.create')"
+                  >
                     {{ isEditing ? $t('common.save') : $t('template.create') }}
                   </button>
                 </div>
@@ -212,7 +303,11 @@
               <!-- 使用模板视图 -->
               <div v-else-if="currentView === 'use'" class="template-use-view">
                 <div class="template-preview">
-                  <div class="template-icon large" :style="{ background: selectedTemplate.color }">
+                  <div
+                    class="template-icon large"
+                    :style="{ background: selectedTemplate.color }"
+                    aria-hidden="true"
+                  >
                     <component :is="getIcon(selectedTemplate.icon)" :size="32" />
                   </div>
                   <h3 class="template-name">{{ selectedTemplate.name }}</h3>
@@ -248,11 +343,14 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">{{ $t('template.taskTitle') }}</label>
+                  <label class="form-label" for="tpl-use-title">{{ $t('template.taskTitle') }}</label>
                   <input
+                    id="tpl-use-title"
                     v-model="useForm.title"
                     type="text"
+                    name="taskTitle"
                     class="form-input"
+                    :aria-label="$t('template.taskTitle')"
                     :placeholder="$t('template.taskTitlePlaceholder')"
                     maxlength="500"
                   />
@@ -260,21 +358,44 @@
 
                 <div class="form-row">
                   <div class="form-group">
-                    <label class="form-label">{{ $t('template.date') }}</label>
-                    <input v-model="useForm.date" type="date" class="form-input" />
+                    <label class="form-label" for="tpl-use-date">{{ $t('template.date') }}</label>
+                    <input
+                      id="tpl-use-date"
+                      v-model="useForm.date"
+                      type="date"
+                      name="taskDate"
+                      class="form-input"
+                      :aria-label="$t('template.date')"
+                    />
                   </div>
                   <div class="form-group">
-                    <label class="form-label">{{ $t('template.time') }}</label>
-                    <input v-model="useForm.time" type="time" class="form-input" />
+                    <label class="form-label" for="tpl-use-time">{{ $t('template.time') }}</label>
+                    <input
+                      id="tpl-use-time"
+                      v-model="useForm.time"
+                      type="time"
+                      name="taskTime"
+                      class="form-input"
+                      :aria-label="$t('template.time')"
+                    />
                   </div>
                 </div>
 
                 <div class="form-actions">
-                  <button class="secondary-btn" @click="goBack">{{ $t('common.cancel') }}</button>
+                  <button
+                    class="secondary-btn"
+                    type="button"
+                    :aria-label="$t('common.cancel')"
+                    @click="goBack"
+                  >
+                    {{ $t('common.cancel') }}
+                  </button>
                   <button
                     class="primary-btn"
+                    type="button"
                     @click="applySelectedTemplate"
                     :disabled="!useForm.title"
+                    :aria-label="$t('template.useTemplate')"
                   >
                     <Check :size="16" />
                     <span>{{ $t('template.useTemplate') }}</span>
@@ -289,15 +410,41 @@
 
     <!-- 删除确认对话框 -->
     <Transition name="modal-fade">
-      <div v-if="showDeleteConfirm" class="modal-overlay delete-confirm" @click.self="cancelDelete">
-        <div class="confirm-dialog glass-panel" :class="{ 'dark-mode': isDark }">
+      <div
+        v-if="showDeleteConfirm"
+        class="modal-overlay delete-confirm"
+        @click.self="cancelDelete"
+      >
+        <div
+          class="confirm-dialog glass-panel"
+          :class="{ 'dark-mode': isDark }"
+          role="alertdialog"
+          aria-modal="true"
+          :aria-label="$t('template.deleteConfirm')"
+          tabindex="-1"
+          @keydown.esc="cancelDelete"
+        >
           <h3 class="confirm-title">{{ $t('template.deleteConfirm') }}</h3>
           <p class="confirm-text">
             {{ $t('template.deleteConfirmText', { name: templateToDelete?.name }) }}
           </p>
           <div class="confirm-actions">
-            <button class="secondary-btn" @click="cancelDelete">{{ $t('common.cancel') }}</button>
-            <button class="danger-btn" @click="executeDelete">{{ $t('common.delete') }}</button>
+            <button
+              class="secondary-btn"
+              type="button"
+              :aria-label="$t('common.cancel')"
+              @click="cancelDelete"
+            >
+              {{ $t('common.cancel') }}
+            </button>
+            <button
+              class="danger-btn"
+              type="button"
+              :aria-label="$t('common.delete')"
+              @click="executeDelete"
+            >
+              {{ $t('common.delete') }}
+            </button>
           </div>
         </div>
       </div>

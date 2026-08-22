@@ -31,6 +31,7 @@
           class="fab-btn reset-btn"
           @click.stop="pomodoroStore.resetTimer()"
           :title="$t('pomodoro.reset')"
+          :aria-label="$t('pomodoro.reset')"
         >
           <RotateCcw :size="12" />
         </button>

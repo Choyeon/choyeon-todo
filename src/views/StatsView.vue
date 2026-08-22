@@ -207,6 +207,7 @@
               :key="day"
               class="range-tab"
               :class="{ active: rangeDays === day }"
+              :aria-label="$t('stats.daysFormat', { days: day })"
               @click="rangeDays = day"
             >
               {{ $t('stats.daysFormat', { days: day }) }}
@@ -325,6 +326,7 @@
               <button
                 class="chart-tab"
                 :class="{ active: categoryStatType === 'active' }"
+                :aria-label="$t('stats.pendingTasks')"
                 @click="categoryStatType = 'active'"
               >
                 {{ $t('stats.pendingTasks') }}
@@ -332,6 +334,7 @@
               <button
                 class="chart-tab"
                 :class="{ active: categoryStatType === 'completed' }"
+                :aria-label="$t('stats.completedTasks')"
                 @click="categoryStatType = 'completed'"
               >
                 {{ $t('stats.completedTasks') }}

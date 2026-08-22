@@ -458,6 +458,19 @@ export const migrateV2ToV3 = (stateSnapshot) => {
       }
     })
 
+    // 净化：若 headings 不存在或 headingId 引用无效，置 null
+    const hasHeadings = Array.isArray(snap.headings) && snap.headings.length > 0
+    const headingIds = hasHeadings ? new Set(snap.headings.map((h) => h && h.id).filter(Boolean)) : null
+    for (const t of tasks) {
+      if (t.headingId != null) {
+        if (!headingIds || !headingIds.has(t.headingId)) t.headingId = null
+      }
+      // 净化：不存在的 parentId 引用置 null（防止数据悬空 -> 任务渲染时找不到父级出现 undefined.length）
+      if (t.parentId != null && !tasks.some((x) => x.id === t.parentId)) {
+        t.parentId = null
+      }
+    }
+
     settings.tasksVersion = 3
 
     return {

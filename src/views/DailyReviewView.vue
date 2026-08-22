@@ -5,7 +5,7 @@
         <h1>{{ $t('dailyReview.title') }}</h1>
         <p class="header-subtitle">{{ formattedDate }}</p>
       </div>
-      <button class="close-btn" @click="goBack">
+      <button class="close-btn" :aria-label="$t('common.close')" @click="goBack">
         <X :size="24" />
       </button>
     </div>
@@ -127,7 +127,11 @@
     </div>
 
     <div class="review-actions">
-      <button class="btn primary" @click="goBack">
+      <button
+        class="btn primary"
+        :aria-label="$t('dailyReview.continueWorking')"
+        @click="goBack"
+      >
         {{ $t('dailyReview.continueWorking') }}
       </button>
     </div>

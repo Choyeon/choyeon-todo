@@ -17,6 +17,7 @@
           :key="mode.value"
           class="mode-tab"
           :class="{ active: pomodoroStore.currentMode === mode.value }"
+          :aria-label="`${$t('pomodoro.mode')} ${$t('pomodoro.' + mode.value)}`"
           @click="pomodoroStore.switchMode(mode.value)"
         >
           {{ $t('pomodoro.' + mode.value) }}
@@ -145,6 +146,8 @@
         <input
           type="number"
           class="custom-input"
+          name="pomodoroCustomMinutes"
+          :aria-label="$t('pomodoro.customDuration')"
           :value="pomodoroStore.customMinutes"
           min="1"
           max="180"
@@ -157,14 +160,30 @@
           @keyup.enter="pomodoroStore.applyCustomDuration()"
         />
         <span class="custom-unit">{{ $t('pomodoro.minutes') }}</span>
-        <button class="custom-ok" @click="pomodoroStore.applyCustomDuration()">
+        <button
+          class="custom-ok"
+          type="button"
+          :aria-label="$t('common.confirm')"
+          @click="pomodoroStore.applyCustomDuration()"
+        >
           {{ $t('common.confirm') }}
         </button>
-        <button class="custom-cancel" @click="pomodoroStore.isCustomEditing = false">
+        <button
+          class="custom-cancel"
+          type="button"
+          :aria-label="$t('common.cancel')"
+          @click="pomodoroStore.isCustomEditing = false"
+        >
           {{ $t('common.cancel') }}
         </button>
       </div>
-      <button v-else class="custom-toggle" @click="pomodoroStore.isCustomEditing = true">
+      <button
+        v-else
+        class="custom-toggle"
+        type="button"
+        :aria-label="$t('pomodoro.customDuration')"
+        @click="pomodoroStore.isCustomEditing = true"
+      >
         <Edit3 :size="13" /> {{ $t('pomodoro.customDuration') }}
       </button>
 
@@ -175,17 +194,29 @@
           @click="pomodoroStore.resetTimer"
           :disabled="!pomodoroStore.hasStarted"
           :title="$t('pomodoro.reset')"
+          :aria-label="$t('pomodoro.reset')"
         >
           <RotateCcw :size="22" />
         </button>
-        <button class="ctrl-btn primary" @click="handleToggleTimer">
+        <button
+          class="ctrl-btn primary"
+          :aria-label="pomodoroStore.isRunning ? $t('pomodoro.pause') : $t('pomodoro.start')"
+          @click="handleToggleTimer"
+        >
           <Play v-if="!pomodoroStore.isRunning" :size="32" />
           <Pause v-else :size="32" />
         </button>
         <div class="ctrl-btn-placeholder"></div>
       </div>
 
-      <button class="exit-btn" @click="exitFullscreen">{{ $t('pomodoro.exitFullscreen') }}</button>
+      <button
+        class="exit-btn"
+        type="button"
+        :aria-label="$t('pomodoro.exitFullscreen')"
+        @click="exitFullscreen"
+      >
+        {{ $t('pomodoro.exitFullscreen') }}
+      </button>
     </div>
   </div>
 </template>

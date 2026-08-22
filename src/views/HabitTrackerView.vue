@@ -5,7 +5,11 @@
         <h1>{{ $t('habitTracker.title') }}</h1>
         <p class="header-subtitle">{{ $t('habitTracker.subtitle') }}</p>
       </div>
-      <button class="add-habit-btn" @click="showAddHabitModal = true">
+      <button
+        class="add-habit-btn"
+        :aria-label="$t('habitTracker.addHabit')"
+        @click="showAddHabitModal = true"
+      >
         <Plus :size="20" />
         {{ $t('habitTracker.addHabit') }}
       </button>
@@ -24,15 +28,26 @@
               {{ getCurrentStreak(habit) }} {{ $t('habitTracker.days') }}
             </p>
           </div>
-          <button class="menu-btn" @click="toggleMenu(habit.id)">
+          <button
+            class="menu-btn"
+            :aria-label="`${habit.name} ${$t('common.menu')}`"
+            @click="toggleMenu(habit.id)"
+          >
             <MoreVertical :size="18" />
           </button>
           <div v-if="openMenuId === habit.id" class="habit-menu">
-            <button @click="editHabit(habit)">
+            <button
+              :aria-label="`${$t('common.edit')} ${habit.name}`"
+              @click="editHabit(habit)"
+            >
               <Edit2 :size="14" />
               {{ $t('common.edit') }}
             </button>
-            <button @click="deleteHabit(habit)" class="danger">
+            <button
+              class="danger"
+              :aria-label="`${$t('common.delete')} ${habit.name}`"
+              @click="deleteHabit(habit)"
+            >
               <Trash2 :size="14" />
               {{ $t('common.delete') }}
             </button>
@@ -59,11 +74,16 @@
             v-for="day in getLast30Days()"
             :key="day"
             class="calendar-day"
+            role="button"
+            tabindex="0"
+            :aria-label="`${habit.name} ${day} ${isCompletedOn(habit, day) ? $t('common.completed') : $t('common.incomplete')}`"
             :class="{
               completed: isCompletedOn(habit, day),
               today: isToday(day)
             }"
             @click="toggleCompletion(habit, day)"
+            @keydown.enter="toggleCompletion(habit, day)"
+            @keydown.space.prevent="toggleCompletion(habit, day)"
           >
             <div class="day-marker"></div>
           </div>
@@ -72,6 +92,7 @@
         <button
           class="checkin-btn"
           :class="{ completed: isCompletedToday(habit) }"
+          :aria-label="`${habit.name} ${isCompletedToday(habit) ? $t('habitTracker.checkedIn') : $t('habitTracker.checkIn')}`"
           @click="toggleTodayCompletion(habit)"
         >
           <Check :size="18" v-if="isCompletedToday(habit)" />
@@ -86,7 +107,11 @@
         </div>
         <h3>{{ $t('habitTracker.noHabits') }}</h3>
         <p>{{ $t('habitTracker.noHabitsDesc') }}</p>
-        <button class="add-first-btn" @click="showAddHabitModal = true">
+        <button
+          class="add-first-btn"
+          :aria-label="$t('habitTracker.addFirstHabit')"
+          @click="showAddHabitModal = true"
+        >
           <Plus :size="18" />
           {{ $t('habitTracker.addFirstHabit') }}
         </button>
@@ -97,22 +122,37 @@
     <Teleport to="body">
       <Transition name="modal-fade">
         <div v-if="showAddHabitModal" class="modal-overlay" @click="closeModal">
-          <div class="modal-container" @click.stop>
+          <div
+            class="modal-container"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="editingHabit ? $t('habitTracker.editHabit') : $t('habitTracker.newHabit')"
+            tabindex="-1"
+            @keydown.esc="closeModal"
+            @click.stop
+          >
             <div class="modal-header">
               <h2>
                 {{ editingHabit ? $t('habitTracker.editHabit') : $t('habitTracker.newHabit') }}
               </h2>
-              <button class="close-btn" @click="closeModal">
+              <button
+                class="close-btn"
+                :aria-label="$t('common.close')"
+                @click="closeModal"
+              >
                 <X :size="20" />
               </button>
             </div>
 
             <div class="modal-body">
               <div class="form-group">
-                <label>{{ $t('habitTracker.habitName') }}</label>
+                <label for="habit-name">{{ $t('habitTracker.habitName') }}</label>
                 <input
+                  id="habit-name"
                   v-model="habitForm.name"
                   type="text"
+                  name="habitName"
+                  :aria-label="$t('habitTracker.habitName')"
                   :placeholder="$t('habitTracker.habitNamePlaceholder')"
                   class="form-input"
                 />
@@ -120,12 +160,16 @@
 
               <div class="form-group">
                 <label>{{ $t('habitTracker.icon') }}</label>
-                <div class="icon-selector">
+                <div class="icon-selector" role="radiogroup" :aria-label="$t('habitTracker.icon')">
                   <button
                     v-for="icon in availableIcons"
                     :key="icon.name"
+                    type="button"
                     class="icon-option"
                     :class="{ active: habitForm.icon === icon.name }"
+                    role="radio"
+                    :aria-checked="habitForm.icon === icon.name"
+                    :aria-label="`${$t('habitTracker.icon')} ${icon.name}`"
                     @click="habitForm.icon = icon.name"
                   >
                     <component :is="icon.component" :size="20" />
@@ -135,23 +179,30 @@
 
               <div class="form-group">
                 <label>{{ $t('habitTracker.color') }}</label>
-                <div class="color-selector">
+                <div class="color-selector" role="radiogroup" :aria-label="$t('habitTracker.color')">
                   <button
                     v-for="color in availableColors"
                     :key="color"
+                    type="button"
                     class="color-option"
                     :style="{ background: color }"
                     :class="{ active: habitForm.color === color }"
+                    role="radio"
+                    :aria-checked="habitForm.color === color"
+                    :aria-label="`${$t('habitTracker.color')} ${color}`"
                     @click="habitForm.color = color"
                   ></button>
                 </div>
               </div>
 
               <div class="form-group">
-                <label>{{ $t('habitTracker.targetDays') }}</label>
+                <label for="habit-target">{{ $t('habitTracker.targetDays') }}</label>
                 <input
+                  id="habit-target"
                   v-model.number="habitForm.targetDays"
                   type="number"
+                  name="habitTargetDays"
+                  :aria-label="$t('habitTracker.targetDays')"
                   min="1"
                   max="365"
                   class="form-input"
@@ -160,10 +211,20 @@
             </div>
 
             <div class="modal-footer">
-              <button class="btn secondary" @click="closeModal">
+              <button
+                class="btn secondary"
+                type="button"
+                :aria-label="$t('common.cancel')"
+                @click="closeModal"
+              >
                 {{ $t('common.cancel') }}
               </button>
-              <button class="btn primary" @click="saveHabit">
+              <button
+                class="btn primary"
+                type="button"
+                :aria-label="$t('common.save')"
+                @click="saveHabit"
+              >
                 {{ $t('common.save') }}
               </button>
             </div>

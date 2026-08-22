@@ -29,6 +29,7 @@
               <div class="title-input-wrap">
                 <input
                   type="text"
+                  name="taskTitle"
                   class="form-title-input"
                   :placeholder="$t('task.titlePlaceholder') + ' (支持：明天、下周一、12/25)'"
                   v-model="form.title"
@@ -121,6 +122,7 @@
                 <div class="add-tag-input-row">
                   <input
                     type="text"
+                    name="newTagName"
                     class="form-input tag-name-input"
                     :placeholder="$t('task.newTagPlaceholder')"
                     v-model="newTagName"
@@ -129,10 +131,11 @@
                   />
                   <button
                     class="add-tag-confirm-btn"
+                    :aria-label="$t('common.add')"
                     @click="handleAddTag"
                     :disabled="!newTagName.trim()"
                   >
-                    <Check :size="16" />
+                    <Check :size="16" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -147,6 +150,7 @@
                 <div class="setting-action">
                   <input
                     type="date"
+                    name="taskDate"
                     class="date-input"
                     v-model="form.date"
                     :aria-label="$t('task.selectDate')"
@@ -160,6 +164,7 @@
                 <div class="setting-action">
                   <input
                     type="time"
+                    name="taskTime"
                     class="date-input"
                     v-model="form.time"
                     :aria-label="$t('task.selectTime')"
@@ -177,6 +182,7 @@
                 <div class="setting-action">
                   <input
                     type="datetime-local"
+                    name="dueUntil"
                     class="date-input"
                     v-model="form.dueUntil"
                     :aria-label="$t('task.dueUntil')"
@@ -189,6 +195,7 @@
                 <span class="setting-label">{{ $t('task.repeat') }}</span>
                 <div class="setting-action">
                   <select
+                    name="repeatFrequency"
                     class="repeat-select"
                     :value="form.repeat ? form.repeat.frequency : ''"
                     @change="setRepeatFrequency($event.target.value || null)"
@@ -211,11 +218,13 @@
                   <div class="setting-action interval-input-wrap">
                     <input
                       type="number"
+                      name="repeatInterval"
                       min="1"
                       max="365"
                       :value="form.repeat.interval || 1"
                       @input="setRepeatInterval($event.target.value)"
                       class="interval-input"
+                      :aria-label="$t('task.repeatInterval')"
                     />
                     <span class="interval-unit">{{ repeatIntervalUnit }}</span>
                   </div>
@@ -245,6 +254,7 @@
                   <span class="sub-setting-label">{{ $t('task.endRepeat') }}</span>
                   <div class="setting-action">
                     <select
+                      name="repeatEndType"
                       class="repeat-end-select"
                       :value="repeatEndType"
                       @change="setRepeatEndType($event.target.value)"
@@ -262,9 +272,11 @@
                   <div class="setting-action">
                     <input
                       type="date"
+                      name="repeatEndDate"
                       :value="form.repeat.endDate || ''"
                       @input="setRepeatEndDate($event.target.value)"
                       class="repeat-end-date-input"
+                      :aria-label="$t('task.endDate')"
                     />
                   </div>
                 </div>
@@ -274,11 +286,13 @@
                   <div class="setting-action interval-input-wrap">
                     <input
                       type="number"
+                      name="repeatEndCount"
                       min="1"
                       max="365"
                       :value="form.repeat.endCount || 1"
                       @input="setRepeatEndCount($event.target.value)"
                       class="interval-input"
+                      :aria-label="$t('task.repeatCount')"
                     />
                     <span class="interval-unit">{{ $t('task.times') }}</span>
                   </div>
@@ -300,6 +314,7 @@
                     class="toggle-switch"
                     role="switch"
                     :aria-checked="form.reminder"
+                    :aria-label="$t('task.reminder')"
                     @click="form.reminder = !form.reminder"
                   >
                     <span class="toggle-knob"></span>
@@ -318,6 +333,7 @@
                     class="toggle-switch"
                     role="switch"
                     :aria-checked="form.important"
+                    :aria-label="$t('task.markImportant')"
                     @click="form.important = !form.important"
                   >
                     <span class="toggle-knob"></span>
@@ -342,9 +358,10 @@
                       :class="{ checked: sub.completed }"
                       role="checkbox"
                       :aria-checked="sub.completed"
+                      :aria-label="`${sub.title} — ${sub.completed ? '已完成' : '未完成'}`"
                       @click="toggleSubTask(sub.id)"
                     >
-                      <Check v-if="sub.completed" :size="12" />
+                      <Check v-if="sub.completed" :size="12" aria-hidden="true" />
                     </button>
                     <span class="subtask-title" :class="{ completed: sub.completed }">
                       {{ sub.title }}
@@ -384,6 +401,7 @@
                 <div class="add-subtask-row">
                   <input
                     type="text"
+                    name="newSubtaskTitle"
                     class="form-input subtask-input"
                     :placeholder="$t('task.addSubtaskPlaceholder')"
                     v-model="newSubTaskTitle"
@@ -404,6 +422,7 @@
               <div class="notes-wrap">
                 <div class="form-section-label">{{ $t('task.notes') }}</div>
                 <textarea
+                  name="taskNotes"
                   class="form-input"
                   rows="3"
                   :placeholder="$t('task.notesPlaceholder')"
@@ -436,10 +455,12 @@
                 v-if="showDepPicker"
                 class="dep-picker"
                 role="dialog"
+                aria-modal="true"
                 :aria-label="$t('task.depPick')"
               >
                 <input
                   type="text"
+                  name="depSearch"
                   class="form-input dep-search"
                   :placeholder="$t('task.depSearchPlaceholder')"
                   v-model="depSearchQuery"
@@ -502,10 +523,11 @@
               <input
                 ref="attachmentInputRef"
                 type="file"
+                name="taskAttachments"
                 multiple
                 hidden
                 @change="onAttachmentChange"
-                aria-hidden="true"
+                :aria-label="$t('task.attachmentAdd')"
               />
               <div
                 class="att-dropzone"
@@ -603,6 +625,7 @@
               <div class="comment-input-row">
                 <input
                   type="text"
+                  name="taskComment"
                   class="form-input comment-input"
                   :placeholder="$t('task.commentInputPlaceholder')"
                   v-model="newCommentText"
@@ -613,6 +636,7 @@
                   type="button"
                   class="save-btn small"
                   :disabled="!newCommentText.trim()"
+                  :aria-label="$t('task.commentPost')"
                   @click="addComment"
                 >
                   {{ $t('task.commentPost') }}
@@ -675,8 +699,8 @@
             </div>
 
             <div class="modal-footer">
-              <button class="save-btn" @click="handleSave">{{ $t('common.save') }}</button>
-              <button class="cancel-btn" @click="handleClose">{{ $t('common.cancel') }}</button>
+              <button class="save-btn" :aria-label="$t('common.save')" @click="handleSave">{{ $t('common.save') }}</button>
+              <button class="cancel-btn" :aria-label="$t('common.cancel')" @click="handleClose">{{ $t('common.cancel') }}</button>
             </div>
 
             <!-- 预览图片大图 -->

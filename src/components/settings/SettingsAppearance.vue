@@ -96,6 +96,7 @@
         class="toggle-switch"
         role="switch"
         :aria-checked="settingsStore.sidebarCollapsed"
+        :aria-label="$t('settings.sidebarCollapsed')"
         @click.stop="toggleSidebar"
       >
         <span class="toggle-knob"></span>
@@ -181,6 +182,8 @@
         :key="loc"
         class="language-option"
         :class="{ active: locale === loc }"
+        :aria-label="getLocaleLabel(loc)"
+        :aria-pressed="locale === loc"
         @click="changeLanguage(loc)"
       >
         <span class="lang-label">{{ getLocaleLabel(loc) }}</span>

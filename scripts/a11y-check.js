@@ -298,18 +298,45 @@ const scanFile = (filePath, source) => {
   }
 
   // ===== E5：Dialog 语义与 ESC =====
+  // 明显不是 dialog 自身的后缀（只是包裹/内部区块）
+  const NON_DIALOG_SUFFIXES =
+    /(^|[\s_-])(modal|dialog|popup|popover)[-_](backdrop|overlay|mask|header|title|body|content|footer|actions|colors|close|btn|buttons|label|divider|groups?|rows?|cols?|grid|list|form|inputs?|selects?)([\s_-]|$)/i
   const dialogCandidates = elements.filter((el) => {
     const role = getRole(el)
     if (role === 'dialog' || role === 'alertdialog') return true
-    // class 名暗示 popup/dialog
     const clazz = getAttr(el, 'class')
     const cv = clazz ? clazz.value || String(clazz.raw || '') : ''
-    if (/(^|[\s-])(modal|dialog|popup|popover)([\s-]|$)/i.test(cv)) return true
-    return false
+    if (!cv) return false
+    // 类名暗示 dialog/popup/popover（支持 hyphen/underscore/空格）
+    if (!/(^|[\s_-])(modal|dialog|popup|popover|confirm-dialog)([\s_-]|$)/i.test(cv)) return false
+    // 过滤掉明显只是 backdrop/overlay/header/title/body/actions 等子块
+    if (NON_DIALOG_SUFFIXES.test(cv)) return false
+    return true
   })
+  const parentOf = (target) => {
+    let p = target && target.parent
+    while (p && p.type !== 1) p = p.parent
+    return p || null
+  }
+  // 判断是否处于某个"确实像 dialog 的祖先"中：有 role=dialog 或类名就是 dialog-container/modal-container
+  const hasDialogAncestor = (el) => {
+    let p = parentOf(el)
+    while (p) {
+      const role = getRole(p)
+      if (role === 'dialog' || role === 'alertdialog') return true
+      const c = getAttr(p, 'class')
+      const cv = c ? c.value || String(c.raw || '') : ''
+      if (/(^|[\s_-])(modal|dialog|popup|popover|confirm-dialog)([\s_-]|$)/i.test(cv) && !NON_DIALOG_SUFFIXES.test(cv)) return true
+      p = parentOf(p)
+    }
+    return false
+  }
   for (const dlg of dialogCandidates) {
     const role = getRole(dlg)
     const hasRole = role === 'dialog' || role === 'alertdialog'
+    // 若自身没有 role，但祖先有 role=dialog（说明是 backdrop / 内层元素），仅当有 aria-modal/aria-labelledby 错误才提示
+    const inheritedOk = !hasRole && hasDialogAncestor(dlg)
+    if (inheritedOk) continue
     const hasModal = (() => {
       const a = getAttr(dlg, 'aria-modal')
       return a && (a.value === 'true' || a.raw && a.raw.includes('true'))
@@ -329,11 +356,14 @@ const scanFile = (filePath, source) => {
       })
       continue
     }
-    // ESC 检查：template 里是否有 @keydown.*escape/@keydown.*esc
+    // ESC 检查：template 里是否有 @keydown.*escape/@keydown.*esc 或 .esc/.esc.prevent 修饰符
     // 或 .vue 源码中有 keydown listener + Escape/Esc
     const hasEsc =
+      /@keydown(?:\.self)?(?:\.(?:prevent|stop|ctrl|meta|alt|shift|exact))*(?:\.esc|\.escape)(?:\.(?:prevent|stop|exact))*=/.test(source) ||
       /@keydown(?:\.self)?(?:\.(?:prevent|stop))*="[^"]*(?:Escape|Esc|escape|esc)[^"]*"/.test(source) ||
-      /window\.addEventListener\(['"]keydown['"]/.test(source) && /Escape|Esc/.test(source)
+      /window\.addEventListener\(['"]keydown['"]/.test(source) && /Escape|Esc/.test(source) ||
+      /addEventListener\(\s*['"]keydown['"]/.test(source) && /Escape|Esc/.test(source) ||
+      /e\.key\s*(?:===|!==|==|!=)\s*['"`]Escape['"`]/.test(source)
     if (!hasEsc) {
       issues.push({
         rule: 'E5',

@@ -9,7 +9,11 @@
       </div>
 
       <div v-if="completedTasks.length > 0" class="action-bar">
-        <button class="clear-btn" @click="showClearModal = true">
+        <button
+          class="clear-btn"
+          :aria-label="$t('task.clearCompleted')"
+          @click="showClearModal = true"
+        >
           <Trash2 :size="16" />
           {{ $t('task.clearCompleted') }}
         </button>
@@ -22,18 +26,34 @@
       <Transition name="fade">
         <div v-if="showClearModal" class="modal-backdrop" @click.self="showClearModal = false">
           <Transition name="slide-up">
-            <div v-if="showClearModal" class="confirm-modal" @keydown.esc="showClearModal = false">
-              <div class="confirm-icon">
+            <div
+              v-if="showClearModal"
+              class="confirm-modal"
+              role="alertdialog"
+              aria-modal="true"
+              :aria-label="$t('task.clearCompletedConfirm')"
+              tabindex="-1"
+              @keydown.esc="showClearModal = false"
+            >
+              <div class="confirm-icon" aria-hidden="true">
                 <AlertTriangle :size="32" />
               </div>
               <h3 class="confirm-title">{{ $t('task.clearCompletedConfirm') }}</h3>
               <p class="confirm-desc">{{ $t('task.clearCompletedDesc') }}</p>
               <div class="confirm-actions">
-                <button class="confirm-btn danger" @click="confirmClear">
+                <button
+                  class="confirm-btn danger"
+                  :aria-label="$t('task.clearCompletedConfirm')"
+                  @click="confirmClear"
+                >
                   <Trash2 :size="16" />
                   {{ $t('task.clearCompletedConfirm') }}
                 </button>
-                <button class="confirm-btn cancel" @click="showClearModal = false">
+                <button
+                  class="confirm-btn cancel"
+                  :aria-label="$t('common.cancel')"
+                  @click="showClearModal = false"
+                >
                   {{ $t('common.cancel') }}
                 </button>
               </div>

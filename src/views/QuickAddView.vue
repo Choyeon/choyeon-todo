@@ -6,6 +6,8 @@
           ref="taskInput"
           v-model="taskTitle"
           type="text"
+          name="quickAddTitle"
+          :aria-label="$t('quickAdd.placeholder')"
           :placeholder="$t('quickAdd.placeholder')"
           class="task-input"
           @keydown.enter="addTask"
@@ -13,10 +15,21 @@
         />
       </div>
       <div class="actions">
-        <button class="cancel-btn" @click="closeWindow">
+        <button
+          class="cancel-btn"
+          type="button"
+          :aria-label="$t('common.cancel')"
+          @click="closeWindow"
+        >
           {{ $t('common.cancel') }}
         </button>
-        <button class="add-btn" @click="addTask" :disabled="!taskTitle.trim()">
+        <button
+          class="add-btn"
+          type="button"
+          :aria-label="$t('common.add')"
+          @click="addTask"
+          :disabled="!taskTitle.trim()"
+        >
           {{ $t('common.add') }}
         </button>
       </div>

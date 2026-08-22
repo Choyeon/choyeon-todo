@@ -9,23 +9,25 @@
             role="dialog"
             aria-modal="true"
             :aria-label="$t('task.reminder')"
+            @keydown.esc="handleSnooze"
+            tabindex="-1"
           >
-            <div class="reminder-icon">
+            <div class="reminder-icon" aria-hidden="true">
               <Bell :size="32" />
             </div>
             <h3 class="reminder-title">{{ currentTask?.title || $t('task.reminder') }}</h3>
             <p class="reminder-desc">
               {{ isOverdue ? $t('task.overdue') : reminderTimeText }}
             </p>
-            <div class="reminder-time">
+            <div class="reminder-time" aria-hidden="true">
               <Clock :size="14" />
               <span>{{ formatTime }}</span>
             </div>
             <div class="reminder-actions">
-              <button class="reminder-btn snooze-btn" @click="handleSnooze">
+              <button class="reminder-btn snooze-btn" :aria-label="$t('task.snooze')" @click="handleSnooze">
                 {{ $t('task.snooze') }}
               </button>
-              <button class="reminder-btn primary-btn" @click="handleView">
+              <button class="reminder-btn primary-btn" :aria-label="$t('task.viewTask')" @click="handleView">
                 {{ $t('task.viewTask') }}
               </button>
             </div>

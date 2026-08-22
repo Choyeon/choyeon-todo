@@ -5,22 +5,23 @@
         <h1>{{ $t('review.title') }}</h1>
         <p class="header-subtitle">{{ $t('review.subtitle') }}</p>
       </div>
-      <button class="close-btn" @click="goBack">
+      <button class="close-btn" :aria-label="$t('common.close')" @click="goBack">
         <X :size="24" />
       </button>
     </div>
 
     <!-- 时间范围选择 -->
     <div class="period-selector">
-      <button class="period-btn" :class="{ active: period === 'week' }" @click="period = 'week'">
+      <button class="period-btn" :class="{ active: period === 'week' }" :aria-label="$t('review.thisWeek')" @click="period = 'week'">
         {{ $t('review.thisWeek') }}
       </button>
-      <button class="period-btn" :class="{ active: period === 'month' }" @click="period = 'month'">
+      <button class="period-btn" :class="{ active: period === 'month' }" :aria-label="$t('review.thisMonth')" @click="period = 'month'">
         {{ $t('review.thisMonth') }}
       </button>
       <button
         class="period-btn"
         :class="{ active: period === 'lastWeek' }"
+        :aria-label="$t('review.lastWeek')"
         @click="period = 'lastWeek'"
       >
         {{ $t('review.lastWeek') }}
@@ -28,6 +29,7 @@
       <button
         class="period-btn"
         :class="{ active: period === 'lastMonth' }"
+        :aria-label="$t('review.lastMonth')"
         @click="period = 'lastMonth'"
       >
         {{ $t('review.lastMonth') }}
@@ -134,7 +136,13 @@
       <div class="task-list">
         <div v-for="task in importantTasks" :key="task.id" class="task-item">
           <div class="task-checkbox">
-            <input type="checkbox" :checked="task.completed" @change="toggleTaskComplete(task)" />
+            <input
+              type="checkbox"
+              :name="`review-important-${task.id}`"
+              :aria-label="`${task.completed ? '标记未完成' : '标记完成'}: ${task.title}`"
+              :checked="task.completed"
+              @change="toggleTaskComplete(task)"
+            />
           </div>
           <div class="task-content">
             <div class="task-title" :class="{ completed: task.completed }">{{ task.title }}</div>
@@ -168,7 +176,13 @@
       <div class="task-list">
         <div v-for="task in overdueTasks" :key="task.id" class="task-item overdue">
           <div class="task-checkbox">
-            <input type="checkbox" :checked="task.completed" @change="toggleTaskComplete(task)" />
+            <input
+              type="checkbox"
+              :name="`review-overdue-${task.id}`"
+              :aria-label="`${task.completed ? '标记未完成' : '标记完成'}: ${task.title}`"
+              :checked="task.completed"
+              @change="toggleTaskComplete(task)"
+            />
           </div>
           <div class="task-content">
             <div class="task-title" :class="{ completed: task.completed }">{{ task.title }}</div>
@@ -185,7 +199,7 @@
 
     <!-- 导出报告 -->
     <div class="export-section">
-      <button class="export-btn" @click="exportReport">
+      <button class="export-btn" :aria-label="$t('review.exportReport')" @click="exportReport">
         <Download :size="20" />
         {{ $t('review.exportReport') }}
       </button>

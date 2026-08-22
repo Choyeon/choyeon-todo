@@ -10,6 +10,7 @@
       <button
         v-if="selectedCategories.length > 0"
         class="batch-delete-btn"
+        :aria-label="`${$t('categories.batchDelete')} (${selectedCategories.length})`"
         @click="handleBatchDelete"
       >
         <Trash2 :size="14" />
@@ -19,9 +20,12 @@
 
     <div class="category-list">
       <div v-for="cat in taskStore.categories" :key="cat.id" class="category-item">
-        <label class="category-checkbox" v-if="cat.id !== 'other'">
+        <label class="category-checkbox" v-if="cat.id !== 'other'" :for="`cat-chk-${cat.id}`">
           <input
+            id="cat-chk-${cat.id}"
             type="checkbox"
+            name="categorySelect"
+            :aria-label="`选择分类 ${cat.name}`"
             :checked="selectedCategories.includes(cat.id)"
             @change="toggleSelectCategory(cat.id)"
           />
@@ -51,7 +55,7 @@
       </div>
     </div>
 
-    <button class="add-category-btn" @click="openAddCategory">
+    <button class="add-category-btn" :aria-label="$t('categories.addNew')" @click="openAddCategory">
       <Plus :size="18" />
       {{ $t('categories.addNew') }}
     </button>
@@ -60,12 +64,21 @@
       <Transition name="fade">
         <div v-if="showCategoryModal" class="modal-backdrop" @click.self="closeCategoryModal">
           <Transition name="slide-up">
-            <div v-if="showCategoryModal" class="category-modal" @keydown.esc="closeCategoryModal">
+            <div
+              v-if="showCategoryModal"
+              class="category-modal"
+              role="dialog"
+              aria-modal="true"
+              :aria-label="editingCategory ? $t('categories.editCategory') : $t('categories.addNew')"
+              @keydown.esc="closeCategoryModal"
+              tabindex="-1"
+            >
               <h3 class="modal-title">
                 {{ editingCategory ? $t('categories.editCategory') : $t('categories.addNew') }}
               </h3>
               <input
                 type="text"
+                name="categoryName"
                 class="form-input"
                 :placeholder="$t('categories.name')"
                 v-model="categoryForm.name"
@@ -89,10 +102,10 @@
                 </button>
               </div>
               <div class="modal-actions">
-                <button class="cancel-btn" @click="closeCategoryModal">
+                <button class="cancel-btn" :aria-label="$t('common.cancel')" @click="closeCategoryModal">
                   {{ $t('common.cancel') }}
                 </button>
-                <button class="save-btn" @click="saveCategory">
+                <button class="save-btn" :aria-label="editingCategory ? $t('common.save') : $t('common.add')" @click="saveCategory">
                   {{ editingCategory ? $t('common.save') : $t('common.add') }}
                 </button>
               </div>
@@ -109,9 +122,13 @@
             <div
               v-if="showDeleteModal"
               class="category-modal delete-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="删除分类确认"
               @keydown.esc="closeDeleteModal"
+              tabindex="-1"
             >
-              <div class="delete-icon">
+              <div class="delete-icon" aria-hidden="true">
                 <AlertTriangle :size="32" />
               </div>
               <h3 class="modal-title">{{ $t('categories.deleteConfirm') }}</h3>
@@ -119,16 +136,16 @@
                 {{ deleteModalMessage }}
               </p>
               <div class="delete-options">
-                <button class="delete-option-btn move" @click="confirmDeleteWithMove">
+                <button class="delete-option-btn move" :aria-label="$t('settings.moveToDefaultCategory')" @click="confirmDeleteWithMove">
                   <ArrowRight :size="16" />
                   {{ $t('settings.moveToDefaultCategory') }}
                 </button>
-                <button class="delete-option-btn delete" @click="confirmDeleteWithRemove">
+                <button class="delete-option-btn delete" :aria-label="$t('settings.deleteTasks')" @click="confirmDeleteWithRemove">
                   <Trash2 :size="16" />
                   {{ $t('settings.deleteTasks') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="closeDeleteModal">
+              <button class="cancel-btn full-width" :aria-label="$t('common.cancel')" @click="closeDeleteModal">
                 {{ $t('common.cancel') }}
               </button>
             </div>

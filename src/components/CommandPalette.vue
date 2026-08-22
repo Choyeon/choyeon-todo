@@ -16,12 +16,14 @@
           @before-leave="beforeLeave"
         >
           <div
-            v-if="visible"
-            class="cp-panel"
-            ref="panelRef"
-            role="search"
-            :aria-label="t('palette.a11yLabel')"
-          >
+          v-if="visible"
+          class="cp-panel"
+          ref="panelRef"
+          role="search"
+          :aria-label="t('palette.a11yLabel')"
+          @keydown.esc.prevent="close"
+          tabindex="-1"
+        >
             <!-- 搜索栏 -->
             <div class="cp-header">
               <span class="cp-search-icon" aria-hidden="true">
@@ -31,6 +33,7 @@
                 ref="inputRef"
                 v-model="query"
                 class="cp-search-input"
+                name="commandSearch"
                 :placeholder="t('palette.placeholder')"
                 @keydown="onInputKeydown"
                 @input="onInputChange"
@@ -77,6 +80,7 @@
                     :class="{ active: activeRecentIndex === idx }"
                     role="option"
                     :aria-selected="activeRecentIndex === idx"
+                    :aria-label="cmd.title"
                     @click="selectRecent(idx)"
                     @mousemove="() => (hoverGroup = 'recent')"
                   >
@@ -104,6 +108,7 @@
                     :class="{ active: activeGroupIndex === idx }"
                     role="option"
                     :aria-selected="activeGroupIndex === idx"
+                    :aria-label="`${g.label} (${g.count})`"
                     @click="selectGroup(idx)"
                     @mousemove="onGroupHover(idx)"
                   >
@@ -170,6 +175,7 @@
                     :class="{ active: activeIndex === idx }"
                     role="option"
                     :aria-selected="activeIndex === idx"
+                    :aria-label="cmd.description ? `${cmd.title} — ${cmd.description}` : cmd.title"
                     @click="run(idx)"
                     @mousemove="() => (activeIndex = idx)"
                     tabindex="-1"

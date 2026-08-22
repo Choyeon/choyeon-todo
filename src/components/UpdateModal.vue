@@ -32,20 +32,33 @@
             </div>
             <div class="update-actions">
               <template v-if="isDownloaded">
-                <button class="update-btn later-btn" @click="handleLater">
+                <button
+                  class="update-btn later-btn"
+                  :aria-label="$t('update.installLater')"
+                  @click="handleLater"
+                >
                   {{ $t('update.installLater') }}
                 </button>
-                <button class="update-btn update-btn-primary" @click="handleInstall">
+                <button
+                  class="update-btn update-btn-primary"
+                  :aria-label="$t('update.installNow')"
+                  @click="handleInstall"
+                >
                   {{ $t('update.installNow') }}
                 </button>
               </template>
               <template v-else>
-                <button class="update-btn later-btn" @click="handleLater">
+                <button
+                  class="update-btn later-btn"
+                  :aria-label="$t('update.later')"
+                  @click="handleLater"
+                >
                   {{ $t('update.later') }}
                 </button>
                 <button
                   class="update-btn update-btn-primary"
                   :disabled="isDownloading"
+                  :aria-label="isDownloading ? $t('update.downloading') : $t('update.updateNow')"
                   @click="handleUpdate"
                 >
                   <template v-if="isDownloading">

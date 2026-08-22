@@ -29,6 +29,7 @@
             :key="style.value"
             class="debug-menu-item"
             :class="{ active: currentTitlebarStyle === style.value }"
+            :aria-label="style.label"
             @click="setTitlebarStyle(style.value)"
           >
             <div class="item-icon" :class="`icon-${style.value}`">
@@ -40,7 +41,11 @@
             <span class="item-desc">{{ style.preview }}</span>
           </button>
         </div>
-        <button class="debug-menu-item debug-menu-item-secondary" @click="setTitlebarStyle('auto')">
+        <button
+          class="debug-menu-item debug-menu-item-secondary"
+          :aria-label="$t('debug.restoreDefault')"
+          @click="setTitlebarStyle('auto')"
+        >
           <RotateCcw :size="14" />
           <span class="item-label">{{ $t('debug.restoreDefault') }}</span>
         </button>
@@ -53,12 +58,20 @@
           <Terminal :size="14" />
           <span>{{ $t('debug.devTools') }}</span>
         </div>
-        <button class="debug-menu-item" @click="handleOpenDevTools">
+        <button
+          class="debug-menu-item"
+          :aria-label="$t('debug.openDevTools')"
+          @click="handleOpenDevTools"
+        >
           <Code :size="14" />
           <span class="item-label">{{ $t('debug.openDevTools') }}</span>
           <span class="item-desc">Chrome DevTools</span>
         </button>
-        <button class="debug-menu-item" @click="showErrorMonitor = !showErrorMonitor">
+        <button
+          class="debug-menu-item"
+          :aria-label="$t('debug.errorMonitor')"
+          @click="showErrorMonitor = !showErrorMonitor"
+        >
           <AlertTriangle :size="14" />
           <span class="item-label">{{ $t('debug.errorMonitor') }}</span>
           <span class="item-desc">{{ errorTotal }} {{ $t('debug.totalRecords') }}</span>
@@ -81,15 +94,27 @@
           </div>
         </div>
         <div class="err-actions">
-          <button class="err-action-btn" @click="refreshErrors">
+          <button
+            class="err-action-btn"
+            :aria-label="$t('debug.refresh')"
+            @click="refreshErrors"
+          >
             <RefreshCw :size="12" />
             {{ $t('debug.refresh') }}
           </button>
-          <button class="err-action-btn danger" @click="handleClearErrors">
+          <button
+            class="err-action-btn danger"
+            :aria-label="$t('debug.clear')"
+            @click="handleClearErrors"
+          >
             <Trash2 :size="12" />
             {{ $t('debug.clear') }}
           </button>
-          <button class="err-action-btn" @click="handleTestError">
+          <button
+            class="err-action-btn"
+            :aria-label="$t('debug.mockError')"
+            @click="handleTestError"
+          >
             <Bug :size="12" />
             {{ $t('debug.mockError') }}
           </button>
@@ -117,7 +142,11 @@
           <Bell :size="14" />
           <span>{{ $t('debug.notification') }}</span>
         </div>
-        <button class="debug-menu-item" @click="handleTestNotification">
+        <button
+          class="debug-menu-item"
+          :aria-label="$t('debug.sendTest')"
+          @click="handleTestNotification"
+        >
           <Send :size="14" />
           <span class="item-label">{{ $t('debug.sendTest') }}</span>
           <span class="item-desc">{{ $t('debug.viewToast') }}</span>
@@ -135,12 +164,20 @@
           <Download :size="14" />
           <span>{{ $t('debug.update') }}</span>
         </div>
-        <button class="debug-menu-item" @click="handleMockUpdate">
+        <button
+          class="debug-menu-item"
+          :aria-label="$t('debug.mockUpdate')"
+          @click="handleMockUpdate"
+        >
           <Download :size="14" />
           <span class="item-label">{{ $t('debug.mockUpdate') }}</span>
           <span class="item-desc">{{ $t('debug.mockUpdateDesc') }}</span>
         </button>
-        <button class="debug-menu-item" @click="handleCheckUpdate">
+        <button
+          class="debug-menu-item"
+          :aria-label="$t('debug.checkUpdate')"
+          @click="handleCheckUpdate"
+        >
           <RefreshCw :size="14" />
           <span class="item-label">{{ $t('debug.checkUpdate') }}</span>
           <span class="item-desc">{{ $t('debug.checkUpdateDesc') }}</span>

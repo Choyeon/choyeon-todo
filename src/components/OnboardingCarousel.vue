@@ -213,6 +213,7 @@
                 type="button"
                 class="ob-btn ob-btn-ghost"
                 @click="skip"
+                :aria-label="t('onboarding.skip')"
               >
                 {{ t('onboarding.skip') }}
               </button>

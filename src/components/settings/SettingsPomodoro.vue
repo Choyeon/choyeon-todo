@@ -18,6 +18,7 @@
       <div class="number-input-wrap">
         <input
           type="number"
+          name="pomodoroWorkMinutes"
           class="number-input"
           :value="settingsStore.pomodoroWorkMinutes"
           min="1"
@@ -39,6 +40,7 @@
       <div class="number-input-wrap">
         <input
           type="number"
+          name="pomodoroBreakMinutes"
           class="number-input"
           :value="settingsStore.pomodoroBreakMinutes"
           min="1"
@@ -60,6 +62,7 @@
       <div class="number-input-wrap">
         <input
           type="number"
+          name="pomodoroLongBreakMinutes"
           class="number-input"
           :value="settingsStore.pomodoroLongBreakMinutes"
           min="1"
@@ -81,6 +84,7 @@
       <div class="number-input-wrap">
         <input
           type="number"
+          name="pomodoroSessionsBeforeLongBreak"
           class="number-input"
           :value="settingsStore.pomodoroSessionsBeforeLongBreak"
           min="1"

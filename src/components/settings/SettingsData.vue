@@ -42,8 +42,10 @@
     <input
       ref="fileInputRef"
       type="file"
+      name="importDataFile"
       accept=".json"
       style="display: none"
+      :aria-label="$t('settings.importData')"
       @change="handleFileImport"
     />
 

@@ -951,7 +951,11 @@ export const useTaskStore = defineStore('task', () => {
       totalFocusTime: 0,
       createdAt: now,
       completedAt: null,
-      isInbox: !!task.isInbox
+      isInbox: !!task.isInbox,
+      blockedBy: Array.isArray(task.blockedBy)
+        ? task.blockedBy.filter((x) => typeof x === 'string' && x.length > 0)
+        : [],
+      parentId: (task.parentId && typeof task.parentId === 'string' && task.parentId) || null
     }
     // Task 1: 叠加 v3 新字段默认值；若调用方显式传了 listId / areaId，保留优先
     const explicitOverrides = {}
@@ -1303,6 +1307,8 @@ export const useTaskStore = defineStore('task', () => {
     // 重载：区分 moves 数组 vs (fromId, toId)
     if (args.length === 1 && Array.isArray(args[0])) {
       const moves = args[0]
+      // 空数组视为 no-op，返回 false 方便调用方检测无效参数场景
+      if (moves.length === 0) return false
       // 原子性校验：先把所有目标 task 找到，并确认 parentId/listId 更新后的深度合法
       // Stage 1: 预校验
       const snapshot = new Map()
@@ -2441,9 +2447,14 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const importData = (jsonStr) => {
+    // 先单独解析 JSON：解析失败直接返回 falsy（null），符合非法 JSON 场景的语义契约
+    let data
     try {
-      const data = JSON.parse(jsonStr)
-
+      data = JSON.parse(jsonStr)
+    } catch (_parseErr) {
+      return null
+    }
+    try {
       if (!data || typeof data !== 'object') {
         return { success: false, error: '无效的数据格式' }
       }

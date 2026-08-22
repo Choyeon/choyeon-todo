@@ -9,6 +9,8 @@
         <button
           class="tab-btn"
           :class="{ active: mode === 'weekly' }"
+          :aria-label="t('report.weekly') || 'Weekly'"
+          :aria-pressed="mode === 'weekly'"
           @click="mode = 'weekly'"
         >
           {{ t('report.weekly') || 'Weekly' }}
@@ -16,6 +18,8 @@
         <button
           class="tab-btn"
           :class="{ active: mode === 'monthly' }"
+          :aria-label="t('report.monthly') || 'Monthly'"
+          :aria-pressed="mode === 'monthly'"
           @click="mode = 'monthly'"
         >
           {{ t('report.monthly') || 'Monthly' }}
@@ -76,12 +80,12 @@
     </div>
 
     <div class="report-footer">
-      <button class="download-btn" @click="downloadMarkdown">
-        <Download :size="16" />
+      <button class="download-btn" :aria-label="t('report.download') || 'Download Markdown'" @click="downloadMarkdown">
+        <Download :size="16" aria-hidden="true" />
         <span>{{ t('report.download') || 'Download Markdown' }}</span>
       </button>
-      <button class="copy-btn" @click="copyMarkdown">
-        <Copy :size="14" />
+      <button class="copy-btn" :aria-label="copyBtnText" @click="copyMarkdown">
+        <Copy :size="14" aria-hidden="true" />
         <span>{{ copyBtnText }}</span>
       </button>
     </div>

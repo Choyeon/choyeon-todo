@@ -58,30 +58,34 @@
       v-if="showPanel === 'mini'"
       class="pfab-panel pfab-panel-mini"
       role="dialog"
+      aria-modal="true"
       aria-label="番茄钟迷你面板"
       @click.stop
+      @keydown.esc="showPanel = null"
+      tabindex="-1"
     >
       <div class="pfab-panel-header">
         <strong>{{ currentModeLabel }} · {{ formattedTime }}</strong>
         <button class="pfab-close" type="button" aria-label="关闭" @click="showPanel = null">×</button>
       </div>
       <div class="pfab-panel-actions">
-        <button type="button" class="pfab-action" @click="onToggleTimer">
+        <button type="button" class="pfab-action" :aria-label="isRunning ? '暂停番茄钟' : '开始番茄钟'" @click="onToggleTimer">
           {{ isRunning ? '暂停' : '开始' }}
         </button>
-        <button type="button" class="pfab-action" :disabled="!canSkip" @click="onSkipStage">
+        <button type="button" class="pfab-action" aria-label="跳过当前阶段" :disabled="!canSkip" @click="onSkipStage">
           跳过
         </button>
-        <button type="button" class="pfab-action" @click="gotoPomodoro">专注页面</button>
+        <button type="button" class="pfab-action" aria-label="前往专注页面" @click="gotoPomodoro">专注页面</button>
       </div>
       <div v-if="currentTaskId" class="pfab-task-line">
         <span>绑定：{{ currentTask ? currentTask.title.slice(0, 16) : currentTaskId }}</span>
-        <button type="button" class="pfab-link" @click="onUnbindTask">解绑</button>
+        <button type="button" class="pfab-link" aria-label="解绑当前任务" @click="onUnbindTask">解绑</button>
       </div>
       <button
         v-if="!currentTaskId"
         type="button"
         class="pfab-link pfab-link-full"
+        aria-label="绑定当前任务到番茄钟"
         @click="$emit('bindTask')"
       >
         绑定当前任务
@@ -93,8 +97,11 @@
       v-if="showPanel === 'settings'"
       class="pfab-panel pfab-panel-settings"
       role="dialog"
+      aria-modal="true"
       aria-label="番茄钟模式设置"
       @click.stop
+      @keydown.esc="showPanel = null"
+      tabindex="-1"
     >
       <div class="pfab-panel-header">
         <strong>模式与时长</strong>
@@ -139,6 +146,7 @@
           </button>
           <input
             type="number"
+            name="pomodoroDuration"
             class="pfab-dur-input"
             :value="modeDurations[selectedMode]"
             min="1"

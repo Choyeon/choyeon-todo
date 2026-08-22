@@ -29,7 +29,13 @@
             :class="{ completed: task.completed }"
           >
             <div class="task-checkbox">
-              <input type="checkbox" :checked="task.completed" @change="toggleTaskComplete(task)" />
+              <input
+                type="checkbox"
+                :name="`quadrant-task-${task.id}`"
+                :aria-label="`${task.completed ? '标记未完成' : '标记完成'}: ${task.title}`"
+                :checked="task.completed"
+                @change="toggleTaskComplete(task)"
+              />
             </div>
             <div class="task-content">
               <div class="task-title">{{ task.title }}</div>
@@ -70,7 +76,13 @@
             :class="{ completed: task.completed }"
           >
             <div class="task-checkbox">
-              <input type="checkbox" :checked="task.completed" @change="toggleTaskComplete(task)" />
+              <input
+                type="checkbox"
+                :name="`quadrant-task-${task.id}`"
+                :aria-label="`${task.completed ? '标记未完成' : '标记完成'}: ${task.title}`"
+                :checked="task.completed"
+                @change="toggleTaskComplete(task)"
+              />
             </div>
             <div class="task-content">
               <div class="task-title">{{ task.title }}</div>
@@ -111,7 +123,13 @@
             :class="{ completed: task.completed }"
           >
             <div class="task-checkbox">
-              <input type="checkbox" :checked="task.completed" @change="toggleTaskComplete(task)" />
+              <input
+                type="checkbox"
+                :name="`quadrant-task-${task.id}`"
+                :aria-label="`${task.completed ? '标记未完成' : '标记完成'}: ${task.title}`"
+                :checked="task.completed"
+                @change="toggleTaskComplete(task)"
+              />
             </div>
             <div class="task-content">
               <div class="task-title">{{ task.title }}</div>
@@ -152,7 +170,13 @@
             :class="{ completed: task.completed }"
           >
             <div class="task-checkbox">
-              <input type="checkbox" :checked="task.completed" @change="toggleTaskComplete(task)" />
+              <input
+                type="checkbox"
+                :name="`quadrant-task-${task.id}`"
+                :aria-label="`${task.completed ? '标记未完成' : '标记完成'}: ${task.title}`"
+                :checked="task.completed"
+                @change="toggleTaskComplete(task)"
+              />
             </div>
             <div class="task-content">
               <div class="task-title">{{ task.title }}</div>

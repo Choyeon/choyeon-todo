@@ -30,9 +30,13 @@
             <div
               v-if="showClearDataModal"
               class="category-modal delete-modal"
+              role="alertdialog"
+              aria-modal="true"
+              :aria-label="$t('settings.clearAllDataConfirm')"
+              tabindex="-1"
               @keydown.esc="showClearDataModal = false"
             >
-              <div class="delete-icon">
+              <div class="delete-icon" aria-hidden="true">
                 <AlertTriangle :size="32" />
               </div>
               <h3 class="modal-title">{{ $t('settings.clearAllDataConfirm') }}</h3>
@@ -40,12 +44,20 @@
                 {{ $t('settings.clearAllDataDesc') }}
               </p>
               <div class="delete-options">
-                <button class="delete-option-btn delete" @click="confirmClearAllData">
+                <button
+                  class="delete-option-btn delete"
+                  :aria-label="$t('settings.confirmClear')"
+                  @click="confirmClearAllData"
+                >
                   <Trash2 :size="16" />
                   {{ $t('settings.confirmClear') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="showClearDataModal = false">
+              <button
+                class="cancel-btn full-width"
+                :aria-label="$t('common.cancel')"
+                @click="showClearDataModal = false"
+              >
                 {{ $t('common.cancel') }}
               </button>
             </div>
@@ -65,9 +77,17 @@
             <div
               v-if="showResetDataModal"
               class="category-modal delete-modal"
+              role="alertdialog"
+              aria-modal="true"
+              :aria-label="$t('settings.resetDataConfirm')"
+              tabindex="-1"
               @keydown.esc="showResetDataModal = false"
             >
-              <div class="delete-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b">
+              <div
+                class="delete-icon"
+                style="background: rgba(245, 158, 11, 0.12); color: #f59e0b"
+                aria-hidden="true"
+              >
                 <RefreshCw :size="32" />
               </div>
               <h3 class="modal-title">{{ $t('settings.resetDataConfirm') }}</h3>
@@ -78,13 +98,18 @@
                 <button
                   class="delete-option-btn"
                   style="background: rgba(245, 158, 11, 0.12); color: #d97706"
+                  :aria-label="$t('settings.confirmReset')"
                   @click="confirmResetData"
                 >
                   <RefreshCw :size="16" />
                   {{ $t('settings.confirmReset') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" @click="showResetDataModal = false">
+              <button
+                class="cancel-btn full-width"
+                :aria-label="$t('common.cancel')"
+                @click="showResetDataModal = false"
+              >
                 {{ $t('common.cancel') }}
               </button>
             </div>

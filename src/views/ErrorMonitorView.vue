@@ -6,11 +6,19 @@
         <p class="monitor-subtitle">实时追踪应用运行时错误</p>
       </div>
       <div class="header-actions">
-        <button class="btn-secondary" @click="refreshData">
+        <button
+          class="btn-secondary"
+          aria-label="刷新"
+          @click="refreshData"
+        >
           <RefreshCw :size="16" />
           刷新
         </button>
-        <button class="btn-danger" @click="handleClearAll">
+        <button
+          class="btn-danger"
+          aria-label="清空日志"
+          @click="handleClearAll"
+        >
           <Trash2 :size="16" />
           清空日志
         </button>
@@ -70,10 +78,17 @@
             <input
               v-model="searchQuery"
               type="text"
+              name="errorSearch"
               class="search-input"
+              aria-label="搜索错误"
               placeholder="搜索错误..."
             />
-            <select v-model="filterType" class="filter-select">
+            <select
+              v-model="filterType"
+              name="errorFilterType"
+              class="filter-select"
+              aria-label="错误类型筛选"
+            >
               <option value="">全部类型</option>
               <option value="vue-error">Vue 错误</option>
               <option value="window-error">窗口错误</option>
@@ -114,7 +129,11 @@
       <div class="error-detail-panel" v-if="selectedLog">
         <div class="panel-header detail-header">
           <h3>错误详情</h3>
-          <button class="icon-btn" @click="selectedId = null">
+          <button
+            class="icon-btn"
+            aria-label="关闭详情"
+            @click="selectedId = null"
+          >
             <X :size="18" />
           </button>
         </div>

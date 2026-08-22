@@ -5,7 +5,12 @@
         <h1>{{ $t('nav.inbox') }}</h1>
         <p class="header-subtitle">{{ inboxTasks.length }} {{ $t('inbox.itemsToOrganize') }}</p>
       </div>
-      <button v-if="inboxTasks.length > 0" class="clear-btn" @click="confirmClearAll">
+      <button
+        v-if="inboxTasks.length > 0"
+        class="clear-btn"
+        :aria-label="$t('inbox.clearAll')"
+        @click="confirmClearAll"
+      >
         <Trash2 :size="16" />
         {{ $t('inbox.clearAll') }}
       </button>
@@ -32,15 +37,27 @@
         </div>
 
         <div class="task-actions">
-          <button class="action-btn edit" @click="editTask(task)">
+          <button
+            class="action-btn edit"
+            :aria-label="`${$t('common.edit')} ${task.title}`"
+            @click="editTask(task)"
+          >
             <Edit2 :size="16" />
             {{ $t('common.edit') }}
           </button>
-          <button class="action-btn organize" @click="openOrganizeDialog(task)">
+          <button
+            class="action-btn organize"
+            :aria-label="`${$t('inbox.organize')} ${task.title}`"
+            @click="openOrganizeDialog(task)"
+          >
             <FolderInput :size="16" />
             {{ $t('inbox.organize') }}
           </button>
-          <button class="action-btn delete" @click="confirmDelete(task)">
+          <button
+            class="action-btn delete"
+            :aria-label="`${$t('common.delete')} ${task.title}`"
+            @click="confirmDelete(task)"
+          >
             <Trash2 :size="16" />
           </button>
         </div>
@@ -49,18 +66,36 @@
 
     <!-- 整理对话框 -->
     <div v-if="showOrganizeDialog" class="dialog-overlay" @click="closeOrganizeDialog">
-      <div class="organize-dialog" @click.stop>
+      <div
+        class="organize-dialog"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="$t('inbox.organizeTask')"
+        tabindex="-1"
+        @keydown.esc="closeOrganizeDialog"
+        @click.stop
+      >
         <div class="dialog-header">
           <h3>{{ $t('inbox.organizeTask') }}</h3>
-          <button class="close-btn" @click="closeOrganizeDialog">
+          <button
+            class="close-btn"
+            :aria-label="$t('common.close')"
+            @click="closeOrganizeDialog"
+          >
             <X :size="20" />
           </button>
         </div>
 
         <div class="dialog-content">
           <div class="form-group">
-            <label>{{ $t('task.category') }}</label>
-            <select v-model="organizeForm.category" class="form-select">
+            <label for="inbox-category">{{ $t('task.category') }}</label>
+            <select
+              id="inbox-category"
+              v-model="organizeForm.category"
+              name="inboxCategory"
+              class="form-select"
+              :aria-label="$t('task.category')"
+            >
               <option v-for="cat in taskStore.categories" :key="cat.id" :value="cat.id">
                 {{ cat.name }}
               </option>
@@ -68,17 +103,28 @@
           </div>
 
           <div class="form-group">
-            <label>{{ $t('task.date') }}</label>
-            <input type="date" v-model="organizeForm.date" class="form-input" />
+            <label for="inbox-date">{{ $t('task.date') }}</label>
+            <input
+              id="inbox-date"
+              type="date"
+              name="inboxDate"
+              :aria-label="$t('task.date')"
+              v-model="organizeForm.date"
+              class="form-input"
+            />
           </div>
 
           <div class="form-group">
             <label>{{ $t('task.priority') }}</label>
-            <div class="priority-selector">
+            <div class="priority-selector" role="radiogroup" :aria-label="$t('task.priority')">
               <button
                 v-for="p in [1, 2, 3, 4]"
                 :key="p"
+                type="button"
                 :class="['priority-btn', `priority-${p}`, { active: organizeForm.priority === p }]"
+                role="radio"
+                :aria-checked="organizeForm.priority === p"
+                :aria-label="`${$t('task.priority')} P${p}`"
                 @click="organizeForm.priority = p"
               >
                 P{{ p }}
@@ -88,24 +134,44 @@
 
           <div class="form-group">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="organizeForm.important" />
+              <input
+                type="checkbox"
+                name="inboxImportant"
+                :aria-label="$t('task.important')"
+                v-model="organizeForm.important"
+              />
               <span>{{ $t('task.important') }}</span>
             </label>
           </div>
 
           <div class="form-group">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="organizeForm.reminder" />
+              <input
+                type="checkbox"
+                name="inboxReminder"
+                :aria-label="$t('task.reminder')"
+                v-model="organizeForm.reminder"
+              />
               <span>{{ $t('task.reminder') }}</span>
             </label>
           </div>
         </div>
 
         <div class="dialog-footer">
-          <button class="btn secondary" @click="closeOrganizeDialog">
+          <button
+            class="btn secondary"
+            type="button"
+            :aria-label="$t('common.cancel')"
+            @click="closeOrganizeDialog"
+          >
             {{ $t('common.cancel') }}
           </button>
-          <button class="btn primary" @click="saveOrganize">
+          <button
+            class="btn primary"
+            type="button"
+            :aria-label="$t('common.save')"
+            @click="saveOrganize"
+          >
             {{ $t('common.save') }}
           </button>
         </div>

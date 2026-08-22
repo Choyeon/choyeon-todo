@@ -16,6 +16,8 @@
         :key="mode.value"
         class="mode-tab"
         :class="{ active: pomodoroStore.currentMode === mode.value }"
+        :aria-label="$t('pomodoro.' + mode.value)"
+        :aria-pressed="pomodoroStore.currentMode === mode.value"
         @click="pomodoroStore.switchMode(mode.value)"
       >
         <component :is="modeIcons[mode.value]" :size="14" />
@@ -128,10 +130,13 @@
 
     <div v-if="pomodoroStore.isCustomEditing" class="custom-duration">
       <div class="custom-row">
-        <label>{{ $t('pomodoro.durationMinutes') }}</label>
+        <label for="customMinutesInput">{{ $t('pomodoro.durationMinutes') }}</label>
         <input
+          id="customMinutesInput"
           type="number"
+          name="customMinutes"
           class="custom-input"
+          :aria-label="$t('pomodoro.durationMinutes')"
           :value="pomodoroStore.customMinutes"
           min="1"
           max="180"
@@ -145,15 +150,15 @@
         />
       </div>
       <div class="custom-actions">
-        <button class="custom-btn cancel" @click="pomodoroStore.isCustomEditing = false">
+        <button class="custom-btn cancel" :aria-label="$t('common.cancel')" @click="pomodoroStore.isCustomEditing = false">
           {{ $t('common.cancel') }}
         </button>
-        <button class="custom-btn confirm" @click="pomodoroStore.applyCustomDuration()">
+        <button class="custom-btn confirm" :aria-label="$t('common.confirm')" @click="pomodoroStore.applyCustomDuration()">
           {{ $t('common.confirm') }}
         </button>
       </div>
     </div>
-    <button v-else class="custom-duration-toggle" @click="pomodoroStore.isCustomEditing = true">
+    <button v-else class="custom-duration-toggle" :aria-label="$t('pomodoro.customDuration')" @click="pomodoroStore.isCustomEditing = true">
       <Edit3 :size="12" />
       <span>{{ $t('pomodoro.customDuration') }}</span>
     </button>
@@ -222,6 +227,7 @@
     <div class="controls">
       <button
         class="control-btn reset-btn"
+        :aria-label="$t('pomodoro.reset')"
         @click="pomodoroStore.resetTimer"
         :title="$t('pomodoro.reset')"
       >
@@ -230,6 +236,7 @@
       <button
         class="control-btn primary-btn"
         :class="{ running: pomodoroStore.isRunning }"
+        :aria-label="pomodoroStore.isRunning ? $t('pomodoro.pause') : $t('pomodoro.start')"
         @click="handleToggleTimer"
         :title="pomodoroStore.isRunning ? $t('pomodoro.pause') : $t('pomodoro.start')"
       >
@@ -239,6 +246,7 @@
       <button
         class="control-btn skip-btn"
         :class="{ disabled: !pomodoroStore.canSkip }"
+        :aria-label="$t('pomodoro.skip')"
         @click="handleSkip"
         :disabled="!pomodoroStore.canSkip"
         :title="$t('pomodoro.skip')"
@@ -247,7 +255,7 @@
       </button>
     </div>
 
-    <button class="fullscreen-btn" @click="openFullscreen" :title="$t('pomodoro.fullscreen')">
+    <button class="fullscreen-btn" :aria-label="$t('pomodoro.fullscreen')" @click="openFullscreen" :title="$t('pomodoro.fullscreen')">
       <Maximize2 :size="16" />
       <span>{{ $t('pomodoro.fullscreen') }}</span>
     </button>
@@ -255,6 +263,7 @@
     <button
       v-if="isElectron"
       class="fab-btn"
+      :aria-label="$t('pomodoro.desktopFab')"
       @click="pomodoroStore.toggleFab"
       :title="$t('pomodoro.desktopFab')"
     >
@@ -263,7 +272,7 @@
     </button>
 
     <div class="noise-section">
-      <button class="noise-toggle-btn" @click="showNoisePanel = !showNoisePanel">
+      <button class="noise-toggle-btn" :aria-label="$t('pomodoro.whiteNoise')" @click="showNoisePanel = !showNoisePanel">
         <Volume2 :size="16" />
         <span>{{ $t('pomodoro.whiteNoise') }}</span>
         <ChevronDown :size="14" class="chevron" :class="{ open: showNoisePanel }" />
@@ -277,6 +286,8 @@
               :key="noise.id"
               class="noise-item"
               :class="{ active: pomodoroStore.currentNoise === noise.id }"
+              :aria-label="$t('pomodoro.noise_' + noise.id)"
+              :aria-pressed="pomodoroStore.currentNoise === noise.id"
               @click="pomodoroStore.toggleWhiteNoise(noise.id)"
             >
               <component :is="noiseIcons[noise.id]" :size="16" />
@@ -284,17 +295,19 @@
             </button>
           </div>
           <div class="noise-volume" v-if="pomodoroStore.isNoisePlaying">
-            <VolumeX :size="14" />
+            <VolumeX :size="14" aria-hidden="true" />
             <input
               type="range"
+              name="noiseVolume"
               min="0"
               max="1"
               step="0.01"
+              :aria-label="$t('pomodoro.noiseVolume')"
               :value="pomodoroStore.noiseVolume"
               @input="pomodoroStore.setNoiseVolume(parseFloat($event.target.value))"
               class="volume-slider"
             />
-            <Volume2 :size="14" />
+            <Volume2 :size="14" aria-hidden="true" />
           </div>
         </div>
       </Transition>

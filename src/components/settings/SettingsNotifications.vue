@@ -54,6 +54,7 @@
         <p class="setting-desc">{{ $t('settings.defaultReminderTimeDesc') }}</p>
       </div>
       <select
+        name="defaultReminderTime"
         class="reminder-select"
         :value="settingsStore.defaultReminderTime"
         :aria-label="$t('settings.defaultReminderTime')"

@@ -20,7 +20,7 @@
         <h1>{{ $t('achievement.title') }}</h1>
         <p class="header-subtitle">{{ $t('achievement.subtitle') }}</p>
       </div>
-      <button class="close-btn" @click="goBack">
+      <button class="close-btn" :aria-label="$t('common.close')" @click="goBack">
         <X :size="24" />
       </button>
     </div>

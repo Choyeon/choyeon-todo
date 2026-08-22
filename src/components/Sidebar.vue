@@ -16,6 +16,7 @@
         <Search class="search-icon" :size="16" aria-hidden="true" />
         <input
           type="text"
+          name="sidebarSearch"
           :placeholder="$t('nav.search')"
           v-model="searchInput"
           @input="onSearchInput"
@@ -376,7 +377,7 @@
         >
           <!-- Area -->
           <template v-if="contextMenu.type === 'area'">
-            <button class="context-menu-item" role="menuitem" @click="handleAreaRename">
+            <button class="context-menu-item" role="menuitem" :aria-label="$t('areas.rename')" @click="handleAreaRename">
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('areas.rename') }}</span>
             </button>
@@ -384,19 +385,20 @@
               v-if="contextMenu.area && areaStore.areas.length > 1"
               class="context-menu-item danger"
               role="menuitem"
+              :aria-label="$t('areas.delete')"
               @click="handleAreaDelete"
             >
               <Trash2 :size="14" aria-hidden="true" />
               <span>{{ $t('areas.delete') }}</span>
             </button>
-            <button class="context-menu-item" role="menuitem" @click="handleAreaAddList">
+            <button class="context-menu-item" role="menuitem" :aria-label="$t('lists.addList')" @click="handleAreaAddList">
               <FolderPlus :size="14" aria-hidden="true" />
               <span>{{ $t('lists.addList') }}</span>
             </button>
           </template>
           <!-- List -->
           <template v-else-if="contextMenu.type === 'list'">
-            <button class="context-menu-item" role="menuitem" @click="handleListRename">
+            <button class="context-menu-item" role="menuitem" :aria-label="$t('lists.rename')" @click="handleListRename">
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('lists.rename') }}</span>
             </button>
@@ -404,6 +406,7 @@
               v-if="contextMenu.list && listStore.lists.length > 1"
               class="context-menu-item danger"
               role="menuitem"
+              :aria-label="$t('lists.delete')"
               @click="handleListDelete"
             >
               <Trash2 :size="14" aria-hidden="true" />
@@ -416,6 +419,7 @@
               v-if="contextMenu.category && contextMenu.category.id !== 'other'"
               class="context-menu-item"
               role="menuitem"
+              :aria-label="$t('categories.editCategory')"
               @click="handleContextEdit"
             >
               <Pencil :size="14" aria-hidden="true" />
@@ -425,34 +429,35 @@
               v-if="contextMenu.category && contextMenu.category.id !== 'other'"
               class="context-menu-item danger"
               role="menuitem"
+              :aria-label="$t('categories.deleteCategory')"
               @click="handleContextDelete"
             >
               <Trash2 :size="14" aria-hidden="true" />
               <span>{{ $t('categories.deleteCategory') }}</span>
             </button>
-            <button class="context-menu-item" role="menuitem" @click="handleContextAdd">
+            <button class="context-menu-item" role="menuitem" :aria-label="$t('categories.addNew')" @click="handleContextAdd">
               <Plus :size="14" aria-hidden="true" />
               <span>{{ $t('categories.addNew') }}</span>
             </button>
           </template>
           <!-- Tag -->
           <template v-else-if="contextMenu.type === 'tag'">
-            <button class="context-menu-item" role="menuitem" @click="handleTagEdit">
+            <button class="context-menu-item" role="menuitem" :aria-label="$t('tags.editTag')" @click="handleTagEdit">
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('tags.editTag') }}</span>
             </button>
-            <button class="context-menu-item danger" role="menuitem" @click="handleTagDelete">
+            <button class="context-menu-item danger" role="menuitem" :aria-label="$t('tags.deleteTag')" @click="handleTagDelete">
               <Trash2 :size="14" aria-hidden="true" />
               <span>{{ $t('tags.deleteTag') }}</span>
             </button>
           </template>
           <!-- Filter -->
           <template v-else-if="contextMenu.type === 'filter'">
-            <button class="context-menu-item" role="menuitem" @click="handleFilterRename">
+            <button class="context-menu-item" role="menuitem" :aria-label="$t('filters.rename')" @click="handleFilterRename">
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('filters.rename') }}</span>
             </button>
-            <button class="context-menu-item" role="menuitem" @click="handleFilterTogglePin">
+            <button class="context-menu-item" role="menuitem" :aria-label="contextMenu.filter && contextMenu.filter.pinned ? $t('filters.unpin') : $t('filters.pin')" @click="handleFilterTogglePin">
               <Pin :size="14" aria-hidden="true" />
               <span>{{
                 contextMenu.filter && contextMenu.filter.pinned
@@ -460,11 +465,11 @@
                   : $t('filters.pin')
               }}</span>
             </button>
-            <button class="context-menu-item" role="menuitem" @click="handleFilterDuplicate">
+            <button class="context-menu-item" role="menuitem" :aria-label="$t('filters.duplicate')" @click="handleFilterDuplicate">
               <Copy :size="14" aria-hidden="true" />
               <span>{{ $t('filters.duplicate') }}</span>
             </button>
-            <button class="context-menu-item danger" role="menuitem" @click="handleFilterDelete">
+            <button class="context-menu-item danger" role="menuitem" :aria-label="$t('filters.delete')" @click="handleFilterDelete">
               <Trash2 :size="14" aria-hidden="true" />
               <span>{{ $t('filters.delete') }}</span>
             </button>

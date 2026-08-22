@@ -3,6 +3,7 @@
     <Search class="search-icon" />
     <input
       type="text"
+      name="mobileSearch"
       :placeholder="$t('nav.search')"
       v-model="searchValue"
       :aria-label="$t('nav.searchAria')"
