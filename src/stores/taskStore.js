@@ -42,7 +42,9 @@ const STORAGE_KEYS = {
   categories: 'choyeon_categories_v2',
   tags: 'choyeon_tags_v2',
   myDay: 'choyeon_myday_v1',
-  templates: 'choyeon_templates_v1'
+  templates: 'choyeon_templates_v1',
+  // v3 UI 视图状态持久化
+  uiView: 'choyeon_uiview_v1'
 }
 
 const DEFAULT_CATEGORIES = [
@@ -129,6 +131,7 @@ const ACTIVITY_TYPES = [
   'restore',
   'migrate',
   'reminderTrigger',
+  'reminderSnooze',
   'pomodoroComplete'
 ]
 
@@ -243,6 +246,10 @@ export const useTaskStore = defineStore('task', () => {
   const currentView = ref('myday')
   const currentCategory = ref(null)
   const currentTag = ref(null)
+  // v3 视图状态：Sidebar 切换 list/area/filter 时写入
+  const currentFilterId = ref(null)
+  const currentListId = ref(null)
+  const currentAreaId = ref(null)
   const focusedTaskId = ref(null)
   const myDayDate = ref(null)
   const myDayTaskIds = ref([])
@@ -566,6 +573,23 @@ export const useTaskStore = defineStore('task', () => {
           console.warn('[TaskStore] Failed to parse templates:', e)
         }
       }
+      // v3: 加载 UI 视图状态（currentView/currentFilterId/currentListId/currentAreaId 等）
+      const savedUiView = localStorage.getItem(STORAGE_KEYS.uiView)
+      if (savedUiView) {
+        try {
+          const parsed = JSON.parse(savedUiView)
+          if (parsed && typeof parsed === 'object') {
+            if (typeof parsed.currentView === 'string') currentView.value = parsed.currentView
+            if (parsed.currentCategory !== undefined) currentCategory.value = parsed.currentCategory ?? null
+            if (parsed.currentTag !== undefined) currentTag.value = parsed.currentTag ?? null
+            if (parsed.currentFilterId !== undefined) currentFilterId.value = parsed.currentFilterId ?? null
+            if (parsed.currentListId !== undefined) currentListId.value = parsed.currentListId ?? null
+            if (parsed.currentAreaId !== undefined) currentAreaId.value = parsed.currentAreaId ?? null
+          }
+        } catch (e) {
+          console.warn('[TaskStore] Failed to parse uiView:', e)
+        }
+      }
 
       // Task 1: 读取后做 v3 迁移保证（零互斥迁移，失败时回滚到加载前 state）
       try {
@@ -603,6 +627,22 @@ export const useTaskStore = defineStore('task', () => {
           taskIds: myDayTaskIds.value
         })
       )
+      // v3: 保存 UI 视图状态
+      try {
+        localStorage.setItem(
+          STORAGE_KEYS.uiView,
+          JSON.stringify({
+            currentView: currentView.value,
+            currentCategory: currentCategory.value,
+            currentTag: currentTag.value,
+            currentFilterId: currentFilterId.value,
+            currentListId: currentListId.value,
+            currentAreaId: currentAreaId.value
+          })
+        )
+      } catch (e) {
+        console.error('[TaskStore] Failed to save uiView:', e)
+      }
     } catch (e) {
       console.error('[TaskStore] Failed to save to storage:', e)
       if (e && e.name === 'QuotaExceededError') {
@@ -778,6 +818,13 @@ export const useTaskStore = defineStore('task', () => {
     watchFn(templates, debouncedSave, { deep: true })
     watchFn(myDayDate, debouncedSave)
     watchFn(myDayTaskIds, debouncedSave, { deep: true })
+    // v3: UI 视图状态变化同样触发持久化
+    watchFn(currentView, debouncedSave)
+    watchFn(currentCategory, debouncedSave)
+    watchFn(currentTag, debouncedSave)
+    watchFn(currentFilterId, debouncedSave)
+    watchFn(currentListId, debouncedSave)
+    watchFn(currentAreaId, debouncedSave)
   }
 
   // Task 1: 通用 logActivity。仅在任务存在时写入，避免无效活动。
@@ -876,8 +923,10 @@ export const useTaskStore = defineStore('task', () => {
     }
 
     const now = Date.now()
+    // 允许调用方显式指定 id（import/CSV/Sync 等场景需要保留原始 id）；非法或空则生成
+    const explicitId = task && typeof task.id === 'string' && task.id.trim() ? task.id.trim() : null
     const base = {
-      id: generateId('task_'),
+      id: explicitId || generateId('task_'),
       title: task.title.trim().slice(0, 500),
       category: catExists ? catId : UNDELETABLE_CATEGORY,
       date: task.date || getTodayStr(),
@@ -890,7 +939,7 @@ export const useTaskStore = defineStore('task', () => {
       tags: Array.isArray(task.tags) ? task.tags : [],
       subTasks: Array.isArray(task.subTasks)
         ? task.subTasks.map((st, i) => ({
-            id: generateId('sub_'),
+            id: (st && typeof st.id === 'string' && st.id) || generateId('sub_'),
             title: st.title || '',
             completed: false,
             order: i
@@ -1801,6 +1850,26 @@ export const useTaskStore = defineStore('task', () => {
       case 'inbox':
         result = tasks.value.filter((t) => t.isInbox && !t.completed)
         break
+      case 'list':
+        result = currentListId.value
+          ? tasks.value.filter(
+              (t) =>
+                !t.completed &&
+                (t.listId === currentListId.value ||
+                  (!t.listId && t.category === currentListId.value))
+            )
+          : []
+        break
+      case 'area':
+        result = currentAreaId.value
+          ? tasks.value.filter((t) => !t.completed && t.areaId === currentAreaId.value)
+          : []
+        break
+      case 'filter':
+        // 实际过滤由 filterStore.runFilter 在消费端组合完成
+        // 此处先返回所有未完成任务作为基底，避免组件引用空集
+        result = tasks.value.filter((t) => !t.completed)
+        break
       default:
         result = []
     }
@@ -2617,6 +2686,97 @@ export const useTaskStore = defineStore('task', () => {
     return true
   }
 
+  // Task 5: 提醒相关最小侵入写操作（保证单次 debouncedSave）
+  // 计算 snooze 预设偏移（同 useReminderScheduler.resolveSnoozePreset 的简化副本，避免环形 import）
+  const computeSnoozeOffsetMs = (offsetOrDate) => {
+    if (offsetOrDate instanceof Date) {
+      const t = offsetOrDate.getTime()
+      if (Number.isFinite(t) && t > 0) return { offsetMs: Math.max(0, t - Date.now()), customTs: t }
+    }
+    if (typeof offsetOrDate === 'number' && Number.isFinite(offsetOrDate)) {
+      // 小于 10000 视为"分钟数"；较大视为毫秒时间戳
+      if (offsetOrDate <= 10000) {
+        return { offsetMs: Math.max(0, Math.floor(offsetOrDate)) * 60 * 1000 }
+      }
+      if (offsetOrDate > Date.now() - 1000) {
+        return { offsetMs: Math.max(0, offsetOrDate - Date.now()), customTs: offsetOrDate }
+      }
+      return { offsetMs: 5 * 60 * 1000 }
+    }
+    if (offsetOrDate && typeof offsetOrDate === 'object') {
+      if (offsetOrDate.minutes !== undefined) {
+        const m = Number(offsetOrDate.minutes)
+        if (Number.isFinite(m) && m >= 0) return { offsetMs: m * 60 * 1000 }
+      }
+      if (offsetOrDate.customDate !== undefined) {
+        const d =
+          offsetOrDate.customDate instanceof Date
+            ? offsetOrDate.customDate.getTime()
+            : Number(offsetOrDate.customDate)
+        if (Number.isFinite(d) && d > 0) return { offsetMs: Math.max(0, d - Date.now()), customTs: d }
+      }
+      if (typeof offsetOrDate.preset === 'string') {
+        const alias = offsetOrDate.preset
+        const todayStr = getTodayStr()
+        if (alias === 'tomorrow_9am') {
+          const tmr = addDays(todayStr, 1)
+          const [y, mo, d] = tmr.split('-').map(Number)
+          const ts = new Date(y, mo - 1, d, 9, 0, 0, 0).getTime()
+          return { offsetMs: Math.max(0, ts - Date.now()), customTs: ts }
+        }
+        if (alias === 'next_week') {
+          const nw = addDays(todayStr, 7)
+          const [y, mo, d] = nw.split('-').map(Number)
+          const ts = new Date(y, mo - 1, d, 9, 0, 0, 0).getTime()
+          return { offsetMs: Math.max(0, ts - Date.now()), customTs: ts }
+        }
+      }
+    }
+    // 回退：5 分钟
+    return { offsetMs: 5 * 60 * 1000 }
+  }
+
+  const setNextReminder = (taskId, nextReminderAt) => {
+    if (!taskId) return false
+    const task = getTaskById(taskId)
+    if (!task) return false
+    let value = nextReminderAt
+    if (value instanceof Date) value = value.getTime()
+    if (value !== null && value !== undefined) {
+      const n = Number(value)
+      if (!Number.isFinite(n) || n <= 0) return false
+      value = n
+    } else {
+      value = null
+    }
+    const ok = updateTask(taskId, { nextReminderAt: value })
+    // 一次 debouncedSave 已由 updateTask 内部 watch 自动触发（若监听已建立），此处保证独立使用时也持久化
+    debouncedSave()
+    return ok
+  }
+
+  const snoozeTaskById = (taskId, offsetOrDate) => {
+    if (!taskId) return false
+    const task = getTaskById(taskId)
+    if (!task) return false
+    const { offsetMs } = computeSnoozeOffsetMs(offsetOrDate)
+    const nextTs = Date.now() + offsetMs
+    const prev = Number(task.snoozeCount) || 0
+    const ok = updateTask(taskId, {
+      nextReminderAt: nextTs,
+      snoozeCount: prev + 1
+    })
+    if (ok) {
+      logActivity(taskId, 'reminderSnooze', {
+        until: nextTs,
+        minutes: Math.round(offsetMs / 60000)
+      })
+    }
+    debouncedSave()
+    return ok
+  }
+
+
   return {
     tasks,
     categories,
@@ -2626,6 +2786,9 @@ export const useTaskStore = defineStore('task', () => {
     currentView,
     currentCategory,
     currentTag,
+    currentFilterId,
+    currentListId,
+    currentAreaId,
     focusedTaskId,
     focusedTask,
     myDayTasks,
@@ -2685,6 +2848,10 @@ export const useTaskStore = defineStore('task', () => {
     addPomodoroSession,
     markAllComplete,
     restoreTask,
+    // Task 5 additions
+    setNextReminder,
+    snoozeTaskById,
+    logActivity,
     cleanup,
     // Task 1 v3 additions
     ensureV3,
