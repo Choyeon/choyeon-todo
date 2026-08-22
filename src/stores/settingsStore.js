@@ -3,6 +3,14 @@ import { ref, computed } from 'vue'
 
 const STORAGE_KEY = 'choyeon_settings_v1'
 
+const detectDefaultDensity = () => {
+  if (typeof window === 'undefined') return 'standard'
+  const width = window.innerWidth || window.screen?.width || 1440
+  if (width <= 1366) return 'compact'
+  if (width <= 1600) return 'standard'
+  return 'comfortable'
+}
+
 const DEFAULT_SETTINGS = {
   sidebarCollapsed: false,
   themeMode: 'light',
@@ -21,7 +29,16 @@ const DEFAULT_SETTINGS = {
   pomodoroWorkMinutes: 25,
   pomodoroBreakMinutes: 5,
   pomodoroLongBreakMinutes: 15,
-  pomodoroSessionsBeforeLongBreak: 4
+  pomodoroSessionsBeforeLongBreak: 4,
+  myDaySmartEnabled: true,
+  myDaySmartCount: 15,
+  sidebarShowFilters: true,
+  sidebarShowAreas: true,
+  density: 'standard',
+  // Task 1: v3 数据契约版本号
+  //  - 新用户默认：3
+  //  - 老用户加载：若 tasksVersion 缺失则设置为 2，taskStore.ensureV3 触发迁移
+  tasksVersion: 3
 }
 
 const THEME_COLORS = [
@@ -139,6 +156,14 @@ export const useSettingsStore = defineStore('settings', () => {
   const pomodoroBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroBreakMinutes)
   const pomodoroLongBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroLongBreakMinutes)
   const pomodoroSessionsBeforeLongBreak = ref(DEFAULT_SETTINGS.pomodoroSessionsBeforeLongBreak)
+  const myDaySmartEnabled = ref(DEFAULT_SETTINGS.myDaySmartEnabled)
+  const myDaySmartCount = ref(DEFAULT_SETTINGS.myDaySmartCount)
+  const sidebarShowFilters = ref(DEFAULT_SETTINGS.sidebarShowFilters)
+  const sidebarShowAreas = ref(DEFAULT_SETTINGS.sidebarShowAreas)
+  const density = ref(detectDefaultDensity())
+  const _densityInitializedFromStorage = ref(false)
+  // Task 1: v3 数据契约版本号；注意老用户缺失时保持 2 以便迁移触发
+  const tasksVersion = ref(DEFAULT_SETTINGS.tasksVersion)
 
   const resolvedTheme = computed(() => {
     if (themeMode.value === 'system') {
@@ -254,6 +279,29 @@ export const useSettingsStore = defineStore('settings', () => {
         ) {
           pomodoroSessionsBeforeLongBreak.value = data.pomodoroSessionsBeforeLongBreak
         }
+        if (typeof data.myDaySmartEnabled === 'boolean') {
+          myDaySmartEnabled.value = data.myDaySmartEnabled
+        }
+        if (typeof data.myDaySmartCount === 'number' && data.myDaySmartCount >= 1 && data.myDaySmartCount <= 100) {
+          myDaySmartCount.value = data.myDaySmartCount
+        }
+        if (typeof data.sidebarShowFilters === 'boolean') {
+          sidebarShowFilters.value = data.sidebarShowFilters
+        }
+        if (typeof data.sidebarShowAreas === 'boolean') {
+          sidebarShowAreas.value = data.sidebarShowAreas
+        }
+        if (data.density && ['comfortable', 'standard', 'compact'].includes(data.density)) {
+          density.value = data.density
+          _densityInitializedFromStorage.value = true
+        }
+        // Task 1: tasksVersion。注意老用户（缺该字段）默认设 2 以便触发迁移，
+        // 新写入的用户始终 >= 3。
+        if (typeof data.tasksVersion === 'number') {
+          tasksVersion.value = Math.max(1, Math.floor(data.tasksVersion))
+        } else {
+          tasksVersion.value = 2
+        }
       }
       applyTheme()
     } catch (e) {
@@ -290,7 +338,13 @@ export const useSettingsStore = defineStore('settings', () => {
           pomodoroWorkMinutes: pomodoroWorkMinutes.value,
           pomodoroBreakMinutes: pomodoroBreakMinutes.value,
           pomodoroLongBreakMinutes: pomodoroLongBreakMinutes.value,
-          pomodoroSessionsBeforeLongBreak: pomodoroSessionsBeforeLongBreak.value
+          pomodoroSessionsBeforeLongBreak: pomodoroSessionsBeforeLongBreak.value,
+          myDaySmartEnabled: myDaySmartEnabled.value,
+          myDaySmartCount: myDaySmartCount.value,
+          sidebarShowFilters: sidebarShowFilters.value,
+          sidebarShowAreas: sidebarShowAreas.value,
+          density: density.value,
+          tasksVersion: tasksVersion.value
         })
       )
     } catch (e) {
@@ -325,7 +379,13 @@ export const useSettingsStore = defineStore('settings', () => {
       pomodoroWorkMinutes,
       pomodoroBreakMinutes,
       pomodoroLongBreakMinutes,
-      pomodoroSessionsBeforeLongBreak
+      pomodoroSessionsBeforeLongBreak,
+      myDaySmartEnabled,
+      myDaySmartCount,
+      sidebarShowFilters,
+      sidebarShowAreas,
+      density,
+      tasksVersion
     ]
     watchFn(watchSources, debouncedSave)
   }
@@ -429,6 +489,29 @@ export const useSettingsStore = defineStore('settings', () => {
     bingWallpaperEnabled.value = !bingWallpaperEnabled.value
   }
 
+  const setDensity = (value) => {
+    if (!['comfortable', 'standard', 'compact'].includes(value)) return
+    density.value = value
+  }
+
+  const toggleSidebarShowFilters = () => {
+    sidebarShowFilters.value = !sidebarShowFilters.value
+  }
+
+  const toggleSidebarShowAreas = () => {
+    sidebarShowAreas.value = !sidebarShowAreas.value
+  }
+
+  const toggleMyDaySmartEnabled = () => {
+    myDaySmartEnabled.value = !myDaySmartEnabled.value
+  }
+
+  const setMyDaySmartCount = (count) => {
+    const n = Number(count)
+    if (!Number.isFinite(n)) return
+    myDaySmartCount.value = Math.max(1, Math.min(100, Math.round(n)))
+  }
+
   const toggleTheme = () => {
     if (themeMode.value === 'system') {
       themeMode.value = 'light'
@@ -459,6 +542,12 @@ export const useSettingsStore = defineStore('settings', () => {
     pomodoroBreakMinutes.value = DEFAULT_SETTINGS.pomodoroBreakMinutes
     pomodoroLongBreakMinutes.value = DEFAULT_SETTINGS.pomodoroLongBreakMinutes
     pomodoroSessionsBeforeLongBreak.value = DEFAULT_SETTINGS.pomodoroSessionsBeforeLongBreak
+    myDaySmartEnabled.value = DEFAULT_SETTINGS.myDaySmartEnabled
+    myDaySmartCount.value = DEFAULT_SETTINGS.myDaySmartCount
+    sidebarShowFilters.value = DEFAULT_SETTINGS.sidebarShowFilters
+    sidebarShowAreas.value = DEFAULT_SETTINGS.sidebarShowAreas
+    density.value = detectDefaultDensity()
+    tasksVersion.value = DEFAULT_SETTINGS.tasksVersion
     applyTheme()
   }
 
@@ -518,6 +607,12 @@ export const useSettingsStore = defineStore('settings', () => {
     pomodoroBreakMinutes,
     pomodoroLongBreakMinutes,
     pomodoroSessionsBeforeLongBreak,
+    myDaySmartEnabled,
+    myDaySmartCount,
+    sidebarShowFilters,
+    sidebarShowAreas,
+    density,
+    tasksVersion,
     themeColors: THEME_COLORS,
     loadFromStorage,
     applyTheme,
@@ -540,6 +635,11 @@ export const useSettingsStore = defineStore('settings', () => {
     setMiniWindowEnabled,
     toggleMiniWindow,
     toggleBingWallpaper,
+    setDensity,
+    toggleSidebarShowFilters,
+    toggleSidebarShowAreas,
+    toggleMyDaySmartEnabled,
+    setMyDaySmartCount,
     resetSettings,
     cleanup
   }

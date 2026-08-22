@@ -9,6 +9,33 @@ import {
   getNextWeekRange,
   getTomorrowStr
 } from '../utils/date'
+// Task 1: 引入 v3 迁移工具
+import {
+  migrateV2ToV3,
+  rollbackSaveAndPersist,
+  saveConflict
+} from '../utils/migrate-v3'
+import { useSnackbar } from '../composables/useSnackbar'
+import { useSettingsStore } from './settingsStore'
+import { useAreaStore, DEFAULT_AREA_ID } from './areaStore'
+import { useListStore, DEFAULT_LIST_ID } from './listStore'
+// 简单 wrapper：优先用 useSnackbar，否则仅 console（测试环境无 DOM 也 OK）
+const pushSnackbar = (msg) => {
+  try {
+    if (typeof useSnackbar === 'function') {
+      const s = useSnackbar()
+      if (s && typeof s.show === 'function') {
+        s.show(msg)
+        return
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  if (typeof console !== 'undefined') {
+    console.warn('[Snackbar]', msg)
+  }
+}
 
 const STORAGE_KEYS = {
   tasks: 'choyeon_tasks_v2',
@@ -88,6 +115,22 @@ const DEFAULT_TEMPLATES = [
 ]
 
 const UNDELETABLE_CATEGORY = 'other'
+// Task 1: v3 契约最低版本
+const MIN_TASKS_VERSION = 3
+// 子任务层级限制（祖先链长度 ≤ 4 → 根 + 4 层 = 最深 5 层）
+const MAX_PARENT_DEPTH = 4
+// 活动日志类型（共 8 类）
+const ACTIVITY_TYPES = [
+  'add',
+  'edit',
+  'complete',
+  'uncomplete',
+  'delete',
+  'restore',
+  'migrate',
+  'reminderTrigger',
+  'pomodoroComplete'
+]
 
 export const generateId = (prefix = '') => {
   return `${prefix}${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`
@@ -254,6 +297,8 @@ export const useTaskStore = defineStore('task', () => {
     if (!task) return false
     task.pomodoroSessions = (task.pomodoroSessions || 0) + 1
     task.totalFocusTime = (task.totalFocusTime || 0) + Math.max(0, Math.floor(seconds))
+    // Task 1: 如果超过 0 秒，视为一次番茄完成
+    if (seconds > 0) logActivity(taskId, 'pomodoroComplete', { seconds: Math.floor(seconds) })
     return true
   }
 
@@ -521,6 +566,13 @@ export const useTaskStore = defineStore('task', () => {
           console.warn('[TaskStore] Failed to parse templates:', e)
         }
       }
+
+      // Task 1: 读取后做 v3 迁移保证（零互斥迁移，失败时回滚到加载前 state）
+      try {
+        ensureV3('loadFromStorage')
+      } catch (e) {
+        console.error('[TaskStore] ensureV3 after loadFromStorage failed:', e)
+      }
     } catch (e) {
       console.error('[TaskStore] Failed to load from storage:', e)
       tasks.value = []
@@ -577,6 +629,148 @@ export const useTaskStore = defineStore('task', () => {
     saveToStorage()
   }
 
+  // Task 1: 零副作用 ensureV3。
+  // 判断 settings.tasksVersion 若 < MIN_TASKS_VERSION，则调用 migrateV2ToV3()。
+  // 失败时写 conflict + rollback，并保持原状态（不破坏 tasks/categories/tags/templates）。
+  const ensureV3 = (reason = 'auto') => {
+    let settingsTV = 3
+    try {
+      const sStore = useSettingsStore()
+      if (sStore && typeof sStore.tasksVersion === 'number') {
+        settingsTV = sStore.tasksVersion
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // 快速自检：tasks 是否所有条目都具备 v3 字段；若无，即使版本号对也要迁移
+    let hasV3Fields = true
+    if (tasks.value.length > 0) {
+      // 抽样检查前 N 条 + 最近 2 条，避免全量扫描开销
+      const sample = tasks.value.slice(0, 50).concat(tasks.value.slice(-2))
+      for (const t of sample) {
+        if (
+          t.listId == null ||
+          t.areaId == null ||
+          t.blockedBy == null ||
+          !Array.isArray(t.activity) ||
+          t.updatedAt == null
+        ) {
+          hasV3Fields = false
+          break
+        }
+      }
+    }
+
+    const needMigrate = settingsTV < MIN_TASKS_VERSION || !hasV3Fields
+    if (!needMigrate) {
+      // 已 v3：补齐每个任务字段默认值（避免老版本升级缺字段）
+      let changed = false
+      tasks.value = tasks.value.map((t) => {
+        const ensured = ensureV3DefaultsOnTask(t)
+        if (
+          ensured.listId !== t.listId ||
+          ensured.areaId !== t.areaId ||
+          ensured.parentId !== t.parentId ||
+          !Array.isArray(t.blockedBy) ||
+          !Array.isArray(t.activity)
+        ) {
+          changed = true
+        }
+        return ensured
+      })
+      if (changed) {
+        try {
+          const sStore = useSettingsStore()
+          if (sStore) sStore.tasksVersion = MIN_TASKS_VERSION
+        } catch {
+          /* ignore */
+        }
+        if (saveTimeout) clearTimeout(saveTimeout)
+        saveToStorage()
+      }
+      return { ok: true, migrated: false, reason }
+    }
+
+    // 1) 快照（深拷贝）——失败 rollback
+    const snap = {
+      tasks: JSON.parse(JSON.stringify(tasks.value)),
+      categories: JSON.parse(JSON.stringify(categories.value)),
+      tags: JSON.parse(JSON.stringify(tags.value)),
+      templates: JSON.parse(JSON.stringify(templates.value))
+    }
+
+    try {
+      // 2) 读入 area/list 数据（若已存）
+      let a = []
+      let l = []
+      try {
+        const aStore = useAreaStore()
+        if (aStore && Array.isArray(aStore.areas)) a = aStore.areas
+      } catch {
+        /* ignore */
+      }
+      try {
+        const lStore = useListStore()
+        if (lStore && Array.isArray(lStore.lists)) l = lStore.lists
+      } catch {
+        /* ignore */
+      }
+
+      const res = migrateV2ToV3({
+        tasks: tasks.value,
+        categories: categories.value,
+        areas: a,
+        lists: l,
+        settings: { tasksVersion: settingsTV }
+      })
+      if (!res || !res.ok) {
+        throw new Error((res && res.error) || 'migrateV2ToV3 failed')
+      }
+
+      // 3) 写入 tasks/categories/areas/lists + settings.tasksVersion
+      tasks.value = res.migrated.tasks
+      categories.value = res.migrated.categories
+      if (res.migrated.areas && res.migrated.areas.length) {
+        try {
+          const aStore = useAreaStore()
+          if (aStore && Array.isArray(aStore.areas)) aStore.areas = res.migrated.areas
+        } catch {
+          /* ignore */
+        }
+      }
+      if (res.migrated.lists && res.migrated.lists.length) {
+        try {
+          const lStore = useListStore()
+          if (lStore && Array.isArray(lStore.lists)) lStore.lists = res.migrated.lists
+        } catch {
+          /* ignore */
+        }
+      }
+      try {
+        const sStore = useSettingsStore()
+        if (sStore) sStore.tasksVersion = MIN_TASKS_VERSION
+      } catch {
+        /* ignore */
+      }
+
+      // 4) 单次保存
+      if (saveTimeout) clearTimeout(saveTimeout)
+      saveToStorage()
+      return { ok: true, migrated: true, reason }
+    } catch (e) {
+      console.error('[TaskStore] ensureV3 failed, rollback:', e)
+      // 5) rollback
+      tasks.value = snap.tasks
+      categories.value = snap.categories
+      tags.value = snap.tags
+      templates.value = snap.templates
+      rollbackSaveAndPersist(`ensureV3:${reason}:${Date.now()}`, snap)
+      saveConflict(`ensureV3:${reason}`, { error: e && e.message, snap })
+      return { ok: false, migrated: false, reason, error: e.message }
+    }
+  }
+
   const setupStorageWatch = (watchFn) => {
     watchFn(tasks, debouncedSave, { deep: true })
     watchFn(categories, debouncedSave, { deep: true })
@@ -584,6 +778,83 @@ export const useTaskStore = defineStore('task', () => {
     watchFn(templates, debouncedSave, { deep: true })
     watchFn(myDayDate, debouncedSave)
     watchFn(myDayTaskIds, debouncedSave, { deep: true })
+  }
+
+  // Task 1: 通用 logActivity。仅在任务存在时写入，避免无效活动。
+  // 默认限制最多保留最近 200 条，避免无限增长。
+  const MAX_ACTIVITY_PER_TASK = 200
+  const logActivity = (taskId, type, extra = {}) => {
+    if (!taskId || !ACTIVITY_TYPES.includes(type)) return false
+    const task = getTaskById(taskId)
+    if (!task) return false
+    if (!Array.isArray(task.activity)) task.activity = []
+    const entry = { type, at: Date.now(), ...extra }
+    task.activity.push(entry)
+    if (task.activity.length > MAX_ACTIVITY_PER_TASK) {
+      task.activity.splice(0, task.activity.length - MAX_ACTIVITY_PER_TASK)
+    }
+    return true
+  }
+
+  // Task 1: 子任务祖先链深度（沿 parentId 上溯，返回祖先链长度 = 深度）。
+  // 无父级 => 0；子级 => 1；…；层级阈值校验 ≤ MAX_PARENT_DEPTH。
+  const getAncestorDepth = (taskId, visited = null) => {
+    let depth = 0
+    let cur = taskId
+    const seen = visited || new Set()
+    while (cur) {
+      if (seen.has(cur)) return Infinity // 防环
+      seen.add(cur)
+      const t = getTaskById(cur)
+      if (!t || !t.parentId) break
+      depth++
+      if (depth > MAX_PARENT_DEPTH + 16) return Infinity
+      cur = t.parentId
+    }
+    return depth
+  }
+
+  // Task 1: 依赖阻断校验。blockedBy 中任一条未完成任务 => 阻断。
+  const isTaskBlocked = (task) => {
+    if (!task) return false
+    if (!Array.isArray(task.blockedBy) || task.blockedBy.length === 0) return false
+    for (const depId of task.blockedBy) {
+      const dep = getTaskById(depId)
+      if (dep && !dep.completed) return true
+    }
+    return false
+  }
+
+  // Task 1: 为新任务补齐 v3 默认字段。供 addTask / addSubTask / importData 共用。
+  const ensureV3DefaultsOnTask = (t, overrides = {}) => {
+    const base = t || {}
+    const now = Date.now()
+    return {
+      ...base,
+      parentId: base.parentId !== undefined ? base.parentId : overrides.parentId ?? null,
+      headingId: base.headingId ?? overrides.headingId ?? null,
+      listId:
+        base.listId ?? overrides.listId ?? base.categoryId ?? base.category ?? DEFAULT_LIST_ID,
+      areaId: base.areaId ?? overrides.areaId ?? DEFAULT_AREA_ID,
+      blockedBy: Array.isArray(base.blockedBy) ? base.blockedBy.slice() : overrides.blockedBy ?? [],
+      comments: Array.isArray(base.comments) ? base.comments.slice() : overrides.comments ?? [],
+      attachments: Array.isArray(base.attachments)
+        ? base.attachments.slice()
+        : overrides.attachments ?? [],
+      assignee: typeof base.assignee === 'string' ? base.assignee : overrides.assignee ?? '',
+      createdBy: typeof base.createdBy === 'string' ? base.createdBy : overrides.createdBy ?? '',
+      nextReminderAt:
+        typeof base.nextReminderAt === 'number' && base.nextReminderAt > 0
+          ? base.nextReminderAt
+          : overrides.nextReminderAt ?? null,
+      snoozeCount:
+        typeof base.snoozeCount === 'number'
+          ? Math.max(0, base.snoozeCount)
+          : overrides.snoozeCount ?? 0,
+      activity: Array.isArray(base.activity) ? base.activity.slice() : overrides.activity ?? [],
+      createdAt: typeof base.createdAt === 'number' ? base.createdAt : overrides.createdAt ?? now,
+      updatedAt: typeof base.updatedAt === 'number' ? base.updatedAt : overrides.updatedAt ?? now
+    }
   }
 
   const addTask = (task) => {
@@ -605,7 +876,7 @@ export const useTaskStore = defineStore('task', () => {
     }
 
     const now = Date.now()
-    const newTask = {
+    const base = {
       id: generateId('task_'),
       title: task.title.trim().slice(0, 500),
       category: catExists ? catId : UNDELETABLE_CATEGORY,
@@ -633,10 +904,25 @@ export const useTaskStore = defineStore('task', () => {
       completedAt: null,
       isInbox: !!task.isInbox
     }
+    // Task 1: 叠加 v3 新字段默认值；若调用方显式传了 listId / areaId，保留优先
+    const explicitOverrides = {}
+    if (task && typeof task.listId === 'string' && task.listId) explicitOverrides.listId = task.listId
+    if (task && typeof task.areaId === 'string' && task.areaId) explicitOverrides.areaId = task.areaId
+    const newTask = ensureV3DefaultsOnTask(base, {
+      listId: explicitOverrides.listId ?? base.category,
+      activity: [{ type: 'add', at: now }]
+    })
+    // 兼容：categoryId 别名 -> 写回 category
+    if (task && task.categoryId && typeof task.categoryId === 'string') {
+      newTask.category = task.categoryId
+      if (!explicitOverrides.listId) newTask.listId = task.categoryId
+    }
     tasks.value.unshift(newTask)
     return newTask
   }
 
+  // Task 1: 扩展 UPDATABLE_FIELDS
+  //   注意：blockedBy 在外部 updateTask 调用中仅接受合法 id 数组（下方校验）。
   const UPDATABLE_FIELDS = [
     'title',
     'category',
@@ -653,13 +939,30 @@ export const useTaskStore = defineStore('task', () => {
     'priority',
     'isInbox',
     'pomodoroSessions',
-    'totalFocusTime'
+    'totalFocusTime',
+    // v3 新字段：仅允许特定写路径
+    'parentId',
+    'listId',
+    'areaId',
+    'headingId',
+    'blockedBy',
+    'comments',
+    'attachments',
+    'assignee',
+    'nextReminderAt',
+    'snoozeCount',
+    'createdBy',
+    'completedOrder',
+    'completedAt',
+    'updatedAt'
   ]
 
   const updateTask = (id, updates) => {
     if (!id || !updates) return false
     const index = getTaskIndexById(id)
     if (index === -1) return false
+
+    const prevTask = tasks.value[index]
 
     const safeUpdates = {}
     for (const key of UPDATABLE_FIELDS) {
@@ -691,11 +994,19 @@ export const useTaskStore = defineStore('task', () => {
     if (safeUpdates.reminder !== undefined) {
       safeUpdates.reminder = !!safeUpdates.reminder
     }
-    const prevCompleted = !!tasks.value[index].completed
+    const prevCompleted = !!prevTask.completed
     const willChangeCompleted =
       safeUpdates.completed !== undefined && !!safeUpdates.completed !== prevCompleted
     if (safeUpdates.completed !== undefined) {
       safeUpdates.completed = !!safeUpdates.completed
+    }
+    // Task 1: 若要标记完成 -> blockedBy 阻断校验
+    if (willChangeCompleted && safeUpdates.completed) {
+      const mergedForBlocked = { ...prevTask, ...safeUpdates }
+      if (isTaskBlocked(mergedForBlocked)) {
+        pushSnackbar('任务被阻断，需先完成前置任务')
+        return false
+      }
     }
     if (safeUpdates.tags !== undefined && !Array.isArray(safeUpdates.tags)) {
       return false
@@ -723,10 +1034,64 @@ export const useTaskStore = defineStore('task', () => {
     if (safeUpdates.isInbox !== undefined) {
       safeUpdates.isInbox = !!safeUpdates.isInbox
     }
+    // Task 1: v3 字段校验
+    if (safeUpdates.blockedBy !== undefined) {
+      if (!Array.isArray(safeUpdates.blockedBy)) return false
+      // blockedBy 仅接受合法字符串 id 数组；去重并忽略自身引用
+      const seen = new Set()
+      const clean = []
+      for (const bid of safeUpdates.blockedBy) {
+        if (typeof bid !== 'string' || !bid) continue
+        if (bid === id) continue
+        if (seen.has(bid)) continue
+        seen.add(bid)
+        clean.push(bid)
+      }
+      safeUpdates.blockedBy = clean
+    }
+    if (safeUpdates.comments !== undefined && !Array.isArray(safeUpdates.comments)) return false
+    if (safeUpdates.attachments !== undefined && !Array.isArray(safeUpdates.attachments)) return false
+    if (safeUpdates.parentId !== undefined) {
+      if (safeUpdates.parentId !== null) {
+        if (typeof safeUpdates.parentId !== 'string' || safeUpdates.parentId === id) return false
+        // 先临时模拟更新，校验深度（避免循环修改）
+        const orig = prevTask.parentId
+        prevTask.parentId = safeUpdates.parentId
+        const depth = getAncestorDepth(id)
+        prevTask.parentId = orig
+        if (depth > MAX_PARENT_DEPTH) return false
+      }
+    }
+    if (safeUpdates.listId !== undefined && safeUpdates.listId !== null) {
+      safeUpdates.listId = String(safeUpdates.listId)
+    }
+    if (safeUpdates.areaId !== undefined && safeUpdates.areaId !== null) {
+      safeUpdates.areaId = String(safeUpdates.areaId)
+    }
+    if (safeUpdates.assignee !== undefined) {
+      safeUpdates.assignee = safeUpdates.assignee == null ? '' : String(safeUpdates.assignee)
+    }
+    if (safeUpdates.createdBy !== undefined) {
+      safeUpdates.createdBy = safeUpdates.createdBy == null ? '' : String(safeUpdates.createdBy)
+    }
+    if (safeUpdates.nextReminderAt !== undefined) {
+      if (safeUpdates.nextReminderAt == null) {
+        safeUpdates.nextReminderAt = null
+      } else if (typeof safeUpdates.nextReminderAt !== 'number') {
+        return false
+      }
+    }
+    if (safeUpdates.snoozeCount !== undefined) {
+      const sc = Number(safeUpdates.snoozeCount)
+      if (!Number.isFinite(sc)) return false
+      safeUpdates.snoozeCount = Math.max(0, Math.floor(sc))
+    }
+    safeUpdates.updatedAt = Date.now()
+
     if (safeUpdates.completed !== undefined) {
       safeUpdates.completedAt = safeUpdates.completed ? Date.now() : null
       if (safeUpdates.completed) {
-        if (tasks.value[index].completedOrder === undefined || tasks.value[index].completedOrder < 0) {
+        if (prevTask.completedOrder === undefined || prevTask.completedOrder < 0) {
           let maxCompletedOrder = -1
           for (const t of tasks.value) {
             if (t.id !== id && typeof t.completedOrder === 'number' && t.completedOrder > maxCompletedOrder) {
@@ -741,7 +1106,7 @@ export const useTaskStore = defineStore('task', () => {
       }
     }
 
-    const mergedTask = { ...tasks.value[index], ...safeUpdates }
+    const mergedTask = { ...prevTask, ...safeUpdates }
     tasks.value[index] = mergedTask
 
     // 保持 repeat 生命周期逻辑与 toggleComplete 自洽
@@ -749,9 +1114,17 @@ export const useTaskStore = defineStore('task', () => {
       if (mergedTask.completed) {
         removeFromMyDay(id)
         if (mergedTask.repeat) generateNextRepeatTask(id)
+        logActivity(id, 'complete')
       } else {
         if (mergedTask.repeat) removeNextRepeatTask(id)
+        logActivity(id, 'uncomplete')
       }
+    } else {
+      // 普通编辑：记录 edit 活动（如果有任何实际改动）
+      const hasEdit = Object.keys(safeUpdates).some(
+        (k) => k !== 'updatedAt' && JSON.stringify(safeUpdates[k]) !== JSON.stringify(prevTask[k])
+      )
+      if (hasEdit) logActivity(id, 'edit')
     }
 
     // 聚焦态与完成态自洽：已完成任务不可聚焦
@@ -763,23 +1136,39 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const deleteTask = (id) => {
-    if (!id) return false
+    if (!id) return null
     const index = getTaskIndexById(id)
-    if (index === -1) return false
-    tasks.value.splice(index, 1)
+    if (index === -1) return null
+    // Task 1: 删除活动日志（写到被删任务对象上，保留用于 restore/撤销场景）
+    logActivity(id, 'delete')
+    const [snapshot] = tasks.value.splice(index, 1)
     removeFromMyDay(id)
     // 删除聚焦任务时清空焦点，避免 UI 引用已删除的任务
     if (focusedTaskId.value === id) {
       focusedTaskId.value = null
     }
-    return true
+    // Task 1: 清理 blockedBy 中对该任务的引用
+    tasks.value.forEach((t) => {
+      if (Array.isArray(t.blockedBy) && t.blockedBy.includes(id)) {
+        t.blockedBy = t.blockedBy.filter((bid) => bid !== id)
+      }
+      // 若 parentId 指向已删除 -> 上提一级
+      if (t.parentId === id) t.parentId = null
+    })
+    return snapshot
   }
 
   const toggleComplete = (id) => {
     const task = getTaskById(id)
     if (!task) return
+    // Task 1: blockedBy 阻断校验（仅当要切换到 completed 时）
+    if (!task.completed && isTaskBlocked(task)) {
+      pushSnackbar('任务被阻断，需先完成前置任务')
+      return false
+    }
     task.completed = !task.completed
     task.completedAt = task.completed ? Date.now() : null
+    task.updatedAt = Date.now()
 
     if (task.completed) {
       let maxOrder = -1
@@ -793,12 +1182,15 @@ export const useTaskStore = defineStore('task', () => {
       if (task.repeat) {
         generateNextRepeatTask(id)
       }
+      logActivity(id, 'complete')
     } else {
       delete task.completedOrder
+      logActivity(id, 'uncomplete')
       if (task.repeat) {
         removeNextRepeatTask(id)
       }
     }
+    return true
   }
 
   const toggleImportant = (id) => {
@@ -815,7 +1207,12 @@ export const useTaskStore = defineStore('task', () => {
     sub.completed = !sub.completed
   }
 
-  const reorderTasks = (fromId, toId) => {
+  // Task 1: 统一重排 / 移动入口。
+  // 重载：
+  //   reorderTasks(moves: [{id, afterId?, beforeId?, parentId?, listId?, headingId?}])  → 新统一 API
+  //   reorderTasks(fromId, toId) → 旧兼容（交换到 toId 之前）
+  // 所有改动在单次 mutation 内完成，完成后触发一次 debouncedSave。
+  const reorderTasksV2 = (fromId, toId) => {
     const fromIndex = getTaskIndexById(fromId)
     const toIndex = getTaskIndexById(toId)
     if (fromIndex === -1 || toIndex === -1) return false
@@ -850,7 +1247,182 @@ export const useTaskStore = defineStore('task', () => {
         t.order = i
       })
     }
+    return true
+  }
 
+  const reorderTasks = (...args) => {
+    // 重载：区分 moves 数组 vs (fromId, toId)
+    if (args.length === 1 && Array.isArray(args[0])) {
+      const moves = args[0]
+      // 原子性校验：先把所有目标 task 找到，并确认 parentId/listId 更新后的深度合法
+      // Stage 1: 预校验
+      const snapshot = new Map()
+      for (const m of moves) {
+        if (!m || !m.id) return false
+        const t = getTaskById(m.id)
+        if (!t) return false
+        snapshot.set(m.id, { ...t })
+      }
+      // Stage 1.5: 检查 parentId 深度
+      for (const m of moves) {
+        if (m.parentId === undefined) continue
+        const snap = snapshot.get(m.id)
+        const curParent = m.parentId ?? null
+        if (curParent === m.id) return false
+        // 临时更新用于深度计算
+        snap.parentId = curParent
+        // 沿快照遍历：遇到未知 parentId（未在 moves 中）时退回 tasks.value 查询
+        let depth = 0
+        let seen = new Set([m.id])
+        let cur = curParent
+        while (cur) {
+          if (seen.has(cur)) return false
+          seen.add(cur)
+          const inSnap = snapshot.get(cur)
+          const nextParent = inSnap ? inSnap.parentId : getTaskById(cur)?.parentId ?? null
+          if (!nextParent) break
+          depth++
+          if (depth > MAX_PARENT_DEPTH) return false
+          cur = nextParent
+        }
+        if (depth > MAX_PARENT_DEPTH) return false
+      }
+      // Stage 2: 实际修改（一次性）
+      const now = Date.now()
+      for (const m of moves) {
+        const t = getTaskById(m.id)
+        if (!t) continue
+        if (m.parentId !== undefined) t.parentId = m.parentId ?? null
+        if (m.listId !== undefined) {
+          t.listId = m.listId
+          // 同步 category 字段，保持 2.x UI 兼容
+          t.category = m.listId
+        }
+        if (m.areaId !== undefined) t.areaId = m.areaId
+        if (m.headingId !== undefined) t.headingId = m.headingId ?? null
+        t.updatedAt = now
+      }
+      // Stage 3: afterId / beforeId 排序（同 completed 状态的未完成/已完成分组，用 order/completedOrder）
+      for (const m of moves) {
+        const t = getTaskById(m.id)
+        if (!t) continue
+        const anchor = m.afterId || m.beforeId
+        if (!anchor) continue
+        const anchorTask = getTaskById(anchor)
+        if (!anchorTask) continue
+        if (anchorTask.completed !== t.completed) continue
+        const field = anchorTask.completed ? 'completedOrder' : 'order'
+        const allSame = tasks.value.filter((x) => x.completed === t.completed)
+        allSame.sort((a, b) => {
+          const ao = typeof a[field] === 'number' ? a[field] : 0
+          const bo = typeof b[field] === 'number' ? b[field] : 0
+          return ao - bo
+        })
+        // 从组中抽出当前 id
+        const withoutMoving = allSame.filter((x) => x.id !== m.id)
+        const anchorIdx = withoutMoving.findIndex((x) => x.id === anchor)
+        if (anchorIdx === -1) continue
+        const insertPos = m.afterId ? anchorIdx + 1 : anchorIdx
+        withoutMoving.splice(insertPos, 0, t)
+        withoutMoving.forEach((x, i) => {
+          x[field] = i
+        })
+      }
+      // Stage 4: 单次 debouncedSave
+      debouncedSave()
+      return true
+    }
+    if (args.length === 2 && typeof args[0] === 'string' && typeof args[1] === 'string') {
+      const result = reorderTasksV2(args[0], args[1])
+      if (result) debouncedSave()
+      return result
+    }
+    return false
+  }
+
+  // Task 1: 添加子任务。parentId 必须存在，且祖先链 ≤ MAX_PARENT_DEPTH。
+  // position 语义：'inside'（缺省，作为 parentId 的直接子任务）/ 'before' / 'after' 仅预留，默认统一以 parentId 为主。
+  const addSubTask = (parentId, draft, position = 'inside') => {
+    if (!parentId) return null
+    const parent = getTaskById(parentId)
+    if (!parent) return null
+    // 深度校验：新子任务 parentId = parentId → depth(parentId)+1 ≤ MAX_PARENT_DEPTH
+    const parentDepth = getAncestorDepth(parentId)
+    if (parentDepth + 1 > MAX_PARENT_DEPTH) return null
+    const base = typeof draft === 'string' ? { title: draft } : draft || {}
+    const now = Date.now()
+    let maxOrder = -1
+    for (const t of tasks.value) {
+      if (typeof t.order === 'number' && t.order > maxOrder) maxOrder = t.order
+    }
+    const fallbackCategory = parent.category || UNDELETABLE_CATEGORY
+    const taskDraft = {
+      title: String(base.title || '').trim(),
+      category: base.category || fallbackCategory,
+      date: base.date || parent.date || getTodayStr(),
+      time: base.time || null,
+      reminder: !!base.reminder,
+      important: !!base.important,
+      priority: base.priority !== undefined ? base.priority : parent.priority ?? 4,
+      notes: base.notes || '',
+      tags: Array.isArray(base.tags) ? base.tags : [],
+      subTasks: Array.isArray(base.subTasks) ? base.subTasks : [],
+      repeat: isValidRepeatConfig(base.repeat) ? base.repeat : null,
+      isInbox: !!base.isInbox
+    }
+    const created = addTask(taskDraft)
+    if (!created) return null
+    // 追加 v3 字段（相对于 addTask 的覆盖）
+    created.parentId = parentId
+    created.areaId = parent.areaId || DEFAULT_AREA_ID
+    created.listId = parent.listId || fallbackCategory || DEFAULT_LIST_ID
+    created.updatedAt = now
+    // activity 追加 addSubTask 的 context（仍在 add 类型内，保留 extra）
+    if (!Array.isArray(created.activity)) created.activity = []
+    created.activity.push({ type: 'add', at: now, extra: { subTaskOf: parentId, position } })
+    return created
+  }
+
+  // Task 1: 转换为子任务（更新 parentId 指向目标）
+  const convertToSubtask = (taskId, parentId) => {
+    if (!taskId || !parentId || taskId === parentId) return false
+    const task = getTaskById(taskId)
+    const parent = getTaskById(parentId)
+    if (!task || !parent) return false
+    // 校验环：parent 的祖先链不能包含 taskId
+    let cur = parentId
+    const seen = new Set([taskId])
+    while (cur) {
+      if (seen.has(cur)) return false
+      seen.add(cur)
+      const n = getTaskById(cur)
+      if (!n || !n.parentId) break
+      cur = n.parentId
+    }
+    // 校验深度
+    const origParent = task.parentId
+    task.parentId = parentId
+    const depth = getAncestorDepth(taskId)
+    if (depth > MAX_PARENT_DEPTH) {
+      task.parentId = origParent
+      return false
+    }
+    task.updatedAt = Date.now()
+    logActivity(taskId, 'edit', { subTaskOf: parentId })
+    debouncedSave()
+    return true
+  }
+
+  // Task 1: 提升子任务（parentId=null）。若当前无 parentId 直接返回 true。
+  const promoteSubtask = (taskId) => {
+    if (!taskId) return false
+    const task = getTaskById(taskId)
+    if (!task) return false
+    if (!task.parentId) return true
+    task.parentId = null
+    task.updatedAt = Date.now()
+    logActivity(taskId, 'edit', { promoted: true })
+    debouncedSave()
     return true
   }
 
@@ -955,32 +1527,40 @@ export const useTaskStore = defineStore('task', () => {
     for (const t of tasks.value) {
       if (typeof t.order === 'number' && t.order > maxOrder) maxOrder = t.order
     }
-    const newTask = {
-      id: generateId('task_'),
-      title: task.title,
-      category: task.category,
-      date: nextDate,
-      time: task.time,
-      completed: false,
-      important: task.important,
-      reminder: task.reminder,
-      notes: task.notes,
-      tags: [...task.tags],
-      subTasks: task.subTasks.map((st) => ({
-        id: generateId('sub_'),
-        title: st.title,
+    const newTask = ensureV3DefaultsOnTask(
+      {
+        id: generateId('task_'),
+        title: task.title,
+        category: task.category,
+        date: nextDate,
+        time: task.time,
         completed: false,
-        order: st.order
-      })),
-      repeat: { ...task.repeat },
-      order: maxOrder + 1,
-      pomodoroSessions: 0,
-      totalFocusTime: 0,
-      createdAt: Date.now(),
-      completedAt: null,
-      parentTaskId: taskId,
-      repeatRootId: rootTaskId || taskId
-    }
+        important: task.important,
+        reminder: task.reminder,
+        notes: task.notes,
+        tags: [...task.tags],
+        subTasks: task.subTasks.map((st) => ({
+          id: generateId('sub_'),
+          title: st.title,
+          completed: false,
+          order: st.order
+        })),
+        repeat: { ...task.repeat },
+        order: maxOrder + 1,
+        pomodoroSessions: 0,
+        totalFocusTime: 0,
+        createdAt: Date.now(),
+        completedAt: null,
+        parentTaskId: taskId,
+        repeatRootId: rootTaskId || taskId
+      },
+      {
+        listId: task.listId || task.category,
+        areaId: task.areaId || DEFAULT_AREA_ID,
+        parentId: task.parentId ?? null,
+        activity: [{ type: 'add', at: Date.now(), extra: { repeatNext: true } }]
+      }
+    )
 
     tasks.value.push(newTask)
     debouncedSave()
@@ -1723,13 +2303,38 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   const exportData = () => {
+    // Task 1: 导出 v3 版本；包含 areas / lists / settings.tasksVersion，
+    // 同时保留 categories 数组与 categoryIndexMap 语义以保证 2.x UI 兼容。
+    const settingsSnap = { tasksVersion: MIN_TASKS_VERSION }
+    try {
+      const sStore = useSettingsStore()
+      if (sStore && typeof sStore.tasksVersion === 'number') {
+        settingsSnap.tasksVersion = Math.max(MIN_TASKS_VERSION, sStore.tasksVersion)
+      }
+    } catch {
+      /* ignore */
+    }
+    let areaList = []
+    let listList = []
+    try {
+      const aStore = useAreaStore()
+      if (aStore && Array.isArray(aStore.areas)) areaList = aStore.areas
+      const lStore = useListStore()
+      if (lStore && Array.isArray(lStore.lists)) listList = lStore.lists
+    } catch {
+      /* ignore */
+    }
     return {
-      version: 2,
+      version: 3,
+      tasksVersion: settingsSnap.tasksVersion,
       exportedAt: new Date().toISOString(),
       tasks: tasks.value,
       categories: categories.value,
+      areas: areaList,
+      lists: listList,
       tags: tags.value,
-      templates: templates.value
+      templates: templates.value,
+      settings: settingsSnap
     }
   }
 
@@ -1774,18 +2379,72 @@ export const useTaskStore = defineStore('task', () => {
         return { success: false, error: '无效的数据格式' }
       }
 
-      let importedCount = 0
+      if (!Array.isArray(data.tasks)) {
+        return { success: false, error: '无效的任务数据格式' }
+      }
 
-      if (data.tasks && Array.isArray(data.tasks)) {
-        const validTasks = data.tasks.filter((t) => {
+      // Task 1: 判断导入数据版本，必要时先迁移
+      const incomingTasksVersion =
+        data.settings && typeof data.settings.tasksVersion === 'number'
+          ? data.settings.tasksVersion
+          : typeof data.tasksVersion === 'number'
+            ? data.tasksVersion
+            : typeof data.version === 'number'
+              ? data.version
+              : 0
+
+      // 预保存当前状态 -> 失败时用于 rollback
+      const prestate = {
+        tasks: JSON.parse(JSON.stringify(tasks.value)),
+        categories: JSON.parse(JSON.stringify(categories.value)),
+        tags: JSON.parse(JSON.stringify(tags.value)),
+        templates: JSON.parse(JSON.stringify(templates.value))
+      }
+
+      const needMigrate = incomingTasksVersion < MIN_TASKS_VERSION
+      let normalizedTasks = data.tasks
+      let normalizedCategories = data.categories || []
+      let normalizedAreas = data.areas || []
+      let normalizedLists = data.lists || []
+      let normalizedSettings = data.settings || { tasksVersion: Math.max(1, incomingTasksVersion) }
+
+      if (needMigrate) {
+        const res = migrateV2ToV3({
+          tasks: data.tasks,
+          categories: normalizedCategories,
+          areas: normalizedAreas,
+          lists: normalizedLists,
+          settings: normalizedSettings
+        })
+        if (!res || !res.ok) {
+          // 失败：保留 prestate 并写 conflict；不修改当前 store 状态
+          saveConflict('importData-v2', {
+            reason: res && res.error ? res.error : 'migrateV2ToV3 failed',
+            payload: data
+          })
+          rollbackSaveAndPersist('importData-v2-prestate', prestate)
+          return { success: false, error: (res && res.error) || '数据迁移失败' }
+        }
+        normalizedTasks = res.migrated.tasks
+        normalizedCategories = res.migrated.categories
+        normalizedAreas = res.migrated.areas
+        normalizedLists = res.migrated.lists
+        normalizedSettings = res.migrated.settings
+      }
+
+      // 校验导入任务后应用
+      const validTasks = normalizedTasks
+        .filter((t) => {
           const v = validateTask(t)
           return v.valid
         })
-        if (validTasks.length > 0) {
-          tasks.value = validTasks.map((t) => ({
+        .map((t) => {
+          // 确保 v3 默认字段齐全
+          const base = {
             id: t.id || generateId('task_'),
             title: String(t.title).trim().slice(0, 500),
-            category: t.category || UNDELETABLE_CATEGORY,
+            category: t.category || t.categoryId || UNDELETABLE_CATEGORY,
+            categoryId: t.categoryId || t.category || UNDELETABLE_CATEGORY,
             date: t.date || getTodayStr(),
             time: t.time || null,
             completed: !!t.completed,
@@ -1805,22 +2464,46 @@ export const useTaskStore = defineStore('task', () => {
             order: typeof t.order === 'number' ? t.order : 0,
             pomodoroSessions: typeof t.pomodoroSessions === 'number' ? t.pomodoroSessions : 0,
             totalFocusTime: typeof t.totalFocusTime === 'number' ? t.totalFocusTime : 0,
-            createdAt: t.createdAt || Date.now(),
-            completedAt: t.completedAt || null
-          }))
-          importedCount = validTasks.length
-        }
-      } else {
-        return { success: false, error: '无效的任务数据格式' }
+            createdAt: typeof t.createdAt === 'number' ? t.createdAt : Date.now(),
+            completedAt: typeof t.completedAt === 'number' ? t.completedAt : null,
+            parentTaskId: t.parentTaskId ?? null,
+            repeatRootId: t.repeatRootId ?? null
+          }
+          return ensureV3DefaultsOnTask(base, {
+            listId: base.category,
+            areaId: DEFAULT_AREA_ID
+          })
+        })
+
+      // 真正写入前再做一次"失败回滚"的 guard
+      const prestateFinal = {
+        tasks: JSON.parse(JSON.stringify(tasks.value)),
+        categories: JSON.parse(JSON.stringify(categories.value)),
+        tags: JSON.parse(JSON.stringify(tags.value)),
+        templates: JSON.parse(JSON.stringify(templates.value))
       }
 
-      if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
-        const validCats = data.categories.filter((c) => c && c.id && c.name)
+      try {
+        tasks.value = validTasks
+      } catch (e) {
+        rollbackSaveAndPersist('importData-v2-taskwrite', prestateFinal)
+        saveConflict('importData-v2-taskwrite', { error: e.message, payload: data })
+        tasks.value = prestateFinal.tasks
+        categories.value = prestateFinal.categories
+        tags.value = prestateFinal.tags
+        templates.value = prestateFinal.templates
+        return { success: false, error: e.message || '任务写入失败' }
+      }
+
+      const importedCount = tasks.value.length
+
+      if (normalizedCategories && Array.isArray(normalizedCategories) && normalizedCategories.length > 0) {
+        const validCats = normalizedCategories.filter((c) => c && c.id && c.name)
         if (validCats.length > 0) {
           const hasOther = validCats.some((c) => c.id === UNDELETABLE_CATEGORY)
           if (!hasOther) {
             const otherCat = DEFAULT_CATEGORIES.find((c) => c.id === UNDELETABLE_CATEGORY)
-            validCats.push(otherCat)
+            if (otherCat) validCats.push(otherCat)
           }
           categories.value = validCats
         }
@@ -1828,9 +2511,39 @@ export const useTaskStore = defineStore('task', () => {
 
       if (data.tags && Array.isArray(data.tags)) {
         const validTags = data.tags.filter((t) => t && t.id && t.name)
-        if (validTags.length > 0) {
-          tags.value = validTags
+        if (validTags.length > 0) tags.value = validTags
+      }
+
+      // 同步 settings tasksVersion / area/list store
+      if (normalizedSettings && typeof normalizedSettings.tasksVersion === 'number') {
+        try {
+          const sStore = useSettingsStore()
+          if (sStore && sStore.tasksVersion != null) {
+            sStore.tasksVersion = Math.max(sStore.tasksVersion, normalizedSettings.tasksVersion)
+          }
+        } catch {
+          /* ignore */
         }
+      }
+      if (Array.isArray(normalizedAreas) && normalizedAreas.length) {
+        try {
+          const aStore = useAreaStore()
+          if (aStore && Array.isArray(aStore.areas)) aStore.areas = normalizedAreas
+        } catch {
+          /* ignore */
+        }
+      }
+      if (Array.isArray(normalizedLists) && normalizedLists.length) {
+        try {
+          const lStore = useListStore()
+          if (lStore && Array.isArray(lStore.lists)) lStore.lists = normalizedLists
+        } catch {
+          /* ignore */
+        }
+      }
+      if (data.templates && Array.isArray(data.templates)) {
+        const validTpls = data.templates.filter((t) => t && t.id && t.name)
+        if (validTpls.length > 0) templates.value = validTpls
       }
 
       // 导入后清理可能失效的聚焦状态
@@ -1838,13 +2551,19 @@ export const useTaskStore = defineStore('task', () => {
         focusedTaskId.value = null
       }
 
-      // 导入后必须立即持久化，防止刷新丢失数据（importData 替换了 tasks 引用，watch 会触发但显式保存确保一致性）
+      // 导入后立即持久化（单次）
       if (saveTimeout) clearTimeout(saveTimeout)
       saveToStorage()
 
-      return { success: true, imported: importedCount, settings: data.settings || null }
+      return { success: true, imported: importedCount, settings: normalizedSettings }
     } catch (e) {
       console.error('[TaskStore] Import failed:', e)
+      // 失败：保存 conflict 用于排查
+      try {
+        saveConflict('importData-catch', { error: e && e.message, payload: jsonStr })
+      } catch {
+        /* ignore */
+      }
       return { success: false, error: e.message || '导入失败' }
     }
   }
@@ -1858,14 +2577,23 @@ export const useTaskStore = defineStore('task', () => {
       }
     })
     const affectedIds = []
+    let blockedHit = false
     tasks.value.forEach((t) => {
       if (!t.completed) {
+        // Task 1: 依赖阻断
+        if (isTaskBlocked(t)) {
+          blockedHit = true
+          return
+        }
         t.completed = true
         t.completedAt = now
+        t.updatedAt = now
         t.completedOrder = ++maxCompletedOrder
         affectedIds.push(t.id)
+        logActivity(t.id, 'complete')
       }
     })
+    if (blockedHit) pushSnackbar('任务被阻断，需先完成前置任务')
     // 与 toggleComplete 自洽：从“我的一天”移除 & 为重复任务生成下一个实例
     affectedIds.forEach((id) => {
       removeFromMyDay(id)
@@ -1881,8 +2609,10 @@ export const useTaskStore = defineStore('task', () => {
 
   const restoreTask = (taskSnapshot, insertIndex) => {
     if (!taskSnapshot || typeof insertIndex !== 'number') return false
+    const safe = ensureV3DefaultsOnTask({ ...taskSnapshot })
     const safeIndex = Math.max(0, Math.min(insertIndex, tasks.value.length))
-    tasks.value.splice(safeIndex, 0, taskSnapshot)
+    tasks.value.splice(safeIndex, 0, safe)
+    logActivity(safe.id, 'restore', { insertIndex: safeIndex })
     debouncedSave()
     return true
   }
@@ -1955,6 +2685,19 @@ export const useTaskStore = defineStore('task', () => {
     addPomodoroSession,
     markAllComplete,
     restoreTask,
-    cleanup
+    cleanup,
+    // Task 1 v3 additions
+    ensureV3,
+    addSubTask,
+    convertToSubtask,
+    promoteSubtask,
+    isTaskBlocked,
+    getAncestorDepth,
+    ensureV3DefaultsOnTask,
+    MIN_TASKS_VERSION,
+    DEFAULT_LIST_ID,
+    DEFAULT_AREA_ID,
+    MAX_PARENT_DEPTH,
+    UPDATABLE_FIELDS
   }
 })
