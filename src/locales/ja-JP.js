@@ -52,7 +52,12 @@ export default {
     tasks: 'タスク',
     homeMobile: 'ホーム',
     importantTasks: '重要なタスク',
-    allShort: 'すべて'
+    allShort: 'すべて',
+    quadrant: '四象限',
+    habitTracker: '習慣トラッカー',
+    dailyReview: '毎日の振り返り',
+    achievement: 'アチーブメント',
+    review: 'レビュー'
   },
   task: {
     newTask: '新規タスク',
@@ -318,6 +323,8 @@ export default {
     data: 'データ',
     exportData: 'データをエクスポート',
     exportDataDesc: 'タスクをJSONファイルとしてエクスポート',
+    exportCSV: 'CSVとしてエクスポート',
+    exportCSVDesc: 'タスクリストをCSVテーブルファイルにエクスポート',
     importData: 'データをインポート',
     importDataDesc: 'JSONファイルからタスクをインポート',
     resetData: 'デフォルトにリセット',
@@ -594,7 +601,12 @@ export default {
     testNotificationContent: 'テスト通知：右下のトーストポップアップを確認してください',
     notificationClicked: '通知がクリックされました',
     notificationClosed: '通知が閉じられました',
-    notificationSent: '通知が送信されました'
+    notificationSent: '通知が送信されました',
+    update: '更新テスト',
+    mockUpdate: '更新通知のモック',
+    mockUpdateDesc: '更新ダイアログのテスト',
+    checkUpdate: '更新を確認',
+    checkUpdateDesc: '手動で更新を確認'
   },
   update: {
     title: '新しいバージョンが利用可能',

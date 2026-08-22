@@ -337,6 +337,8 @@ export default {
     data: 'Data',
     exportData: 'Export Data',
     exportDataDesc: 'Export tasks as JSON file',
+    exportCSV: 'Export as CSV',
+    exportCSVDesc: 'Export task list as a CSV table file',
     importData: 'Import Data',
     importDataDesc: 'Import tasks from JSON file',
     resetData: 'Reset to Default',
@@ -613,7 +615,12 @@ export default {
     testNotificationContent: 'Test notification: Please check the bottom-right toast',
     notificationClicked: 'Notification clicked',
     notificationClosed: 'Notification closed',
-    notificationSent: 'Notification sent'
+    notificationSent: 'Notification sent',
+    update: 'Update test',
+    mockUpdate: 'Mock update notification',
+    mockUpdateDesc: 'Test update dialog',
+    checkUpdate: 'Check for update',
+    checkUpdateDesc: 'Manually check for update'
   },
   update: {
     title: 'New Version Available',

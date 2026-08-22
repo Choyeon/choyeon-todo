@@ -538,7 +538,9 @@ import {
   FolderPlus,
   X,
   Copy,
-  Layers
+  Layers,
+  TrendingUp,
+  LayoutGrid
 } from '@lucide/vue'
 
 const route = useRoute()
@@ -589,7 +591,14 @@ const defaultViews = computed(() => [
     icon: CheckCircle,
     label: t('nav.completed'),
     external: () => router.push('/completed')
-  }
+  },
+  { id: 'stats', icon: BarChart3, label: t('nav.stats'), external: () => router.push('/stats') },
+  { id: 'pomodoro', icon: Timer, label: t('nav.pomodoro'), external: () => router.push('/pomodoro') },
+  { id: 'review', icon: ClipboardCheck, label: t('nav.review'), external: () => router.push('/review') },
+  { id: 'dailyReview', icon: Sunrise, label: t('nav.dailyReview'), external: () => router.push('/daily-review') },
+  { id: 'habitTracker', icon: Target, label: t('nav.habitTracker'), external: () => router.push('/habits') },
+  { id: 'achievement', icon: TrendingUp, label: t('nav.achievement'), external: () => router.push('/achievements') },
+  { id: 'quadrant', icon: LayoutGrid, label: t('nav.quadrant'), external: () => router.push('/quadrant') }
 ])
 
 // ================= 搜索 (100ms debounce) =================

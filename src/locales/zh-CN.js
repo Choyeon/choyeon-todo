@@ -372,6 +372,7 @@ export default {
     doNotDisturbDisabled: '免打扰模式已关闭',
     defaultReminderTimeUpdated: '默认提醒时间已更新',
     dataExported: '数据已导出',
+    csvExported: 'CSV 文件已导出',
     dataImported: '数据导入成功',
     importFailed: '导入失败：文件格式错误',
     notificationNotSupported: '当前浏览器不支持通知',

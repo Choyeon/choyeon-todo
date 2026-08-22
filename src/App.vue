@@ -130,11 +130,6 @@
     />
     <UpdateModal ref="updateModalRef" />
 
-    <!-- Task 6 C: 番茄钟 FAB（Web 模式和 Electron 主窗口非 slave 时挂载；独立 FAB 窗口不挂载） -->
-    <Teleport to="body">
-      <PomodoroFAB v-if="!isStandaloneRoute && !isSlaveWindow" :prefer-separate-window="false" />
-    </Teleport>
-
     <div
       v-if="bingWallpaperUrl"
       class="bing-wallpaper"
@@ -168,7 +163,6 @@ import ConfirmModal from './components/ConfirmModal.vue'
 import ReminderModal from './components/ReminderModal.vue'
 import ThemeTransition from './components/ThemeTransition.vue'
 import UpdateModal from './components/UpdateModal.vue'
-import PomodoroFAB from './components/PomodoroFAB.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import OnboardingCarousel from './components/OnboardingCarousel.vue'
 import { useGlobalHotkeys } from './composables/useGlobalHotkeys'
@@ -692,7 +686,7 @@ onMounted(() => {
   setupElectronListeners()
   syncTasksToTray()
   checkForUpdatesOnStartup()
-  startReminderScheduler()
+  if (!isSlaveWindow.value) startReminderScheduler()
   setupTask6Composables()
 
   if (settingsStore.bingWallpaperEnabled) {
