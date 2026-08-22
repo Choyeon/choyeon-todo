@@ -6,11 +6,118 @@ import './styles/global.css'
 import { useTaskStore } from './stores/taskStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { usePomodoroStore } from './stores/pomodoroStore'
+import { useAreaStore } from './stores/areaStore'
+import { useListStore } from './stores/listStore'
+import { useFilterStore } from './stores/filterStore'
 import { registerSW } from 'virtual:pwa-register'
 import { i18n } from './i18n'
 import { setupErrorMonitoring } from './utils/errorMonitor'
 
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI
+
+// ========== Web 环境下的 Electron API polyfill（Task 9 兜底 + 向后兼容） ==========
+// 防止 `await window.electronAPI?.getAutoLaunch()` 等在非 Electron 环境抛错或返回 undefined。
+// 渲染端统一可调用，不强制分平台写 if/else。
+if (typeof window !== 'undefined' && !window.electronAPI) {
+  const noop = () => {}
+  const noopCleanup = () => () => {}
+  const pFalse = () => Promise.resolve(false)
+  const pFalseObj = () => Promise.resolve({ ok: true, openAtLogin: false, openAsHidden: false })
+  const pDrag = () => Promise.resolve({ ok: true, webFallback: true })
+  Object.defineProperty(window, 'electronAPI', {
+    configurable: true,
+    enumerable: true,
+    writable: false,
+    value: {
+      platform: (typeof navigator !== 'undefined' && navigator.platform) || 'web',
+      versions: {
+        electron: null,
+        chrome: (typeof navigator !== 'undefined' && navigator.userAgent.match(/Chrome\/(\d+)/)?.[1]) || null,
+        node: null
+      },
+      // 常用窗口控制
+      minimizeWindow: noop,
+      toggleMaximizeWindow: noop,
+      closeWindow: noop,
+      isMaximized: pFalse,
+      openDevTools: noop,
+      openDebugWindow: noop,
+      closeDebugWindow: noop,
+      minimizeDebugWindow: noop,
+      sendNotification: noop,
+      syncTasks: noop,
+      onNotificationResponse: noopCleanup,
+      onNotificationTaskClick: noopCleanup,
+      onReminderAction: noopCleanup,
+      onTaskNew: noopCleanup,
+      onTaskFocus: noopCleanup,
+      onNavigateSettings: noopCleanup,
+      onDoNotDisturbChanged: noopCleanup,
+      onMaximizeChange: noopCleanup,
+      // 自启动：旧名字和新名字
+      setAutoStart: () => Promise.resolve(false),
+      getAutoStart: pFalse,
+      // Task 9 B: 新自启动 API
+      setAutoLaunch: pFalseObj,
+      getAutoLaunch: () =>
+        Promise.resolve({ ok: true, openAtLogin: false, openAsHidden: false, webFallback: true }),
+      // Task 9 B: 协议 URL
+      onProtocolUrl: noopCleanup,
+      // Task 9 C: 拖拽
+      startTaskDrag: pDrag,
+      onFilesDropped: noopCleanup,
+      setCloseToQuit: () => Promise.resolve(true),
+      getCloseToQuit: () => Promise.resolve(true),
+      setDoNotDisturb: () => Promise.resolve(false),
+      getDoNotDisturb: pFalse,
+      getBingWallpaper: () => Promise.resolve(null),
+      setGlobalShortcutEnabled: () => Promise.resolve(false),
+      getGlobalShortcutEnabled: pFalse,
+      isWindowVisible: pFalse,
+      showWindow: noop,
+      hideWindow: noop,
+      onFocusSearch: noopCleanup,
+      onTogglePomodoro: noopCleanup,
+      openPomodoroFullscreen: noop,
+      closePomodoroFullscreen: noop,
+      onPomodoroFullscreenClosed: noopCleanup,
+      openPomodoroFab: noop,
+      closePomodoroFab: noop,
+      togglePomodoroFab: noop,
+      openMiniWindow: noop,
+      closeMiniWindow: noop,
+      toggleMiniWindow: noop,
+      showMainWindow: noop,
+      toggleMiniAlwaysOnTop: () => Promise.resolve(false),
+      closeQuickAdd: noop,
+      syncPomodoroState: noop,
+      sendPomodoroAction: noop,
+      getPomodoroState: () => Promise.resolve(null),
+      notifyPomodoroReady: noop,
+      onPomodoroStateUpdated: noopCleanup,
+      onPomodoroAction: noopCleanup,
+      onPomodoroSessionComplete: noopCleanup,
+      onPomodoroTimerEnded: noopCleanup,
+      setPomodoroDuration: noop,
+      checkForUpdates: () => Promise.resolve(null),
+      downloadUpdate: () => Promise.resolve(null),
+      quitAndInstallUpdate: () => Promise.resolve(null),
+      onUpdateChecking: noopCleanup,
+      onUpdateAvailable: noopCleanup,
+      onUpdateNotAvailable: noopCleanup,
+      onUpdateDownloadProgress: noopCleanup,
+      onUpdateDownloaded: noopCleanup,
+      onUpdateError: noopCleanup,
+      onAppFocusLost: noopCleanup,
+      onAppFocusGained: noopCleanup,
+      onAppWindowHidden: noopCleanup,
+      registerHotkeys: () => Promise.resolve({ ok: true, webFallback: true, results: [] }),
+      unregisterAllHotkeys: () => Promise.resolve({ ok: true, webFallback: true }),
+      onHotkeyPressed: noopCleanup,
+      getAppVersion: () => Promise.resolve(null)
+    }
+  })
+}
 
 // 标记运行平台，用于 CSS 条件启用原生亚克力/毛玻璃透明效果
 if (isElectron && window.electronAPI?.platform) {
@@ -56,9 +163,17 @@ window.addEventListener('error', (event) => {
 const settingsStore = useSettingsStore()
 const taskStore = useTaskStore()
 const pomodoroStore = usePomodoroStore()
+const areaStore = useAreaStore()
+const listStore = useListStore()
+const filterStore = useFilterStore()
 
 settingsStore.loadFromStorage()
 settingsStore.applyTheme()
+
+// Task 4: v3 area/list/filter 加载与持久化监听
+areaStore.loadFromStorage()
+listStore.loadFromStorage()
+filterStore.loadFromStorage()
 
 taskStore.loadFromStorage()
 if (taskStore.tasks.length === 0) {
@@ -78,6 +193,9 @@ pomodoroStore.setupWatchers(watch)
 
 taskStore.setupStorageWatch(watch)
 settingsStore.setupStorageWatch(watch)
+areaStore.setupStorageWatch(watch)
+listStore.setupStorageWatch(watch)
+filterStore.setupStorageWatch(watch)
 
 if (isElectron) {
   const syncSetting = async (getter, prop) => {

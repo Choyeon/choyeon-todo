@@ -316,29 +316,66 @@ app.setAppUserModelId('com.choyeon.todo')
 // 窗口状态持久化
 const windowStatePath = path.join(app.getPath('userData'), 'window-state.json')
 
+const clampBoundsToWorkArea = (x, y, width, height) => {
+  try {
+    const displays = screen.getAllDisplays()
+    // 找到与窗口重叠最多的显示区
+    let best = screen.getPrimaryDisplay()
+    let bestArea = 0
+    for (const d of displays) {
+      const bx = Math.max(x, d.workArea.x)
+      const by = Math.max(y, d.workArea.y)
+      const ex = Math.min(x + width, d.workArea.x + d.workArea.width)
+      const ey = Math.min(y + height, d.workArea.y + d.workArea.height)
+      const area = Math.max(0, ex - bx) * Math.max(0, ey - by)
+      if (area > bestArea) {
+        bestArea = area
+        best = d
+      }
+    }
+    const wa = best.workArea
+    // clamp：保证至少 80% 可见区域在 workArea 内
+    let nx = x
+    let ny = y
+    if (x + width * 0.8 < wa.x) nx = wa.x
+    if (y + height * 0.8 < wa.y) ny = wa.y
+    if (x + width > wa.x + wa.width + width * 0.2) nx = wa.x + wa.width - width
+    if (y + height > wa.y + wa.height + height * 0.2) ny = wa.y + wa.height - height
+    return { x: nx, y: ny }
+  } catch {
+    return { x, y }
+  }
+}
+
 const loadWindowState = () => {
   try {
     const data = fs.readFileSync(windowStatePath, 'utf-8')
     const state = JSON.parse(data)
-    const width = state.width || 1200
-    const height = state.height || 800
+    const minW = 360
+    const minH = 480
+    const width = Math.max(minW, Number(state.width) || 1200)
+    const height = Math.max(minH, Number(state.height) || 800)
     let x = typeof state.x === 'number' ? state.x : undefined
     let y = typeof state.y === 'number' ? state.y : undefined
 
-    // Validate window position is within visible screen bounds
+    // Validate window position is within visible screen bounds and clamp to workArea
     if (x !== undefined && y !== undefined) {
       const displays = screen.getAllDisplays()
       const isVisible = displays.some((display) => {
         return (
-          x >= display.bounds.x - 100 &&
-          y >= display.bounds.y - 100 &&
-          x + width <= display.bounds.x + display.bounds.width + 100 &&
-          y + height <= display.bounds.y + display.bounds.height + 100
+          x >= display.bounds.x - 200 &&
+          y >= display.bounds.y - 200 &&
+          x + width <= display.bounds.x + display.bounds.width + 200 &&
+          y + height <= display.bounds.y + display.bounds.height + 200
         )
       })
       if (!isVisible) {
         x = undefined
         y = undefined
+      } else {
+        const clamped = clampBoundsToWorkArea(x, y, width, height)
+        x = clamped.x
+        y = clamped.y
       }
     }
 
@@ -347,10 +384,12 @@ const loadWindowState = () => {
       height,
       x,
       y,
-      isMaximized: !!state.isMaximized
+      isMaximized: !!state.isMaximized,
+      isFullscreen: !!state.isFullscreen,
+      zoomFactor: typeof state.zoomFactor === 'number' ? state.zoomFactor : 1
     }
   } catch {
-    return { width: 1200, height: 800 }
+    return { width: 1200, height: 800, isMaximized: false, isFullscreen: false, zoomFactor: 1 }
   }
 }
 
@@ -358,12 +397,17 @@ const saveWindowState = () => {
   if (!mainWindow || mainWindow.isDestroyed()) return
   try {
     const bounds = mainWindow.getBounds()
+    const zoomFactor = mainWindow.webContents
+      ? mainWindow.webContents.getZoomFactor()
+      : 1
     const state = {
       width: bounds.width,
       height: bounds.height,
       x: bounds.x,
       y: bounds.y,
-      isMaximized: mainWindow.isMaximized()
+      isMaximized: mainWindow.isMaximized(),
+      isFullscreen: mainWindow.isFullScreen(),
+      zoomFactor: typeof zoomFactor === 'number' ? zoomFactor : 1
     }
     fs.writeFileSync(windowStatePath, JSON.stringify(state))
   } catch {
@@ -388,6 +432,9 @@ const getBgColor = () => {
   return nativeTheme.shouldUseDarkColors ? '#202124' : '#ffffff'
 }
 
+// 是否以 --hidden 启动（开机自启静默启动）
+const isHiddenLaunch = () => process.argv.some((a) => a === '--hidden' || a === '-hidden')
+
 function createWindow() {
   const iconPath = getIconPath()
   const windowState = loadWindowState()
@@ -398,6 +445,11 @@ function createWindow() {
     minWidth: 360,
     minHeight: 480,
     title: 'Choyeon To Do - 任务管理',
+    hasShadow: true,
+    resizable: true,
+    maximizable: true,
+    minimizable: true,
+    fullscreenable: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -412,10 +464,24 @@ function createWindow() {
     transparent: process.platform === 'win32'
   }
 
-  // Windows 11 使用原生 Acrylic 亚克力毛玻璃材质
+  // Windows 11：优先 Mica，失败时静默回落 Acrylic
   if (process.platform === 'win32') {
-    windowOptions.backgroundMaterial = 'acrylic'
-    windowOptions.backgroundColor = '#00000000'
+    let applied = false
+    const materials = ['mica', 'acrylic', 'tabbed']
+    for (const mat of materials) {
+      try {
+        windowOptions.backgroundMaterial = mat
+        windowOptions.backgroundColor = '#00000000'
+        applied = true
+        break
+      } catch {
+        // 尝试下一种
+      }
+    }
+    if (!applied) {
+      windowOptions.backgroundMaterial = 'none'
+      windowOptions.backgroundColor = getBgColor()
+    }
   } else {
     windowOptions.backgroundColor = getBgColor()
   }
@@ -427,6 +493,16 @@ function createWindow() {
   if (iconPath) windowOptions.icon = iconPath
 
   mainWindow = new BrowserWindow(windowOptions)
+
+  // 创建后设置 zoomFactor
+  try {
+    if (typeof windowState.zoomFactor === 'number' && mainWindow.webContents) {
+      const zf = Math.max(0.25, Math.min(5, windowState.zoomFactor))
+      mainWindow.webContents.setZoomFactor(zf)
+    }
+  } catch {
+    /* ignore */
+  }
 
   Menu.setApplicationMenu(null)
 
@@ -442,10 +518,23 @@ function createWindow() {
   // 优化 ready-to-show 逻辑
   mainWindow.once('ready-to-show', () => {
     setImmediate(() => {
+      if (windowState.isFullscreen && !mainWindow.isFullScreen()) {
+        try {
+          mainWindow.setFullScreen(true)
+        } catch {
+          /* ignore */
+        }
+      }
       if (windowState.isMaximized) {
         mainWindow.maximize()
       }
-      mainWindow.show()
+      // --hidden 启动时：显示托盘、隐藏主窗口
+      if (isHiddenLaunch()) {
+        createTray()
+        refreshTrayMenu()
+      } else {
+        mainWindow.show()
+      }
     })
   })
 
@@ -470,6 +559,8 @@ function createWindow() {
   mainWindow.on('unmaximize', () => notifyMaximizeChange(false))
   mainWindow.on('resize', debouncedSaveWindowState)
   mainWindow.on('move', debouncedSaveWindowState)
+  mainWindow.on('enter-full-screen', debouncedSaveWindowState)
+  mainWindow.on('leave-full-screen', debouncedSaveWindowState)
 
   mainWindow.on('minimize', (e) => {
     if (!appSettings.closeToQuit) {
@@ -509,8 +600,26 @@ function createWindow() {
     mainWindow = null
   })
 
-  // 安全：阻止外部导航
+  // 安全：阻止外部导航；同时拦截 file:// 开头的拖入文件，并广播到 renderer
   mainWindow.webContents.on('will-navigate', (e, url) => {
+    // 文件拖入检测：如果是 file:// 协议，则解析并分发到 app:filesDropped
+    if (url && url.startsWith('file://')) {
+      e.preventDefault()
+      try {
+        let filePath = decodeURIComponent(url.slice(7))
+        // Windows 下路径可能是 /C:/xxx 形式，去掉前导 /
+        if (/^\/[A-Za-z]:\//.test(filePath)) {
+          filePath = filePath.slice(1)
+        }
+        const files = [{ path: filePath, name: path.basename(filePath) || 'file' }]
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('app:filesDropped', files)
+        }
+      } catch {
+        /* ignore parse errors */
+      }
+      return
+    }
     // 仅允许开发服务器内部导航
     if (process.env.VITE_DEV_SERVER_URL && url.startsWith(process.env.VITE_DEV_SERVER_URL)) {
       return
@@ -955,23 +1064,111 @@ function updateTrayTooltip() {
 
 function buildTrayMenu() {
   const stats = getTaskStats()
+  const v2 = getTodayStatsV2()
   const isMac = process.platform === 'darwin'
   const modKey = isMac ? '⌘' : 'Ctrl'
 
+  // 常用列表：取前 5 个 category
+  const topCategories = Array.isArray(taskCache.categories)
+    ? taskCache.categories.slice(0, 5)
+    : []
+
+  const sendQuickAddPreset = (preset, extra) => {
+    showAndFocusWindow()
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const params = new URLSearchParams()
+      if (preset) params.set('preset', preset)
+      if (extra && extra.listId) params.set('listId', extra.listId)
+      if (extra && extra.title) params.set('title', String(extra.title))
+      const url = `choyeon-todo://quickadd?${params.toString()}`
+      mainWindow.webContents.send('app:handleProtocolUrl', url)
+    }
+  }
+
+  // 快速添加子菜单：我的一天 / 重要 / 5 个常用列表
+  const quickAddSubmenu = [
+    {
+      label: '我的一天',
+      click: () => sendQuickAddPreset('myDay')
+    },
+    {
+      label: '重要',
+      click: () => sendQuickAddPreset('important')
+    },
+    { type: 'separator' }
+  ]
+  if (topCategories.length === 0) {
+    quickAddSubmenu.push({
+      label: '（暂无列表）',
+      enabled: false
+    })
+  } else {
+    for (const c of topCategories) {
+      const label = (c && c.name ? String(c.name) : '未命名').slice(0, 40)
+      const listId = c && c.id ? String(c.id) : null
+      quickAddSubmenu.push({
+        label,
+        click: () => sendQuickAddPreset('list', { listId })
+      })
+    }
+  }
+
+  // 番茄钟子菜单：开始25 / 暂停 / 跳过 / AI 模式
+  const pomodoroSubmenu = [
+    {
+      label: '开始番茄工作 25 分钟',
+      enabled: !pomodoroState.isRunning,
+      click: () => {
+        switchPomodoroMode('work')
+        if (modeDurations.work !== 25 * 60) modeDurations.work = 25 * 60
+        if (!pomodoroState.isRunning) {
+          pomodoroPauseTimeLeft = 25 * 60
+        }
+        startPomodoroTimer()
+      }
+    },
+    {
+      label: '暂停',
+      enabled: pomodoroState.isRunning,
+      click: () => pausePomodoroTimer()
+    },
+    {
+      label: '跳过当前段',
+      enabled: pomodoroState.hasStarted,
+      click: () => skipPomodoroSession()
+    },
+    { type: 'separator' },
+    {
+      label: 'AI 模式（智能切换）',
+      enabled: true,
+      click: () => {
+        showAndFocusWindow()
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('pomodoro:aiMode')
+        }
+      }
+    }
+  ]
+
+  // 启动项状态
+  let autoLaunchChecked = !!appSettings.autoStart
+  try {
+    const s = app.getLoginItemSettings()
+    autoLaunchChecked = !!s.openAtLogin
+  } catch {
+    /* ignore */
+  }
+
   const menuTemplate = [
     {
-      label: mainWindow && mainWindow.isVisible() ? '隐藏主窗口' : '显示主窗口',
+      label: mainWindow && mainWindow.isVisible() ? '隐藏主界面' : '打开主界面',
       accelerator: `${modKey}+Shift+N`,
-      click: () => {
-        toggleWindowVisibility()
-      }
+      click: () => toggleWindowVisibility()
     },
     {
       label: '快速添加任务',
       accelerator: `${modKey}+Shift+Q`,
-      click: () => {
-        createQuickAddWindow()
-      }
+      submenu: quickAddSubmenu
     },
     {
       label: '新建任务',
@@ -999,15 +1196,19 @@ function buildTrayMenu() {
       enabled: false
     },
     {
-      label: `  今日待办: ${stats.todayCount}`,
+      label: `  已完成：${v2.completedToday} 项`,
       enabled: false
     },
     {
-      label: `  重要任务: ${stats.importantCount}`,
+      label: `  专注分：${v2.focusScore}（${v2.focusMinutes} 分钟）`,
       enabled: false
     },
     {
-      label: `  已逾期: ${stats.overdueCount}`,
+      label: `  待提醒：${v2.remindersPending} 项`,
+      enabled: false
+    },
+    {
+      label: `  今日待办：${stats.todayCount} · 重要：${stats.importantCount} · 逾期：${stats.overdueCount}`,
       enabled: false
     },
     { type: 'separator' },
@@ -1042,6 +1243,14 @@ function buildTrayMenu() {
   menuTemplate.push(
     { type: 'separator' },
     {
+      label: '番茄钟',
+      submenu: pomodoroSubmenu
+    },
+    {
+      label: '窗口布局',
+      submenu: snapSubmenu
+    },
+    {
       label: pomodoroState.isRunning ? '停止专注模式' : '开始专注模式',
       accelerator: `${modKey}+Shift+P`,
       click: () => {
@@ -1064,7 +1273,38 @@ function buildTrayMenu() {
         }
       }
     },
+    {
+      label: '开机自启',
+      type: 'checkbox',
+      checked: autoLaunchChecked,
+      click: (menuItem) => {
+        const enabled = !!menuItem.checked
+        try {
+          app.setLoginItemSettings({
+            openAtLogin: enabled,
+            openAsHidden: true,
+            path: process.execPath,
+            args: enabled ? ['--hidden'] : []
+          })
+          appSettings.autoStart = enabled
+          saveAppSettings()
+        } catch (e) {
+          console.error('[Main] setAutoLaunch from tray failed:', e)
+        }
+        refreshTrayMenu()
+      }
+    },
     { type: 'separator' },
+    {
+      label: '检查更新',
+      click: () => {
+        try {
+          autoUpdater.checkForUpdates().catch(() => {})
+        } catch {
+          /* ignore */
+        }
+      }
+    },
     {
       label: '设置',
       click: () => {
@@ -1096,11 +1336,151 @@ function refreshTrayMenu() {
   }
 }
 
+function getTodayStatsV2() {
+  const today = getTodayStr()
+  const y = new Date()
+  y.setDate(y.getDate() - 1)
+  const yesterday = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`
+
+  let completedToday = 0
+  let completedYesterday = 0
+  let pendingToday = 0
+  let importantToday = 0
+  let overdue = 0
+  let remindersPending = 0
+
+  for (const task of taskCache.tasks) {
+    if (task.completed) {
+      // 完成日期以 completedAt 优先，否则用 date
+      const cd = task.completedAt ? new Date(task.completedAt) : null
+      const cdStr = cd
+        ? `${cd.getFullYear()}-${String(cd.getMonth() + 1).padStart(2, '0')}-${String(cd.getDate()).padStart(2, '0')}`
+        : task.date
+      if (cdStr === today) completedToday++
+      else if (cdStr === yesterday) completedYesterday++
+    } else {
+      if (task.date === today) {
+        pendingToday++
+        if (task.important) importantToday++
+      }
+      if (task.date && task.date < today) overdue++
+      if (task.reminder || task.time) remindersPending++
+    }
+  }
+
+  // 专注分粗略：从 completedPomodoros 换算
+  const focusMinutes = Math.max(0, (pomodoroState.completedPomodoros || 0) * 25)
+  const focusScore = Math.min(100, focusMinutes) // 0-100 分，25*4 = 100
+
+  return {
+    completedToday,
+    completedYesterday,
+    pendingToday,
+    importantToday,
+    overdue,
+    remindersPending,
+    focusMinutes,
+    focusScore
+  }
+}
+
+// ================= Snap Layouts：按 workArea 切分 =================
+function applyWindowSnap(position) {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  try {
+    if (mainWindow.isMaximized()) mainWindow.unmaximize()
+    if (mainWindow.isFullScreen()) mainWindow.setFullScreen(false)
+    const display = screen.getDisplayMatching(mainWindow.getBounds())
+    const wa = display.workArea
+    let x = wa.x,
+      y = wa.y,
+      w = wa.width,
+      h = wa.height
+    const halfW = Math.floor(wa.width / 2)
+    const halfH = Math.floor(wa.height / 2)
+    switch (position) {
+      case 'left-half':
+        w = halfW
+        break
+      case 'right-half':
+        x = wa.x + halfW
+        w = halfW
+        break
+      case 'top-half':
+        h = halfH
+        break
+      case 'bottom-half':
+        y = wa.y + halfH
+        h = halfH
+        break
+      case 'top-left':
+        w = halfW
+        h = halfH
+        break
+      case 'top-right':
+        x = wa.x + halfW
+        w = halfW
+        h = halfH
+        break
+      case 'bottom-left':
+        w = halfW
+        y = wa.y + halfH
+        h = halfH
+        break
+      case 'bottom-right':
+        x = wa.x + halfW
+        w = halfW
+        y = wa.y + halfH
+        h = halfH
+        break
+      default:
+        return
+    }
+    mainWindow.setBounds({ x, y, width: w, height: h }, true)
+    saveWindowState()
+  } catch (e) {
+    console.error('[Main] applyWindowSnap error:', e)
+  }
+}
+
+const snapSubmenu = [
+  { label: '左半屏', click: () => applyWindowSnap('left-half') },
+  { label: '右半屏', click: () => applyWindowSnap('right-half') },
+  { label: '上半屏', click: () => applyWindowSnap('top-half') },
+  { label: '下半屏', click: () => applyWindowSnap('bottom-half') },
+  { type: 'separator' },
+  { label: '左上象限', click: () => applyWindowSnap('top-left') },
+  { label: '右上象限', click: () => applyWindowSnap('top-right') },
+  { label: '左下象限', click: () => applyWindowSnap('bottom-left') },
+  { label: '右下象限', click: () => applyWindowSnap('bottom-right') }
+]
+
 function showAndFocusWindow() {
   if (!mainWindow) return
+  try {
+    mainWindow.setVisibleOnAllWorkspaces(false)
+  } catch {
+    /* ignore */
+  }
   if (mainWindow.isMinimized()) mainWindow.restore()
   if (!mainWindow.isVisible()) mainWindow.show()
   mainWindow.focus()
+  // 将迷你窗口也带到前面（不抢焦点）
+  if (miniWindow && !miniWindow.isDestroyed() && miniWindow.isVisible()) {
+    try {
+      miniWindow.showInactive()
+    } catch {
+      try {
+        miniWindow.show()
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+}
+
+function restoreAndFocusMainWindow() {
+  showAndFocusWindow()
 }
 
 function toggleWindowVisibility() {
@@ -1110,6 +1490,66 @@ function toggleWindowVisibility() {
   } else {
     showAndFocusWindow()
   }
+}
+
+// ================= 定时气泡通知：启动 10s + 每日 0 点复盘 =================
+let trayStartupNoticeShown = false
+let dailyReviewTimer = null
+
+function getMsUntilNextMidnight() {
+  const now = new Date()
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5, 0)
+  return Math.max(1000, next.getTime() - now.getTime())
+}
+
+function scheduleDailyReviewBalloon() {
+  if (dailyReviewTimer) {
+    clearTimeout(dailyReviewTimer)
+    dailyReviewTimer = null
+  }
+  const schedule = () => {
+    dailyReviewTimer = setTimeout(() => {
+      try {
+        if (tray && !tray.isDestroyed() && Notification && Notification.isSupported() && !appSettings.doNotDisturb) {
+          const s = getTodayStatsV2()
+          const iconPath = getIconPath()
+          tray.displayBalloon({
+            icon: iconPath || undefined,
+            title: '昨日复盘',
+            content: `完成 ${s.completedYesterday} 项，专注 ${s.focusMinutes} 分钟`,
+            largeIcon: false,
+            noSound: true
+          })
+        }
+      } catch {
+        /* ignore balloon errors */
+      } finally {
+        schedule()
+      }
+    }, getMsUntilNextMidnight())
+  }
+  schedule()
+}
+
+function scheduleStartupBalloon() {
+  if (trayStartupNoticeShown) return
+  trayStartupNoticeShown = true
+  setTimeout(() => {
+    try {
+      if (tray && !tray.isDestroyed() && Notification && Notification.isSupported() && !appSettings.doNotDisturb) {
+        const iconPath = getIconPath()
+        tray.displayBalloon({
+          icon: iconPath || undefined,
+          title: 'Choyeon To Do',
+          content: '已在后台运行，可通过托盘图标快速操作',
+          largeIcon: false,
+          noSound: true
+        })
+      }
+    } catch {
+      /* ignore */
+    }
+  }, 10 * 1000)
 }
 
 function registerGlobalShortcuts() {
@@ -1190,11 +1630,15 @@ function createTray() {
         if (mainWindow.isVisible()) {
           mainWindow.hide()
         } else {
-          mainWindow.show()
-          mainWindow.focus()
+          showAndFocusWindow()
         }
       }
     })
+
+    // 启动 10s 后台气泡（免打扰时不弹）
+    scheduleStartupBalloon()
+    // 每日 0 点复盘气泡
+    scheduleDailyReviewBalloon()
   } catch (e) {
     console.error('[Main] Failed to create tray:', e)
     tray = null
@@ -2144,22 +2588,222 @@ ipcMain.handle('notification:show', (event, payload) => {
   }
 })
 
+// ===================== Task 9: Protocol URL 路由 =====================
+const PROTOCOL_SCHEME = 'choyeon-todo'
+
+// 在所有可用窗口中广播协议 URL（主/子窗口都可能需要 quickadd）
+function broadcastProtocolUrl(url) {
+  if (!url) return
+  const allWindows = [
+    mainWindow,
+    miniWindow,
+    pomodoroFabWindow,
+    pomodoroWindow,
+    quickAddWindow,
+    debugWindow
+  ]
+  for (const win of allWindows) {
+    if (!win || win.isDestroyed()) continue
+    if (!win.webContents || win.webContents.isDestroyed()) continue
+    try {
+      win.webContents.send('app:handleProtocolUrl', url)
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+// 从 argv / commandLine 中提取协议 URL
+function extractProtocolUrl(argv) {
+  if (!Array.isArray(argv)) return null
+  for (const a of argv) {
+    if (typeof a === 'string' && a.startsWith(PROTOCOL_SCHEME + '://')) {
+      return a
+    }
+  }
+  return null
+}
+
+// ===================== Task 9: 新增 IPC（B / C / D） =====================
+function registerTask9IPC() {
+  // ---- B. 自启动（新 API：带 openAsHidden + --hidden） ----
+  ipcMain.handle('app:setAutoLaunch', (event, enabled) => {
+    if (!isFromMain(event)) return { ok: false, err: 'forbidden' }
+    try {
+      app.setLoginItemSettings({
+        openAtLogin: !!enabled,
+        openAsHidden: true,
+        path: process.execPath,
+        args: enabled ? ['--hidden'] : []
+      })
+      appSettings.autoStart = !!enabled
+      saveAppSettings()
+      refreshTrayMenu()
+      return { ok: true, openAtLogin: !!enabled, openAsHidden: true }
+    } catch (e) {
+      console.error('[Main] setAutoLaunch error:', e)
+      return { ok: false, err: (e && e.message) || String(e) }
+    }
+  })
+
+  ipcMain.handle('app:getAutoLaunch', (event) => {
+    if (!isFromMain(event)) return { ok: false, err: 'forbidden' }
+    try {
+      const s = app.getLoginItemSettings()
+      return {
+        ok: true,
+        openAtLogin: !!s.openAtLogin,
+        openAsHidden: !!s.openAsHidden,
+        wasOpenedAtLogin: !!s.wasOpenedAtLogin,
+        willLaunchAtLogin: !!s.willLaunchAtLogin,
+        path: process.execPath,
+        args: appSettings.autoStart ? ['--hidden'] : []
+      }
+    } catch (e) {
+      // fallback 到内存设置
+      return {
+        ok: true,
+        openAtLogin: !!appSettings.autoStart,
+        openAsHidden: true,
+        path: process.execPath,
+        args: appSettings.autoStart ? ['--hidden'] : []
+      }
+    }
+  })
+
+  // ---- C. 拖拽：startDrag ----
+  // 在 Electron 中调用 webContents.startDrag 发起系统级拖拽
+  // 如果用户传了 files，则生成临时文件供拖出
+  const tempDragFiles = new Map() // taskId -> [tmp file paths]，进程退出时清理
+  const cleanupTempDragFiles = () => {
+    for (const paths of tempDragFiles.values()) {
+      for (const p of paths) {
+        try {
+          if (fs.existsSync(p)) fs.unlinkSync(p)
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    tempDragFiles.clear()
+  }
+  // 在 will-quit 清理
+  app.once('will-quit', cleanupTempDragFiles)
+
+  ipcMain.handle('task:startDrag', (event, payload) => {
+    const allowed = isFromMain(event) || isFromMini(event) || isFromDebug(event)
+    if (!allowed) return { ok: false, err: 'forbidden' }
+    if (!payload || typeof payload !== 'object') return { ok: false, err: 'invalid_payload' }
+    try {
+      const sender = event.sender
+      if (!sender || sender.isDestroyed()) return { ok: false, err: 'sender_gone' }
+
+      const taskId = typeof payload.taskId === 'string' ? payload.taskId : `task_${Date.now()}`
+      const html = typeof payload.html === 'string' ? payload.html : ''
+      const plainText = typeof payload.plainText === 'string' ? payload.plainText : String(payload.title || taskId)
+
+      const dragItem = {
+        data: {
+          text: plainText,
+          html: html || undefined
+        },
+        // 使用 nativeImage 自定义拖拽图：没有时留空，Electron 会自动用选择区域
+        icon: undefined,
+        dragImage: undefined
+      }
+
+      // 可选：生成临时 .html 预览文件供拖入外部文件夹
+      if (payload && payload.exportAsFile !== false) {
+        try {
+          const safeTitle = (String(payload.title || taskId) || 'task').replace(
+            /[\\/:*?"<>|\r\n\t]/g,
+            '_'
+          )
+          const tmpDir = app.getPath('temp')
+          const baseName = `${safeTitle.slice(0, 60)}_${taskId.slice(0, 8)}`
+          const tmpHtml = path.join(tmpDir, `${baseName}.html`)
+          const content =
+            html && html.length > 0
+              ? html
+              : `<!doctype html><meta charset="utf-8"><title>${safeTitle}</title><body><h1>${safeTitle}</h1><pre>${escapeHtml(plainText)}</pre></body>`
+          fs.writeFileSync(tmpHtml, content, 'utf-8')
+          // 可选 .url link
+          const tmpUrl = path.join(tmpDir, `${baseName}.url`)
+          const urlContent =
+            '[InternetShortcut]\r\nURL=choyeon-todo://task/' + encodeURIComponent(taskId) + '\r\n'
+          try {
+            fs.writeFileSync(tmpUrl, urlContent, 'utf-8')
+            dragItem.file = tmpHtml // startDrag 的 file 字段可选
+            tempDragFiles.set(taskId, [tmpHtml, tmpUrl])
+          } catch {
+            tempDragFiles.set(taskId, [tmpHtml])
+          }
+        } catch {
+          /* ignore file export errors */
+        }
+      }
+
+      if (typeof sender.startDrag === 'function') {
+        sender.startDrag(dragItem)
+      }
+      return { ok: true, taskId }
+    } catch (e) {
+      return { ok: false, err: (e && e.message) || String(e) }
+    }
+  })
+
+  // ---- D. Snap Layouts：通过 IPC 让 renderer 也能触发（可选） ----
+  ipcMain.on('window:snapLayout', (event, position) => {
+    if (!isFromMain(event)) return
+    applyWindowSnap(position)
+  })
+}
+
+// 简单 HTML escape，避免 XSS
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // 单实例锁
-const gotLock = app.requestSingleInstanceLock()
-if (!gotLock) {
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore()
-      if (!mainWindow.isVisible()) mainWindow.show()
-      mainWindow.focus()
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // 还原主窗口 + 迷你窗口到前面
+    restoreAndFocusMainWindow()
+    // 从二次启动的命令行中解析协议 URL，并分发
+    const url = extractProtocolUrl(commandLine)
+    if (url) {
+      // 稍延迟，确保主窗口已 ready
+      setTimeout(() => broadcastProtocolUrl(url), 80)
+    }
+  })
+
+  // macOS：open-url 事件（协议 URL 点击触发）
+  app.on('open-url', (event, url) => {
+    event.preventDefault()
+    if (url && url.startsWith(PROTOCOL_SCHEME + '://')) {
+      restoreAndFocusMainWindow()
+      setTimeout(() => broadcastProtocolUrl(url), 80)
     }
   })
 
   app.whenReady().then(() => {
     // 加载应用设置
     loadAppSettings()
+
+    // 注册 Task 9 新增 IPC
+    try {
+      registerTask9IPC()
+    } catch (e) {
+      console.error('[Main] registerTask9IPC failed:', e)
+    }
 
     // 注入 CSP 响应头
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
@@ -2194,6 +2838,13 @@ if (!gotLock) {
       })
     })
 
+    // B. 协议注册：choyeon-todo://
+    try {
+      app.setAsDefaultProtocolClient(PROTOCOL_SCHEME, process.execPath, ['--protocol-url'])
+    } catch (e) {
+      console.warn('[Main] setAsDefaultProtocolClient failed:', e)
+    }
+
     createWindow()
 
     setupAutoUpdater()
@@ -2201,16 +2852,35 @@ if (!gotLock) {
     // 注册全局快捷键
     registerGlobalShortcuts()
 
-    // 同步开机自启设置
+    // 同步开机自启设置（Task 9 增强版：含 openAsHidden + --hidden）
     try {
-      if (appSettings.autoStart) {
-        app.setLoginItemSettings({
-          openAtLogin: true,
-          path: process.execPath
-        })
-      }
+      app.setLoginItemSettings({
+        openAtLogin: !!appSettings.autoStart,
+        openAsHidden: true,
+        path: process.execPath,
+        args: appSettings.autoStart ? ['--hidden'] : []
+      })
     } catch (e) {
       console.error('[Main] Failed to sync auto start:', e)
+    }
+
+    // 启动时如果 process.argv 中携带 protocol URL，也分发一次（首次打开）
+    const launchUrl = extractProtocolUrl(process.argv)
+    if (launchUrl) {
+      setTimeout(() => {
+        restoreAndFocusMainWindow()
+        broadcastProtocolUrl(launchUrl)
+      }, 600) // 等主窗口加载完毕
+    }
+
+    // 如果用户选择"关闭到托盘"，启动时默认也创建好托盘，避免首次最小化/关闭时卡顿
+    if (!appSettings.closeToQuit) {
+      try {
+        createTray()
+        refreshTrayMenu()
+      } catch {
+        /* ignore */
+      }
     }
 
     app.on('activate', function () {

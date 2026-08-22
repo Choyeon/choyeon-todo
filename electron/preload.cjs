@@ -203,6 +203,27 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const listener = (_, payload) => callback(payload)
     ipcRenderer.on('hotkey:pressed', listener)
     return () => ipcRenderer.removeListener('hotkey:pressed', listener)
+  },
+
+  // ===== Task 9 A/B: 单实例 / 自启动 / 协议 =====
+  setAutoLaunch: (enabled) => ipcRenderer.invoke('app:setAutoLaunch', !!enabled),
+  getAutoLaunch: () => ipcRenderer.invoke('app:getAutoLaunch'),
+  onProtocolUrl: (callback) => {
+    const listener = (_, url) => {
+      if (typeof url === 'string') callback(url)
+    }
+    ipcRenderer.on('app:handleProtocolUrl', listener)
+    return () => ipcRenderer.removeListener('app:handleProtocolUrl', listener)
+  },
+
+  // ===== Task 9 C: 拖拽深度集成 =====
+  startTaskDrag: (payload) => ipcRenderer.invoke('task:startDrag', payload),
+  onFilesDropped: (callback) => {
+    const listener = (_, files) => {
+      if (Array.isArray(files)) callback(files)
+    }
+    ipcRenderer.on('app:filesDropped', listener)
+    return () => ipcRenderer.removeListener('app:filesDropped', listener)
   }
 })
 

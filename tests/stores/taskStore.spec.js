@@ -222,7 +222,14 @@ describe('TaskStore', () => {
     test('获取逾期任务数', () => {
       const overdueCount = store.getOverdueCount
       const today = getTodayStr()
-      const expected = store.tasks.filter((t) => t.date < today && !t.completed).length
+      const now = new Date()
+      const currentHM = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
+      const expected = store.tasks.filter((t) => {
+        if (t.completed || !t.date) return false
+        if (t.date < today) return true
+        if (t.date === today && t.time && t.time < currentHM) return true
+        return false
+      }).length
       expect(overdueCount).toBe(expected)
     })
   })

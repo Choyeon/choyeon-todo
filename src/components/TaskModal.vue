@@ -64,6 +64,7 @@
                   :class="{ active: form.category === cat.id }"
                   role="radio"
                   :aria-checked="form.category === cat.id"
+                  :aria-label="cat.name"
                   tabindex="0"
                   @click="form.category = cat.id"
                   @keydown.enter.prevent="form.category = cat.id"
@@ -94,6 +95,7 @@
                   :class="{ active: form.tags.includes(tag.id) }"
                   role="checkbox"
                   :aria-checked="form.tags.includes(tag.id)"
+                  :aria-label="tag.name"
                   tabindex="0"
                   @click="toggleTag(tag.id)"
                   @keydown.enter.prevent="toggleTag(tag.id)"
@@ -161,6 +163,23 @@
                     class="date-input"
                     v-model="form.time"
                     :aria-label="$t('task.selectTime')"
+                  />
+                </div>
+              </div>
+
+              <!-- D3: Due Until (截止时间） -->
+              <div class="setting-row">
+                <Clock :size="18" class="row-icon" />
+                <div class="setting-label-wrap">
+                  <span class="setting-label">{{ $t('task.dueUntil') }}</span>
+                  <p class="toggle-desc">{{ $t('task.dueUntilDesc') }}</p>
+                </div>
+                <div class="setting-action">
+                  <input
+                    type="datetime-local"
+                    class="date-input"
+                    v-model="form.dueUntil"
+                    :aria-label="$t('task.dueUntil')"
                   />
                 </div>
               </div>
@@ -330,13 +349,35 @@
                     <span class="subtask-title" :class="{ completed: sub.completed }">
                       {{ sub.title }}
                     </span>
-                    <button
-                      class="subtask-delete"
-                      @click="deleteSubTask(sub.id)"
-                      :aria-label="$t('task.deleteSubtask')"
-                    >
-                      <Trash2 :size="14" />
-                    </button>
+                    <div class="subtask-actions">
+                      <button
+                        type="button"
+                        class="subtask-move"
+                        :disabled="!canMoveSubUp(sub.id)"
+                        :aria-label="$t('task.moveUp')"
+                        :title="$t('task.moveUp')"
+                        @click="moveSub(sub.id, -1)"
+                      >
+                        <ArrowUp :size="13" />
+                      </button>
+                      <button
+                        type="button"
+                        class="subtask-move"
+                        :disabled="!canMoveSubDown(sub.id)"
+                        :aria-label="$t('task.moveDown')"
+                        :title="$t('task.moveDown')"
+                        @click="moveSub(sub.id, 1)"
+                      >
+                        <ArrowDown :size="13" />
+                      </button>
+                      <button
+                        class="subtask-delete"
+                        @click="deleteSubTask(sub.id)"
+                        :aria-label="$t('task.deleteSubtask')"
+                      >
+                        <Trash2 :size="14" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -370,12 +411,307 @@
                   :aria-label="$t('task.notes')"
                 ></textarea>
               </div>
+
+              <!-- D3: Dependencies (blockedBy) -->
+              <hr class="form-divider" />
+              <div class="form-section-label">
+                <div class="section-label-row">
+                  <span class="label-with-icon">
+                    <Link2 :size="14" class="row-icon" />
+                    {{ $t('task.dependencies') }}
+                  </span>
+                  <button
+                    type="button"
+                    class="add-tag-btn"
+                    :aria-label="$t('task.depAdd')"
+                    @click="showDepPicker = !showDepPicker"
+                  >
+                    <Plus :size="14" />
+                  </button>
+                </div>
+                <p class="section-subdesc">{{ $t('task.depDesc') }}</p>
+              </div>
+
+              <div
+                v-if="showDepPicker"
+                class="dep-picker"
+                role="dialog"
+                :aria-label="$t('task.depPick')"
+              >
+                <input
+                  type="text"
+                  class="form-input dep-search"
+                  :placeholder="$t('task.depSearchPlaceholder')"
+                  v-model="depSearchQuery"
+                  :aria-label="$t('task.depSearchPlaceholder')"
+                />
+                <ul v-if="candidateTasks.length" class="dep-list" role="listbox">
+                  <li
+                    v-for="t in candidateTasks"
+                    :key="t.id"
+                    class="dep-item"
+                    role="option"
+                    tabindex="0"
+                    @click="addDependency(t.id)"
+                    @keydown.enter.prevent="addDependency(t.id)"
+                  >
+                    <span class="dep-item-title" :class="{ imp: t.important }">{{ t.title }}</span>
+                    <span v-if="t.date" class="dep-item-date">{{ t.date }}</span>
+                  </li>
+                </ul>
+                <p v-else class="empty-subnote">{{ $t('task.depNoMatches') }}</p>
+              </div>
+
+              <TransitionGroup v-if="form.blockedBy.length" name="tl-fade" tag="ul" class="dep-chips" aria-live="polite">
+                <li v-for="bid in form.blockedBy" :key="bid" class="dep-chip">
+                  <Lock :size="11" aria-hidden="true" class="dep-lock" />
+                  <span class="dep-chip-title" :title="dependencyLabel(bid)">{{ dependencyLabel(bid) }}</span>
+                  <button
+                    type="button"
+                    class="dep-chip-remove"
+                    :aria-label="$t('task.depRemove')"
+                    :title="$t('task.depRemove')"
+                    @click="removeDependency(bid)"
+                  >
+                    <Unlink :size="12" />
+                  </button>
+                </li>
+              </TransitionGroup>
+              <p v-else class="empty-subnote">{{ $t('task.depEmpty') }}</p>
+
+              <!-- D3: Attachments （文件选择 + 拖拽 + 缩略图预览） -->
+              <hr class="form-divider" />
+              <div class="form-section-label">
+                <div class="section-label-row">
+                  <span class="label-with-icon">
+                    <Paperclip :size="14" class="row-icon" />
+                    {{ $t('task.attachments') }}
+                  </span>
+                  <button
+                    type="button"
+                    class="add-tag-btn"
+                    :aria-label="$t('task.attachmentAdd')"
+                    @click="openAttachmentPicker"
+                  >
+                    <Plus :size="14" />
+                  </button>
+                </div>
+                <p class="section-subdesc">{{ $t('task.attachmentDesc') }}</p>
+              </div>
+
+              <input
+                ref="attachmentInputRef"
+                type="file"
+                multiple
+                hidden
+                @change="onAttachmentChange"
+                aria-hidden="true"
+              />
+              <div
+                class="att-dropzone"
+                tabindex="0"
+                role="button"
+                :class="{ drag: isDraggingFiles }"
+                :aria-label="$t('task.attachmentDropHint')"
+                @click="openAttachmentPicker"
+                @keydown.enter.prevent="openAttachmentPicker"
+                @dragover.prevent="onAttachmentDragOver"
+                @dragenter.prevent="onAttachmentDragOver"
+                @dragleave="onAttachmentDragLeave"
+                @drop.prevent="onAttachmentDrop"
+              >
+                <Paperclip :size="18" class="att-drop-icon" />
+                <div class="att-drop-text">
+                  <strong>{{ $t('task.attachmentDropMain') }}</strong>
+                  <span>{{ $t('task.attachmentDropHint') }}</span>
+                </div>
+              </div>
+
+              <TransitionGroup v-if="form.attachments.length" name="tl-fade" tag="div" class="att-grid">
+                <div
+                  v-for="att in form.attachments"
+                  :key="att.id"
+                  class="att-card"
+                  :class="{ img: att.isImage }"
+                >
+                  <button
+                    v-if="att.isImage && att.preview"
+                    type="button"
+                    class="att-preview-btn"
+                    :aria-label="$t('task.attachmentPreview', { name: att.name })"
+                    :title="att.name"
+                    @click="previewAttachment = att"
+                  >
+                    <img :src="att.preview" :alt="att.name" loading="lazy" />
+                    <span class="att-zoom"><ImageIcon :size="14" /></span>
+                  </button>
+                  <div v-else class="att-fallback">
+                    <FileText :size="22" />
+                    <span class="att-name">{{ att.name }}</span>
+                  </div>
+                  <div class="att-meta">
+                    <span class="att-size">{{ fileSizeFmt(att.size) }}</span>
+                    <button
+                      type="button"
+                      class="att-remove"
+                      :aria-label="$t('task.attachmentRemove')"
+                      :title="$t('task.attachmentRemove')"
+                      @click="removeAttachment(att.id)"
+                    >
+                      <X :size="13" />
+                    </button>
+                  </div>
+                </div>
+              </TransitionGroup>
+
+              <!-- D3: Comments -->
+              <hr class="form-divider" />
+              <div class="form-section-label">
+                <div class="section-label-row">
+                  <span class="label-with-icon">
+                    <MessageSquare :size="14" class="row-icon" />
+                    {{ $t('task.comments') }}
+                  </span>
+                </div>
+              </div>
+
+              <ul v-if="form.comments.length" class="comment-list">
+                <li v-for="c in form.comments" :key="c.id" class="comment-item">
+                  <div class="comment-avatar" aria-hidden="true">
+                    {{ (c.author || $t('task.commentAuthorYou')).slice(0, 1).toUpperCase() }}
+                  </div>
+                  <div class="comment-body">
+                    <div class="comment-head">
+                      <strong>{{ c.author || $t('task.commentAuthorYou') }}</strong>
+                      <span class="comment-at">{{ formatActivityAt(c.createdAt) }}</span>
+                      <button
+                        type="button"
+                        class="comment-delete"
+                        :aria-label="$t('task.commentRemove')"
+                        :title="$t('task.commentRemove')"
+                        @click="removeComment(c.id)"
+                      >
+                        <Trash2 :size="12" />
+                      </button>
+                    </div>
+                    <p class="comment-text">{{ c.text }}</p>
+                  </div>
+                </li>
+              </ul>
+              <p v-else class="empty-subnote">{{ $t('task.commentsEmpty') }}</p>
+
+              <div class="comment-input-row">
+                <input
+                  type="text"
+                  class="form-input comment-input"
+                  :placeholder="$t('task.commentInputPlaceholder')"
+                  v-model="newCommentText"
+                  @keyup.enter.prevent="addComment"
+                  :aria-label="$t('task.commentAdd')"
+                />
+                <button
+                  type="button"
+                  class="save-btn small"
+                  :disabled="!newCommentText.trim()"
+                  @click="addComment"
+                >
+                  {{ $t('task.commentPost') }}
+                </button>
+              </div>
+
+              <!-- D3: Activity / 操作历史 -->
+              <hr class="form-divider" />
+              <div class="form-section-label">
+                <div class="section-label-row">
+                  <span class="label-with-icon">
+                    <History :size="14" class="row-icon" />
+                    {{ $t('task.activity') }}
+                  </span>
+                </div>
+                <div class="activity-tabs" role="tablist" :aria-label="$t('task.activityTabs')">
+                  <button
+                    v-for="tab in [
+                      { id: 'all', label: $t('task.activityAll') },
+                      { id: 'comments', label: $t('task.activityComments') },
+                      { id: 'changes', label: $t('task.activityChanges') }
+                    ]"
+                    :key="tab.id"
+                    type="button"
+                    role="tab"
+                    :aria-selected="activityTab === tab.id"
+                    :class="{ active: activityTab === tab.id }"
+                    class="activity-tab"
+                    @click="activityTab = tab.id"
+                  >
+                    {{ tab.label }}
+                  </button>
+                </div>
+              </div>
+              <ol v-if="filteredActivity.length" class="activity-list">
+                <li v-for="a in filteredActivity" :key="a.id" class="activity-item">
+                  <span
+                    class="activity-dot"
+                    :class="`type-${a.type || 'event'}`"
+                    aria-hidden="true"
+                  />
+                  <div class="activity-body">
+                    <p class="activity-text">
+                      <component
+                        :is="
+                          a.type === 'comment' ? MessageSquare :
+                          a.type === 'attachment' ? Paperclip :
+                          a.type === 'create' || a.type === 'edit' ? FileText : History
+                        "
+                        :size="12"
+                        class="activity-icon"
+                      />
+                      {{ a.text }}
+                    </p>
+                    <span class="activity-at">{{ formatActivityAt(a.at) }}</span>
+                  </div>
+                </li>
+              </ol>
+              <p v-else class="empty-subnote">{{ $t('task.activityEmpty') }}</p>
             </div>
 
             <div class="modal-footer">
               <button class="save-btn" @click="handleSave">{{ $t('common.save') }}</button>
               <button class="cancel-btn" @click="handleClose">{{ $t('common.cancel') }}</button>
             </div>
+
+            <!-- 预览图片大图 -->
+            <Teleport to="body">
+              <Transition name="fade">
+                <div
+                  v-if="previewAttachment"
+                  class="att-preview-overlay"
+                  role="dialog"
+                  aria-modal="true"
+                  :aria-label="$t('task.attachmentPreview', { name: previewAttachment.name })"
+                  @click.self="previewAttachment = null"
+                >
+                  <button
+                    type="button"
+                    class="att-preview-close"
+                    :aria-label="$t('common.close')"
+                    @click="previewAttachment = null"
+                  >
+                    <X :size="20" />
+                  </button>
+                  <img
+                    v-if="previewAttachment.preview"
+                    :src="previewAttachment.preview"
+                    :alt="previewAttachment.name"
+                    class="att-preview-img"
+                  />
+                  <div v-else class="att-preview-meta">
+                    <FileText :size="64" />
+                    <p class="att-preview-name">{{ previewAttachment.name }}</p>
+                    <p class="att-preview-size">{{ fileSizeFmt(previewAttachment.size) }}</p>
+                  </div>
+                </div>
+              </Transition>
+            </Teleport>
           </div>
         </Transition>
       </div>
@@ -390,7 +726,8 @@ import { useTaskStore, generateId } from '../stores/taskStore'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { useSnackbar } from '../composables/useSnackbar'
 import { getTodayStr, formatDateStr } from '../utils/date'
-import { X, Calendar, Clock, Bell, Star, Plus, Trash2, Check, RotateCcw, Mic } from '@lucide/vue'
+import { X, Calendar, Clock, Bell, Star, Plus, Trash2, Check, RotateCcw, Mic,
+  ArrowUp, ArrowDown, Unlink, Link2, MessageSquare, Paperclip, Image as ImageIcon, History, FileText, Lock } from '@lucide/vue'
 
 const props = defineProps({
   visible: {
@@ -419,12 +756,17 @@ const form = reactive({
   category: 'work',
   date: getTodayStr(),
   time: '',
+  dueUntil: '',
   reminder: false,
   important: false,
   notes: '',
   tags: [],
   subTasks: [],
-  repeat: null
+  repeat: null,
+  blockedBy: [],
+  comments: [],
+  attachments: [],
+  activity: []
 })
 
 const newSubTaskTitle = ref('')
@@ -432,6 +774,16 @@ const newTagName = ref('')
 const newTagColor = ref('#6B7280')
 const showAddTag = ref(false)
 const parsedDateHint = ref('')
+
+// --- D3 new fields ---
+const newCommentText = ref('')
+const depSearchQuery = ref('')
+const showDepPicker = ref(false)
+const attachmentInputRef = ref(null)
+const isDraggingFiles = ref(false)
+const previewAttachment = ref(null) // for image modal preview
+const activityTab = ref('all') // 'all' | 'comments' | 'changes'
+const dueUntilOpen = ref(false)
 
 /**
  * 智能日期解析 - 从任务标题中提取日期
@@ -751,6 +1103,154 @@ const deleteSubTask = (subId) => {
   if (idx !== -1) form.subTasks.splice(idx, 1)
 }
 
+// ----- Sub task 升降级 (reorder up/down) -----
+const sortSubTasksByOrder = () => {
+  form.subTasks = [...form.subTasks].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+}
+const canMoveSubUp = (subId) => {
+  sortSubTasksByOrder()
+  const idx = form.subTasks.findIndex((st) => st.id === subId)
+  return idx > 0
+}
+const canMoveSubDown = (subId) => {
+  sortSubTasksByOrder()
+  const idx = form.subTasks.findIndex((st) => st.id === subId)
+  return idx !== -1 && idx < form.subTasks.length - 1
+}
+const moveSub = (subId, dir) => {
+  sortSubTasksByOrder()
+  const idx = form.subTasks.findIndex((st) => st.id === subId)
+  if (idx < 0) return
+  const swap = idx + dir
+  if (swap < 0 || swap >= form.subTasks.length) return
+  const a = form.subTasks[idx]; const b = form.subTasks[swap]
+  const tmp = a.order; a.order = b.order; b.order = tmp
+  sortSubTasksByOrder()
+}
+
+// ----- Dependencies (blockedBy) -----
+const candidateTasks = computed(() => {
+  if (!showDepPicker.value) return []
+  const q = (depSearchQuery.value || '').trim().toLowerCase()
+  const excludeIds = new Set([...(form.blockedBy || []), props.task?.id].filter(Boolean))
+  return (taskStore.tasks || [])
+    .filter((t) => !excludeIds.has(t.id) && !t.completed)
+    .filter((t) => !q || (t.title || '').toLowerCase().includes(q))
+    .slice(0, 50)
+})
+const addDependency = (id) => {
+  if (!form.blockedBy.includes(id)) form.blockedBy.push(id)
+}
+const removeDependency = (id) => {
+  form.blockedBy = form.blockedBy.filter((x) => x !== id)
+}
+const dependencyLabel = (id) => taskStore.getTaskById?.(id)?.title || id
+
+// ----- Comments -----
+const addComment = () => {
+  const text = newCommentText.value.trim()
+  if (!text) return
+  form.comments.push({
+    id: generateId('cmt_'),
+    author: t('task.commentAuthorYou'),
+    avatar: null,
+    text,
+    createdAt: Date.now()
+  })
+  appendActivity({
+    id: generateId('act_'),
+    type: 'comment',
+    text,
+    at: Date.now()
+  })
+  newCommentText.value = ''
+}
+const removeComment = (id) => {
+  form.comments = form.comments.filter((c) => c.id !== id)
+}
+
+// ----- Attachments (local file pick + drag-drop + preview) -----
+const isImage = (name) => /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)
+const openAttachmentPicker = () => attachmentInputRef.value?.click?.()
+const fileSizeFmt = (bytes) => {
+  if (!bytes) return '0B'
+  const u = ['B', 'KB', 'MB', 'GB']
+  let i = 0; let n = bytes
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++ }
+  return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)}${u[i]}`
+}
+const readFileAsDataUrl = (file) => new Promise((resolve) => {
+  const r = new FileReader()
+  r.onload = () => resolve(r.result)
+  r.onerror = () => resolve('')
+  r.readAsDataURL(file)
+})
+const addAttachments = async (files) => {
+  if (!files || !files.length) return
+  for (const f of files) {
+    // Cap 10 MB per file
+    if (f.size > 10 * 1024 * 1024) {
+      showSnackbar(t('task.attachmentTooLarge', { name: f.name, max: '10MB' }), { type: 'warning' })
+      continue
+    }
+    const preview = isImage(f.name) ? (await readFileAsDataUrl(f)) : ''
+    form.attachments.push({
+      id: generateId('att_'),
+      name: f.name,
+      size: f.size,
+      type: f.type || 'application/octet-stream',
+      isImage: isImage(f.name),
+      preview,
+      addedAt: Date.now()
+    })
+    appendActivity({
+      id: generateId('act_'),
+      type: 'attachment',
+      text: f.name,
+      at: Date.now()
+    })
+  }
+}
+const removeAttachment = (id) => {
+  form.attachments = form.attachments.filter((a) => a.id !== id)
+  if (previewAttachment.value?.id === id) previewAttachment.value = null
+}
+const onAttachmentChange = (evt) => {
+  addAttachments(evt.target?.files)
+  if (attachmentInputRef.value) attachmentInputRef.value.value = ''
+}
+const onAttachmentDragOver = (evt) => {
+  if (!evt.dataTransfer || !Array.from(evt.dataTransfer.types || []).includes('Files')) return
+  evt.preventDefault()
+  isDraggingFiles.value = true
+}
+const onAttachmentDragLeave = () => { isDraggingFiles.value = false }
+const onAttachmentDrop = (evt) => {
+  if (!evt.dataTransfer) return
+  evt.preventDefault()
+  isDraggingFiles.value = false
+  const files = evt.dataTransfer.files
+  addAttachments(files)
+}
+
+// ----- Activity -----
+const appendActivity = (entry) => {
+  if (!Array.isArray(form.activity)) form.activity = []
+  form.activity.unshift(entry)
+}
+const filteredActivity = computed(() => {
+  const arr = [...(form.activity || [])].sort((a, b) => (b.at || 0) - (a.at || 0))
+  if (activityTab.value === 'comments') return arr.filter((a) => a.type === 'comment')
+  if (activityTab.value === 'changes') return arr.filter((a) => a.type !== 'comment')
+  return arr
+})
+const formatActivityAt = (at) => {
+  const d = new Date(at)
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 watch(
   () => props.visible,
   async (visible) => {
@@ -758,9 +1258,9 @@ watch(
       if (props.task) {
         form.title = props.task.title || ''
         form.category = props.task.category || 'work'
-        // 修复时区 Bug：使用本地日期函数而非 UTC
         form.date = props.task.date || getTodayStr()
         form.time = props.task.time || ''
+        form.dueUntil = props.task.dueUntil || ''
         form.reminder = !!props.task.reminder
         form.important = !!props.task.important
         form.notes = props.task.notes || ''
@@ -768,10 +1268,15 @@ watch(
         form.subTasks = Array.isArray(props.task.subTasks)
           ? props.task.subTasks.map((st) => ({ ...st }))
           : []
+        sortSubTasksByOrder()
         form.repeat = props.task.repeat ? { ...props.task.repeat } : null
         if (form.repeat && form.repeat.weekdays) {
           form.repeat.weekdays = [...form.repeat.weekdays]
         }
+        form.blockedBy = Array.isArray(props.task.blockedBy) ? [...props.task.blockedBy] : []
+        form.comments = Array.isArray(props.task.comments) ? props.task.comments.map((c) => ({ ...c })) : []
+        form.attachments = Array.isArray(props.task.attachments) ? props.task.attachments.map((a) => ({ ...a })) : []
+        form.activity = Array.isArray(props.task.activity) ? props.task.activity.map((a) => ({ ...a })) : []
       } else {
         form.title = ''
         form.category =
@@ -780,6 +1285,7 @@ watch(
             : 'work'
         form.date = getTodayStr()
         form.time = ''
+        form.dueUntil = ''
         form.reminder = false
         form.important = false
         form.notes = ''
@@ -787,10 +1293,18 @@ watch(
           taskStore.currentView === 'tag' && taskStore.currentTag ? [taskStore.currentTag] : []
         form.subTasks = []
         form.repeat = null
+        form.blockedBy = []
+        form.comments = []
+        form.attachments = []
+        form.activity = []
       }
       newSubTaskTitle.value = ''
       newTagName.value = ''
       showAddTag.value = false
+      newCommentText.value = ''
+      depSearchQuery.value = ''
+      showDepPicker.value = false
+      previewAttachment.value = null
 
       initSpeechRecognition()
 
@@ -818,24 +1332,44 @@ const handleSave = () => {
     return
   }
 
+  sortSubTasksByOrder()
+
   const taskData = {
     title: form.title.trim(),
     category: form.category,
     date: form.date || getTodayStr(),
     time: form.time || null,
+    dueUntil: form.dueUntil || null,
     reminder: form.reminder,
     important: form.important,
     notes: form.notes,
     tags: [...form.tags],
     subTasks: form.subTasks.map((st) => ({ ...st })),
-    repeat: form.repeat ? { ...form.repeat } : null
+    repeat: form.repeat ? { ...form.repeat } : null,
+    blockedBy: [...form.blockedBy],
+    comments: form.comments.map((c) => ({ ...c })),
+    attachments: form.attachments.map((a) => ({ ...a })),
+    activity: form.activity.map((a) => ({ ...a }))
   }
 
   if (isEdit.value) {
     taskStore.updateTask(props.task.id, taskData)
+    appendActivity({
+      id: generateId('act_'),
+      type: 'edit',
+      text: t('task.activityEdited'),
+      at: Date.now()
+    })
     showSnackbar(t('task.taskUpdated'))
   } else {
-    taskStore.addTask(taskData)
+    const id = taskStore.addTask(taskData)
+    taskData.id = id
+    appendActivity({
+      id: generateId('act_'),
+      type: 'create',
+      text: t('task.activityCreated'),
+      at: Date.now()
+    })
     showSnackbar(t('task.taskAdded'))
   }
 
@@ -2148,5 +2682,552 @@ const handleSave = () => {
     gap: 6px;
     flex-wrap: wrap;
   }
+}
+
+/* ========== D3: TaskModal 新分区样式 ========== */
+
+.setting-label-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.section-subdesc {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+.label-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.label-with-icon .row-icon {
+  color: var(--color-primary);
+}
+
+.empty-subnote {
+  margin: 6px 0 2px 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted, rgba(127,127,127,0.06));
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+}
+
+/* Sub task 升降级 */
+.subtask-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding-left: 6px;
+}
+.subtask-move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.subtask-move:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary-light);
+  background: var(--color-primary-lighter);
+}
+.subtask-move:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Dependencies */
+.dep-picker {
+  margin: 8px 0 4px 0;
+  padding: 10px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted, rgba(127,127,127,0.04));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+}
+.dep-search { padding: 8px 10px; font-size: 13px; }
+.dep-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dep-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.13s ease;
+  outline: none;
+}
+.dep-item:hover,
+.dep-item:focus-visible {
+  background: var(--color-primary-lighter, rgba(59,130,246,0.08));
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+.dep-item-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.dep-item-title.imp { color: #f59e0b; font-weight: 700; }
+.dep-item-date {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dep-chips {
+  list-style: none;
+  margin: 6px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dep-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 8px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  font-size: 12px;
+  color: var(--color-text);
+}
+.dep-lock { color: var(--color-primary); flex-shrink: 0; }
+.dep-chip-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+  font-weight: 500;
+}
+.dep-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: all 0.15s ease;
+}
+.dep-chip-remove:hover {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* Attachments */
+.att-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 8px 0 6px 0;
+  border: 2px dashed var(--color-border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.16s ease;
+  color: var(--color-text-secondary);
+}
+.att-dropzone:hover,
+.att-dropzone:focus-visible,
+.att-dropzone.drag {
+  border-color: var(--color-primary);
+  background: var(--color-primary-lighter, rgba(59,130,246,0.06));
+  color: var(--color-primary);
+  outline: none;
+}
+.att-drop-icon { flex-shrink: 0; }
+.att-drop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.att-drop-text strong { color: var(--color-text); font-size: 13px; }
+.att-drop-text span { font-size: 12px; }
+
+.att-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin: 8px 0 2px 0;
+}
+.att-card {
+  position: relative;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.16s ease, transform 0.16s ease;
+}
+.att-card:hover {
+  border-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+.att-preview-btn {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: var(--color-surface-muted);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.att-preview-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease;
+}
+.att-preview-btn:hover img { transform: scale(1.04); }
+.att-zoom {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.att-preview-btn:hover .att-zoom { opacity: 1; }
+
+.att-fallback {
+  aspect-ratio: 1/1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+.att-fallback svg { color: var(--color-primary); }
+.att-name {
+  font-size: 11.5px;
+  color: var(--color-text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-align: center;
+  line-height: 1.25;
+  word-break: break-all;
+}
+.att-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+.att-size { flex: 1; font-variant-numeric: tabular-nums; }
+.att-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.att-remove:hover { color: #dc2626; background: rgba(239, 68, 68, 0.12); }
+
+.att-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.att-preview-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+.att-preview-close:hover { background: rgba(255,255,255,0.3); }
+.att-preview-img {
+  max-width: 92vw;
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+}
+.att-preview-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  padding: 32px;
+}
+.att-preview-meta svg { opacity: 0.9; }
+.att-preview-name { margin: 0; font-size: 15px; font-weight: 600; }
+.att-preview-size { margin: 0; opacity: 0.75; font-size: 12.5px; }
+
+/* Comments */
+.comment-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.comment-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  transition: background 0.13s ease;
+}
+.comment-item:hover { background: var(--color-surface-muted, rgba(127,127,127,0.05)); }
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.comment-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.comment-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.comment-head strong { color: var(--color-text); }
+.comment-at {
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  margin-right: auto;
+}
+.comment-delete {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.comment-delete:hover { color: #dc2626; background: rgba(239,68,68,0.12); }
+.comment-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.comment-input-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 8px;
+}
+.comment-input {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+.save-btn.small {
+  padding: 7px 14px;
+  font-size: 12.5px;
+  height: auto;
+}
+
+/* Activity */
+.activity-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--color-surface-muted, rgba(127,127,127,0.08));
+}
+.activity-tab {
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.13s ease;
+  font-family: inherit;
+}
+.activity-tab:hover { color: var(--color-text); background: rgba(127,127,127,0.1); }
+.activity-tab.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+}
+.activity-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+}
+
+.activity-list {
+  list-style: none;
+  padding: 4px 0 0 0;
+  margin: 8px 0 2px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+.activity-list::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 5px;
+  width: 2px;
+  background: var(--color-border-light);
+}
+.activity-item {
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  gap: 12px;
+  position: relative;
+}
+.activity-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-surface);
+  margin-top: 5px;
+  box-shadow: 0 0 0 1px var(--color-primary-light);
+  z-index: 1;
+}
+.activity-dot.type-comment { background: #8b5cf6; box-shadow: 0 0 0 1px rgba(139,92,246,0.4); }
+.activity-dot.type-attachment { background: #10b981; box-shadow: 0 0 0 1px rgba(16,185,129,0.4); }
+.activity-dot.type-edit { background: #f59e0b; box-shadow: 0 0 0 1px rgba(245,158,11,0.4); }
+.activity-dot.type-create { background: #3b82f6; box-shadow: 0 0 0 1px rgba(59,130,246,0.4); }
+
+.activity-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 2px;
+}
+.activity-text {
+  margin: 0;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+.activity-icon {
+  margin-top: 1.5px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+  opacity: 0.9;
+}
+.activity-at {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Responsive */
+@media (max-width: 560px) {
+  .att-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  .label-with-icon { font-size: 13px; }
+  .activity-tabs { padding: 1px; }
+  .activity-tab { padding: 4px 8px; font-size: 11px; }
 }
 </style>

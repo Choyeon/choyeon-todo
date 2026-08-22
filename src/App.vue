@@ -108,6 +108,7 @@
 
     <Snackbar />
     <CommandPalette />
+    <OnboardingCarousel />
     <ConfirmModal />
     <ReminderModal />
     <ThemeTransition
@@ -162,6 +163,7 @@ import ThemeTransition from './components/ThemeTransition.vue'
 import UpdateModal from './components/UpdateModal.vue'
 import PomodoroFAB from './components/PomodoroFAB.vue'
 import CommandPalette from './components/CommandPalette.vue'
+import OnboardingCarousel from './components/OnboardingCarousel.vue'
 import { useGlobalHotkeys } from './composables/useGlobalHotkeys'
 import { useCommandPalette } from './composables/useCommandPalette'
 import { useFocusDistractionDetector } from './composables/useFocusDistractionDetector'

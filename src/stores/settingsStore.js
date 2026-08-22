@@ -35,10 +35,14 @@ const DEFAULT_SETTINGS = {
   sidebarShowFilters: true,
   sidebarShowAreas: true,
   density: 'standard',
+  // Task 5: 智能调度配置文件：strict / default / chill
+  reminderSmartProfile: 'default',
   // Task 1: v3 数据契约版本号
   //  - 新用户默认：3
   //  - 老用户加载：若 tasksVersion 缺失则设置为 2，taskStore.ensureV3 触发迁移
-  tasksVersion: 3
+  tasksVersion: 3,
+  // Task 4: 首次引导控制。新用户默认 true，完成引导后设置为 false；老用户（storage 中有 settings 且无此字段）默认 false
+  isFirstRun: true
 }
 
 const THEME_COLORS = [
@@ -161,9 +165,14 @@ export const useSettingsStore = defineStore('settings', () => {
   const sidebarShowFilters = ref(DEFAULT_SETTINGS.sidebarShowFilters)
   const sidebarShowAreas = ref(DEFAULT_SETTINGS.sidebarShowAreas)
   const density = ref(detectDefaultDensity())
+  // Task 5: 智能调度 profile
+  const reminderSmartProfile = ref(DEFAULT_SETTINGS.reminderSmartProfile)
   const _densityInitializedFromStorage = ref(false)
   // Task 1: v3 数据契约版本号；注意老用户缺失时保持 2 以便迁移触发
   const tasksVersion = ref(DEFAULT_SETTINGS.tasksVersion)
+  // Task 4: 首次引导控制；注意 _firstRunSeenStorage 在 load 中基于 saved 是否有该字段决定最终值
+  const isFirstRun = ref(DEFAULT_SETTINGS.isFirstRun)
+  const _hasLoadedSettings = ref(false)
 
   const resolvedTheme = computed(() => {
     if (themeMode.value === 'system') {
@@ -295,6 +304,13 @@ export const useSettingsStore = defineStore('settings', () => {
           density.value = data.density
           _densityInitializedFromStorage.value = true
         }
+        // Task 5: reminderSmartProfile
+        if (
+          data.reminderSmartProfile &&
+          ['strict', 'default', 'chill'].includes(data.reminderSmartProfile)
+        ) {
+          reminderSmartProfile.value = data.reminderSmartProfile
+        }
         // Task 1: tasksVersion。注意老用户（缺该字段）默认设 2 以便触发迁移，
         // 新写入的用户始终 >= 3。
         if (typeof data.tasksVersion === 'number') {
@@ -302,6 +318,18 @@ export const useSettingsStore = defineStore('settings', () => {
         } else {
           tasksVersion.value = 2
         }
+        // Task 4: 首次引导控制。如果 storage 中已有 settings 且未显示带 isFirstRun=false，
+        // 视为老用户 -> false；如果存储了 isFirstRun=false 则保持 false；存储了 true 则保持 true。
+        if (typeof data.isFirstRun === 'boolean') {
+          isFirstRun.value = data.isFirstRun
+        } else {
+          isFirstRun.value = false
+        }
+        _hasLoadedSettings.value = true
+      } else {
+        // 无保存的设置：新用户
+        isFirstRun.value = true
+        _hasLoadedSettings.value = true
       }
       applyTheme()
     } catch (e) {
@@ -344,7 +372,9 @@ export const useSettingsStore = defineStore('settings', () => {
           sidebarShowFilters: sidebarShowFilters.value,
           sidebarShowAreas: sidebarShowAreas.value,
           density: density.value,
-          tasksVersion: tasksVersion.value
+          reminderSmartProfile: reminderSmartProfile.value,
+          tasksVersion: tasksVersion.value,
+          isFirstRun: isFirstRun.value
         })
       )
     } catch (e) {
@@ -385,7 +415,9 @@ export const useSettingsStore = defineStore('settings', () => {
       sidebarShowFilters,
       sidebarShowAreas,
       density,
-      tasksVersion
+      reminderSmartProfile,
+      tasksVersion,
+      isFirstRun
     ]
     watchFn(watchSources, debouncedSave)
   }
@@ -502,6 +534,18 @@ export const useSettingsStore = defineStore('settings', () => {
     sidebarShowAreas.value = !sidebarShowAreas.value
   }
 
+  // Task 5: 切换/设置智能调度 profile
+  const setReminderSmartProfile = (profile) => {
+    if (!['strict', 'default', 'chill'].includes(profile)) return
+    reminderSmartProfile.value = profile
+  }
+  const toggleReminderSmartProfile = () => {
+    const order = ['default', 'strict', 'chill']
+    const i = order.indexOf(reminderSmartProfile.value)
+    const next = order[(i + 1) % order.length]
+    reminderSmartProfile.value = next
+  }
+
   const toggleMyDaySmartEnabled = () => {
     myDaySmartEnabled.value = !myDaySmartEnabled.value
   }
@@ -510,6 +554,11 @@ export const useSettingsStore = defineStore('settings', () => {
     const n = Number(count)
     if (!Number.isFinite(n)) return
     myDaySmartCount.value = Math.max(1, Math.min(100, Math.round(n)))
+  }
+
+  // Task 4: 首次引导完成
+  const finishFirstRun = () => {
+    isFirstRun.value = false
   }
 
   const toggleTheme = () => {
@@ -547,7 +596,9 @@ export const useSettingsStore = defineStore('settings', () => {
     sidebarShowFilters.value = DEFAULT_SETTINGS.sidebarShowFilters
     sidebarShowAreas.value = DEFAULT_SETTINGS.sidebarShowAreas
     density.value = detectDefaultDensity()
+    reminderSmartProfile.value = DEFAULT_SETTINGS.reminderSmartProfile
     tasksVersion.value = DEFAULT_SETTINGS.tasksVersion
+    isFirstRun.value = DEFAULT_SETTINGS.isFirstRun
     applyTheme()
   }
 
@@ -612,7 +663,9 @@ export const useSettingsStore = defineStore('settings', () => {
     sidebarShowFilters,
     sidebarShowAreas,
     density,
+    reminderSmartProfile,
     tasksVersion,
+    isFirstRun,
     themeColors: THEME_COLORS,
     loadFromStorage,
     applyTheme,
@@ -640,7 +693,10 @@ export const useSettingsStore = defineStore('settings', () => {
     toggleSidebarShowAreas,
     toggleMyDaySmartEnabled,
     setMyDaySmartCount,
+    setReminderSmartProfile,
+    toggleReminderSmartProfile,
     resetSettings,
+    finishFirstRun,
     cleanup
   }
 })

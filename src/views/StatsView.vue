@@ -410,14 +410,96 @@
           </div>
         </div>
       </div>
+
+      <!-- ===== Task 7 新增：时间范围选择器 ===== -->
+      <div class="chart-card task7-range-card">
+        <div class="chart-header">
+          <h3 class="chart-title">{{ $t('stats.advancedStats') || 'Advanced Stats' }}</h3>
+          <div class="range-tabs">
+            <button
+              v-for="opt in heatmapRangeOptions"
+              :key="opt.value"
+              class="range-tab"
+              :class="{ active: heatmapRange === opt.value }"
+              @click="heatmapRange = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Task 7 新增：KarmaCard + 摘要 ===== -->
+      <div class="task7-row-2">
+        <KarmaCard
+          :streak-day="focusSummary.streakDay"
+          :longest-streak="stats.maxStreak"
+        />
+        <div class="focus-summary-card chart-card">
+          <div class="chart-header no-border">
+            <h3 class="chart-title">{{ $t('stats.focusSummary') || 'Focus summary' }}</h3>
+          </div>
+          <div class="chart-body">
+            <div class="summary-kv">
+              <div class="kv-item">
+                <span class="kv-k">{{ $t('stats.todayFocus') || 'Today' }}</span>
+                <span class="kv-v"><b>{{ pomodoroStore.todayFocusMinutes }}</b> {{ $t('stats.minutesUnit') || 'min' }}</span>
+              </div>
+              <div class="kv-item">
+                <span class="kv-k">{{ $t('stats.streakWeek') || 'Week streak' }}</span>
+                <span class="kv-v"><b>{{ focusSummary.streakWeek }}</b> w</span>
+              </div>
+              <div class="kv-item">
+                <span class="kv-k">{{ $t('stats.deepFocus') || 'Deep focus' }}</span>
+                <span class="kv-v"><b>{{ focusSummary.deepFocusMinutes }}</b> {{ $t('stats.minutesUnit') || 'min' }}</span>
+              </div>
+              <div class="kv-item">
+                <span class="kv-k">{{ $t('stats.distractionRate') || 'Distraction' }}</span>
+                <span class="kv-v"><b>{{ Math.round(focusSummary.distractionRate * 100) }}</b>%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Task 7 新增：HeatmapGrid（GitHub 风格） ===== -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">{{ $t('stats.githubHeatmap') || 'Activity heatmap' }}</h3>
+        </div>
+        <div class="chart-body">
+          <HeatmapGrid
+            :tasks="taskStore.tasks"
+            :session-history="pomodoroStore.sessionHistory"
+            :range="heatmapRange"
+            :weeks="53"
+            @select-date="onHeatmapDateClick"
+          />
+        </div>
+      </div>
+
+      <!-- ===== Task 7 新增：ReportCard（周报 / 月报） ===== -->
+      <ReportCard
+        ref="reportRef"
+        :task-store="taskStore"
+        :pomodoro-store="pomodoroStore"
+        :karma-store="karmaStore"
+        initial-mode="weekly"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, h, watchEffect, onUnmounted } from 'vue'
+import { ref, computed, h, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
+import { usePomodoroStore } from '../stores/pomodoroStore'
+import { useKarmaStore } from '../stores/karmaStore'
+import { watch } from 'vue'
+import HeatmapGrid from '../components/stats/HeatmapGrid.vue'
+import KarmaCard from '../components/stats/KarmaCard.vue'
+import ReportCard from '../components/stats/ReportCard.vue'
 import {
   PlusCircle,
   Clock,
@@ -433,10 +515,107 @@ import {
 } from '@lucide/vue'
 import { formatDateStr } from '../utils/date'
 
-const { t, tm } = useI18n()
+const { t, tm, locale } = useI18n()
 const taskStore = useTaskStore()
+const pomodoroStore = usePomodoroStore()
+const karmaStore = useKarmaStore()
 const rangeDays = ref(30)
 const categoryStatType = ref('active')
+const reportRef = ref(null)
+
+// ===== Task 7: 热力图范围选项 =====
+const heatmapRange = ref('ytd')
+const heatmapRangeOptions = computed(() => [
+  { value: '30d', label: t('stats.range30d') || '30d' },
+  { value: '90d', label: t('stats.range90d') || '90d' },
+  { value: '180d', label: t('stats.range180d') || '180d' },
+  { value: 'ytd', label: t('stats.rangeYtd') || 'YTD' }
+])
+
+const onHeatmapDateClick = (dateStr) => {
+  // 简单：切换到 CompletedView 并按日期过滤；此处留作钩子，
+  // 也可以在 filterStore 中设置。这里仅在控制台打印供外部扩展。
+  try {
+    const { useFilterStore } = require('../stores/filterStore')
+    const fs = useFilterStore && useFilterStore()
+    if (fs && typeof fs.setDateFilter === 'function') {
+      fs.setDateFilter(dateStr)
+    }
+  } catch {
+    /* noop */
+  }
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.debug('[StatsView] heatmap-date-click', dateStr)
+  }
+}
+
+// ===== Task 7: 专注摘要（基于 last7） =====
+const focusSummary = computed(() =>
+  (pomodoroStore && typeof pomodoroStore.getFocusSummary === 'function')
+    ? pomodoroStore.getFocusSummary('last7')
+    : {
+        totalMinutes: 0,
+        sessions: 0,
+        avgSessionMin: 0,
+        distractions: 0,
+        distractionRate: 0,
+        deepFocusMinutes: 0,
+        tasksCompleted: 0,
+        streakDay: 0,
+        streakWeek: 0,
+        bestFocusDay: null
+      }
+)
+
+// ===== Task 7: Karma init + hook + 徽章同步 =====
+onMounted(() => {
+  if (typeof karmaStore.init === 'function') karmaStore.init()
+  if (typeof karmaStore.hookToStores === 'function') {
+    karmaStore.hookToStores(taskStore, pomodoroStore, watch)
+  }
+  // 定时同步徽章（每 10 秒 + 数据变更）
+  try {
+    syncBadgesFromStores()
+  } catch (e) {
+    console.warn('[StatsView] sync badges mount failed:', e)
+  }
+})
+
+const syncBadgesFromStores = () => {
+  if (typeof karmaStore.syncBadgesByStoreState !== 'function') return
+  const focus30 = pomodoroStore.getFocusSummary
+    ? pomodoroStore.getFocusSummary('last30')
+    : { totalMinutes: 0 }
+  const totalPomodoroMin = Array.isArray(pomodoroStore.sessionHistory)
+    ? pomodoroStore.sessionHistory
+        .filter((h) => h && h.mode === 'work')
+        .reduce((s, h) => s + (Number(h.durationMin) || 0), 0)
+    : 0
+  const completedCount = Array.isArray(taskStore.tasks)
+    ? taskStore.tasks.filter((t) => t && t.completed).length
+    : 0
+  karmaStore.syncBadgesByStoreState({
+    completedCount,
+    pomodoroMinutes: totalPomodoroMin,
+    dayStreak: focusSummary.value.streakDay || 0,
+    todayFocusMinutes: Number(pomodoroStore.todayFocusMinutes) || 0,
+    noOverdueStreak: 0,
+    aiModeMinutes: 0,
+    daily10PlusStreak: 0
+  })
+  // 防止未使用 warning
+  void focus30
+}
+
+// 数据变更时同步徽章
+let syncTimer = null
+onMounted(() => {
+  syncTimer = setInterval(syncBadgesFromStores, 15000)
+})
+onUnmounted(() => {
+  if (syncTimer) clearInterval(syncTimer)
+})
 
 // 计数器动画组件：使用 ease-out-expo 曲线在数字变化时平滑过渡
 const AnimatedNumber = {
