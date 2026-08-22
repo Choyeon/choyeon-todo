@@ -1649,6 +1649,113 @@ if (!app.isPackaged) {
   })
 }
 
+// ============== Task 6: 应用焦点事件（空桩，不强制硬件级检测） ==============
+//  广播窗口/焦点变化给各主窗口，供 useFocusDistractionDetector 使用。
+function broadcastAppFocus(eventName, payload = {}) {
+  const targets = [mainWindow, pomodoroWindow, pomodoroFabWindow, miniWindow]
+  targets.forEach((win) => {
+    if (!win || win.isDestroyed()) return
+    if (!win.webContents || win.webContents.isDestroyed()) return
+    try {
+      win.webContents.send(eventName, payload)
+    } catch (e) {
+      /* ignore */
+    }
+  })
+}
+
+const APP_FOCUS_EVENTS_ENABLED = !!process.versions?.electron
+if (APP_FOCUS_EVENTS_ENABLED) {
+  app.on('browser-window-blur', (_e, _win) => {
+    broadcastAppFocus('app:focus-lost', { reason: 'browser-window-blur' })
+  })
+  app.on('browser-window-focus', (_e, _win) => {
+    broadcastAppFocus('app:focus-gained', { reason: 'browser-window-focus' })
+  })
+  app.on('browser-window-hide', (_e, win) => {
+    if (win && win === mainWindow) {
+      broadcastAppFocus('app:window-hidden', { reason: 'browser-window-hide' })
+    }
+  })
+  app.on('browser-window-minimize', (_e, win) => {
+    if (win && win === mainWindow) {
+      broadcastAppFocus('app:window-hidden', { reason: 'browser-window-minimize' })
+    }
+  })
+}
+
+// ============== Task 6 B: hotkey IPC 动态注册/反注册 ==============
+const registeredHotkeys = new Set()
+
+function isFromRenderer(event) {
+  // 允许所有已知渲染进程注册（主/番茄/悬浮球/迷你窗口）
+  if (isFromMain(event)) return true
+  if (isFromDebug(event)) return true
+  if (isFromMini(event)) return true
+  if (isFromPomodoroFullscreen(event)) return true
+  if (isFromPomodoroFab(event)) return true
+  return false
+}
+
+ipcMain.handle('hotkey:register', (event, binds) => {
+  if (!isFromRenderer(event)) return { ok: false, err: 'forbidden' }
+  if (!process.versions?.electron) return { ok: false, err: 'not_electron' }
+  if (!globalShortcut) return { ok: false, err: 'globalShortcut_unavailable' }
+  if (!Array.isArray(binds)) binds = []
+  const results = []
+  for (const bind of binds) {
+    if (!bind || typeof bind !== 'object') continue
+    const key = typeof bind.key === 'string' ? bind.key : null
+    const accelerator = typeof bind.accelerator === 'string' ? bind.accelerator : null
+    if (!key || !accelerator) {
+      results.push({ key, accelerator, ok: false, err: 'invalid_bind' })
+      continue
+    }
+    try {
+      // 先注销相同 accelerator，避免重复
+      if (registeredHotkeys.has(accelerator)) {
+        try {
+          globalShortcut.unregister(accelerator)
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      const ok = globalShortcut.register(accelerator, () => {
+        // 发送到渲染进程（主/子窗口都广播）
+        broadcastAppFocus('hotkey:pressed', { key, accelerator })
+      })
+      if (ok) {
+        registeredHotkeys.add(accelerator)
+        results.push({ key, accelerator, ok: true })
+      } else {
+        results.push({ key, accelerator, ok: false, err: 'register_failed' })
+      }
+    } catch (err) {
+      results.push({ key, accelerator, ok: false, err: (err && err.message) || String(err) })
+    }
+  }
+  return { ok: true, results }
+})
+
+ipcMain.handle('hotkey:unregisterAll', (event) => {
+  if (!isFromRenderer(event)) return { ok: false, err: 'forbidden' }
+  try {
+    if (globalShortcut) {
+      for (const acc of Array.from(registeredHotkeys)) {
+        try {
+          globalShortcut.unregister(acc)
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    }
+    registeredHotkeys.clear()
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, err: (err && err.message) || String(err) }
+  }
+})
+
 // 同步任务数据到主进程（用于托盘菜单显示）
 ipcMain.on('tasks:sync', (event, { tasks, categories }) => {
   if (!isFromMain(event)) return
@@ -1876,6 +1983,165 @@ ipcMain.on('notification:send', (event, { title, body, taskId }) => {
   })
 
   notification.show()
+})
+
+// Task 5: 新的高级通知通道（带 actions），通过 ipcMain.handle + send 回发 reminder:action
+// 兼容 window-management（若主窗口未创建则也能发送回调到最近的 sender）
+const sendToAllAppWindows = (channel, payload, preferredSender) => {
+  const sent = new Set()
+  const allWindows = [
+    mainWindow,
+    debugWindow,
+    pomodoroWindow,
+    pomodoroFabWindow,
+    miniWindow,
+    quickAddWindow
+  ]
+  if (preferredSender && !preferredSender.isDestroyed()) {
+    try {
+      preferredSender.send(channel, payload)
+      sent.add(preferredSender.id)
+    } catch {
+      /* ignore */
+    }
+  }
+  for (const win of allWindows) {
+    if (!win || win.isDestroyed()) continue
+    if (!win.webContents || win.webContents.isDestroyed()) continue
+    if (sent.has(win.webContents.id)) continue
+    try {
+      win.webContents.send(channel, payload)
+      sent.add(win.webContents.id)
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+const parseSnoozeActionToMinutes = (action) => {
+  if (!action) return null
+  switch (action) {
+    case 'snooze5':
+      return 5
+    case 'snooze10':
+      return 10
+    case 'snooze30':
+      return 30
+    case 'snooze1h':
+    case 'snooze60':
+      return 60
+    case 'snoozeTmr':
+      return 24 * 60 // 交给 renderer 根据语义再判定
+    default:
+      if (typeof action === 'string' && action.startsWith('snooze')) {
+        const m = Number(action.slice(6))
+        if (Number.isFinite(m) && m >= 0) return m
+      }
+      return null
+  }
+}
+
+ipcMain.handle('notification:show', (event, payload) => {
+  try {
+    // 允许所有本 app 窗口（主端/调试/番茄钟/迷你窗口）发送通知
+    const allowed =
+      isFromMain(event) ||
+      isFromDebug(event) ||
+      isFromMini(event) ||
+      isFromPomodoroFullscreen(event) ||
+      isFromPomodoroFab(event)
+    if (!allowed) return { success: false, error: 'forbidden' }
+
+    if (!payload || typeof payload !== 'object') {
+      return { success: false, error: 'invalid_payload' }
+    }
+    const title = typeof payload.title === 'string' ? payload.title : 'Choyeon To Do'
+    const body = typeof payload.body === 'string' ? payload.body : ''
+    const silent = !!payload.silent
+    const iconPath = getIconPath()
+    const taskId = typeof payload.taskId === 'string' ? payload.taskId : null
+    const actions = Array.isArray(payload.actions) ? payload.actions : []
+
+    if (!validateString(title) || !validateString(body, 2048)) {
+      return { success: false, error: 'invalid_fields' }
+    }
+
+    if (!Notification.isSupported()) {
+      return { success: false, error: 'unsupported' }
+    }
+
+    if (appSettings.doNotDisturb) {
+      return { success: true, suppressed: true }
+    }
+
+    const notifOptions = {
+      title,
+      body,
+      icon: iconPath || undefined,
+      silent,
+      hasReply: false,
+      timeoutType: 'never',
+      urgency: 'normal'
+    }
+    // Electron 在 win32 下的 actions（Toast 原生按钮）最多允许 5 个
+    if (Array.isArray(actions) && actions.length) {
+      notifOptions.actions = actions
+        .filter((a) => a && a.action && a.title)
+        .slice(0, 5)
+        .map((a) => ({ type: 'button', text: String(a.title).slice(0, 64) }))
+    }
+
+    const notification = new Notification(notifOptions)
+
+    // 点击 -> 打开任务
+    notification.on('click', () => {
+      showAndFocusWindow()
+      if (taskId) {
+        sendToAllAppWindows(
+          'reminder:action',
+          { taskId, action: 'openTask' },
+          event.sender
+        )
+      }
+      try {
+        notification.removeAllListeners()
+      } catch {
+        /* ignore */
+      }
+    })
+
+    // Windows Toast actions 按钮
+    notification.on('action', (actionIndex) => {
+      const act = Array.isArray(actions) ? actions[Number(actionIndex) || 0] : null
+      if (!act || !act.action) return
+      const snoozeMinutes = parseSnoozeActionToMinutes(act.action)
+      const outPayload = {
+        taskId,
+        action: act.action,
+        snoozeMinutes: snoozeMinutes ?? null
+      }
+      sendToAllAppWindows('reminder:action', outPayload, event.sender)
+      try {
+        notification.removeAllListeners()
+      } catch {
+        /* ignore */
+      }
+    })
+
+    notification.on('close', () => {
+      try {
+        notification.removeAllListeners()
+      } catch {
+        /* ignore */
+      }
+    })
+
+    notification.show()
+    return { success: true }
+  } catch (e) {
+    console.error('[Main] notification:show error:', e)
+    return { success: false, error: e && e.message ? e.message : 'unknown' }
+  }
 })
 
 // 单实例锁

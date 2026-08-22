@@ -1,9 +1,13 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useSettingsStore } from './settingsStore'
 import { useTaskStore } from './taskStore'
+import { getTodayStr, formatDateStr, addDays } from '../utils/date'
 
 const STORAGE_KEY = 'choyeon_pomodoro_v1'
+const SUMMARY_STORAGE_KEY = 'choyeon_pomodoro_summary_v1'
+const INTERRUPTION_LOG_LIMIT = 200
+const SESSION_HISTORY_LIMIT = 2000
 
 export const usePomodoroStore = defineStore('pomodoro', () => {
   const settingsStore = useSettingsStore()
@@ -357,6 +361,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
 
   const startTimerInternal = () => {
     if (timeLeft.value <= 0) return
+    if (!hasStarted.value) {
+      // 新会话开始：记录干扰快照 + 开始时间
+      sessionStartDistractions = sessionDistractions.value
+      sessionStartAt = Date.now()
+    }
     hasStarted.value = true
     isRunning.value = true
     lastTickTimestamp.value = Date.now()
@@ -365,6 +374,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     timerInterval = setInterval(tick, 200)
 
     saveToStorage()
+    saveSummaryToStorage()
   }
 
   const pauseTimerInternal = () => {
@@ -389,7 +399,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     pauseTimerInternal()
     hasStarted.value = false
     timeLeft.value = totalTime.value
+    // 放弃当前会话：清空 session 级别的干扰计数快照（不等于全局 log）
+    sessionStartAt = null
+    sessionStartDistractions = sessionDistractions.value
     saveToStorage()
+    saveSummaryToStorage()
   }
 
   const skipTimerInternal = () => {
@@ -400,11 +414,39 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const completeSessionInternal = () => {
     const wasRunning = hasStarted.value
     const completedMode = currentMode.value
+    const sessionDurationSec = Math.max(0, totalTime.value - timeLeft.value)
+    const sessionDurationMin = Math.round((sessionDurationSec || totalTime.value) / 60)
+    const sessDistractions = Math.max(0, sessionDistractions.value - sessionStartDistractions)
+    const wasWork = completedMode === 'work'
+    const deep = wasWork && sessionDurationMin >= 25 && sessDistractions === 0
+
     // Electron 模式下，若主进程 timerEnded 已先处理（通过 handleTimerEnded），
     // 本函数只负责清理运行时状态，不再重复计数/通知/切换模式，防止双重互斥。
     const handledByMain = isElectron && sessionCompletedGuardKey !== null
     pauseTimerInternal()
     hasStarted.value = false
+
+    // 无论是否 handledByMain，只要是真实完成的会话都记入 sessionHistory（单次会话只记一次由 guard 保证）
+    if (!handledByMain) {
+      if (wasRunning || sessionStartAt) {
+        pushSessionHistory({
+          at: sessionStartAt || Date.now() - sessionDurationMin * 60 * 1000,
+          mode: completedMode,
+          durationMin: sessionDurationMin,
+          distractions: sessDistractions,
+          taskId: currentTaskId.value || taskStore?.focusedTaskId || null,
+          deep,
+          completedAt: Date.now(),
+          dateStr: getTodayStr()
+        })
+      }
+    }
+
+    // sessionDistractions 只重置 sessionStart 快照，不清空总累计（摘要用）
+    sessionStartAt = null
+    sessionStartDistractions = sessionDistractions.value
+    saveSummaryToStorage()
+
     // 清除一次性去重标志
     if (handledByMain) {
       sessionCompletedGuardKey = null
@@ -413,9 +455,9 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     }
     playBeep()
 
-    if (completedMode === 'work') {
+    if (wasWork) {
       if (taskStore.focusedTaskId && wasRunning) {
-        const elapsed = Math.max(0, totalTime.value - timeLeft.value)
+        const elapsed = Math.max(0, sessionDurationSec)
         taskStore.addPomodoroSession(taskStore.focusedTaskId, elapsed)
       }
       completedPomodoros.value++
@@ -445,7 +487,10 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
         : currentMode.value === 'shortBreak'
           ? settingsStore.pomodoroBreakMinutes
           : settingsStore.pomodoroLongBreakMinutes
+    sessionStartAt = null
+    sessionStartDistractions = sessionDistractions.value
     saveToStorage()
+    saveSummaryToStorage()
   }
 
   const toggleTimer = () => {
@@ -494,6 +539,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     timeLeft.value = customMinutes.value * 60
     isCustomEditing.value = false
     saveToStorage()
+    saveSummaryToStorage()
 
     if (isElectron && !isRunning.value) {
       if (window.electronAPI?.setPomodoroDuration) {
@@ -503,6 +549,287 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
           console.warn('[Pomodoro] Failed to set duration:', e)
         }
       }
+    }
+  }
+
+  // ===== Task 6 A. setDuration：FAB 可调时长 =====
+  const VALID_MODES = ['work', 'shortBreak', 'longBreak']
+  const setDuration = (mode, minutes) => {
+    if (!VALID_MODES.includes(mode)) return false
+    const mins = Math.max(1, Math.min(180, Math.floor(Number(minutes) || 0)))
+    if (mins < 1) return false
+    if (mode === 'work') settingsStore.pomodoroWorkMinutes = mins
+    else if (mode === 'shortBreak') settingsStore.pomodoroBreakMinutes = mins
+    else settingsStore.pomodoroLongBreakMinutes = mins
+    if (!isRunning.value && !hasStarted.value && currentMode.value === mode) {
+      timeLeft.value = mins * 60
+    }
+    customMinutes.value =
+      currentMode.value === 'work'
+        ? settingsStore.pomodoroWorkMinutes
+        : currentMode.value === 'shortBreak'
+          ? settingsStore.pomodoroBreakMinutes
+          : settingsStore.pomodoroLongBreakMinutes
+    saveToStorage()
+    saveSummaryToStorage()
+    if (isElectron) {
+      if (window.electronAPI?.setPomodoroDuration) {
+        try {
+          window.electronAPI.setPomodoroDuration(mode, mins)
+        } catch (e) {
+          console.warn('[Pomodoro] Failed to set duration:', e)
+        }
+      }
+    }
+    return true
+  }
+
+  const modeDurations = computed(() => ({
+    work: settingsStore.pomodoroWorkMinutes,
+    shortBreak: settingsStore.pomodoroBreakMinutes,
+    longBreak: settingsStore.pomodoroLongBreakMinutes,
+    custom: customMinutes.value
+  }))
+
+  // ===== Task 6 A. markDistraction =====
+  const markDistraction = (kind = 'manual') => {
+    const allowedKinds = ['appSwitch', 'focusLost', 'manual', 'userMarked']
+    const finalKind = allowedKinds.includes(kind) ? kind : 'manual'
+    sessionDistractions.value += 1
+    interruptionLog.value.push({ at: Date.now(), kind: finalKind })
+    if (interruptionLog.value.length > INTERRUPTION_LOG_LIMIT) {
+      interruptionLog.value.splice(0, interruptionLog.value.length - INTERRUPTION_LOG_LIMIT)
+    }
+    saveSummaryToStorage()
+    return true
+  }
+
+  // ===== Task 6 A. 绑定当前任务 =====
+  const bindCurrentTask = (taskId) => {
+    currentTaskId.value = taskId || null
+    if (taskStore && typeof taskStore.focusTask === 'function') {
+      taskId ? taskStore.focusTask(taskId) : taskStore.unfocusTask?.()
+    }
+    saveSummaryToStorage()
+    return true
+  }
+  const unbindCurrentTask = () => bindCurrentTask(null)
+
+  // ===== Task 6 A. sessionHistory 入队（带上限） =====
+  const pushSessionHistory = (entry) => {
+    if (!entry) return
+    sessionHistory.value.push(entry)
+    if (sessionHistory.value.length > SESSION_HISTORY_LIMIT) {
+      sessionHistory.value.splice(0, sessionHistory.value.length - SESSION_HISTORY_LIMIT)
+    }
+  }
+
+  // ===== Task 6 A. Streak 派生计算 =====
+  const parseDateLocal = (str) => {
+    if (!str) return new Date()
+    const [y, m, d] = String(str).split('-').map(Number)
+    if (!y || !m || !d) return new Date(str)
+    return new Date(y, m - 1, d)
+  }
+  // ISO 周键（YYYY-Www），周从周一开始
+  const getWeekKey = (dStr) => {
+    const dt = dStr instanceof Date ? dStr : parseDateLocal(dStr)
+    const tmp = new Date(dt.valueOf())
+    tmp.setHours(0, 0, 0, 0)
+    tmp.setDate(tmp.getDate() + 4 - (tmp.getDay() || 7))
+    const yearStart = new Date(tmp.getFullYear(), 0, 1)
+    const weekNo = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7)
+    return `${tmp.getFullYear()}-W${String(weekNo).padStart(2, '0')}`
+  }
+  const computeStreaks = (history = sessionHistory.value, todayStr = getTodayStr()) => {
+    const workDaysSet = new Set()
+    history.forEach((h) => {
+      if (h.mode === 'work' && h.durationMin > 0) {
+        workDaysSet.add(h.dateStr || formatDateStr(new Date(h.at || h.completedAt || Date.now())))
+      }
+    })
+    let dayStreak = 0
+    let cursor = todayStr
+    while (workDaysSet.has(cursor)) {
+      dayStreak++
+      cursor = addDays(cursor, -1)
+    }
+    const weekKeys = new Set()
+    history.forEach((h) => {
+      if (h.mode === 'work' && h.durationMin > 0) {
+        const ds = h.dateStr || formatDateStr(new Date(h.at || h.completedAt || Date.now()))
+        weekKeys.add(getWeekKey(ds))
+      }
+    })
+    let weekStreak = 0
+    let today = parseDateLocal(todayStr)
+    // 向前逐周查找
+    while (true) {
+      const wk = getWeekKey(today)
+      if (weekKeys.has(wk)) {
+        weekStreak++
+        today = new Date(today.valueOf() - 7 * 86400000)
+      } else {
+        break
+      }
+    }
+    return { dayStreak, weekStreak }
+  }
+
+  // ===== Task 6 A. getFocusSummary =====
+  const sessionsInRange = (range) => {
+    const now = Date.now()
+    let days = 1
+    if (range === 'last7') days = 7
+    else if (range === 'last30') days = 30
+    const cutoff = now - (days - 1) * 86400000
+    const today = parseDateLocal(getTodayStr())
+    const cutoffDate = new Date(today.valueOf() - (days - 1) * 86400000)
+    const cutoffStr = formatDateStr(cutoffDate)
+    return sessionHistory.value.filter((h) => {
+      const ds = h.dateStr || formatDateStr(new Date(h.at || h.completedAt || now))
+      return ds >= cutoffStr
+    })
+  }
+
+  const countTasksCompletedInRange = (range) => {
+    // 使用 taskStore 的 activity log 近似：今日/范围 pomodoroComplete 且后续 completed
+    // 简化实现：统计任务中 pomodoroSessions>0 且 completed 且 completedAt 在范围内
+    if (!taskStore || !Array.isArray(taskStore.tasks)) return 0
+    const now = Date.now()
+    let days = 1
+    if (range === 'last7') days = 7
+    else if (range === 'last30') days = 30
+    const cutoff = now - days * 86400000
+    return taskStore.tasks.filter((t) => {
+      if (!t.completed) return false
+      if ((t.pomodoroSessions || 0) < 1) return false
+      const cat = t.completedAt || t.updatedAt || t.createdAt || 0
+      return cat >= cutoff
+    }).length
+  }
+
+  const getFocusSummary = (range = 'today') => {
+    const validRanges = ['today', 'last7', 'last30']
+    const r = validRanges.includes(range) ? range : 'today'
+    const workSessions = sessionsInRange(r).filter((h) => h.mode === 'work')
+    const totalMinutes = workSessions.reduce((s, h) => s + (h.durationMin || 0), 0)
+    const sessions = workSessions.length
+    const avgSessionMin = sessions > 0 ? Math.round((totalMinutes / sessions) * 10) / 10 : 0
+    const distractions = workSessions.reduce((s, h) => s + (h.distractions || 0), 0)
+    const distractionRate = totalMinutes > 0 ? Math.min(1, distractions / totalMinutes) : 0
+    const deepFocusMinutes = workSessions.reduce(
+      (s, h) => s + (h.deep ? h.durationMin || 0 : 0),
+      0
+    )
+    const tasksCompleted = countTasksCompletedInRange(r)
+
+    // Streak 基于全量 history，不因 range 而变
+    const { dayStreak, weekStreak } = computeStreaks()
+
+    // 最佳专注日（范围里专注分钟最多的一天）
+    const dayMap = new Map()
+    workSessions.forEach((h) => {
+      const ds = h.dateStr || formatDateStr(new Date(h.at || h.completedAt || Date.now()))
+      dayMap.set(ds, (dayMap.get(ds) || 0) + (h.durationMin || 0))
+    })
+    let bestFocusDay = null
+    let bestMin = 0
+    dayMap.forEach((min, d) => {
+      if (min > bestMin) {
+        bestMin = min
+        bestFocusDay = d
+      }
+    })
+
+    return {
+      totalMinutes,
+      sessions,
+      avgSessionMin,
+      distractions,
+      distractionRate,
+      deepFocusMinutes,
+      tasksCompleted,
+      streakDay: dayStreak,
+      streakWeek: weekStreak,
+      bestFocusDay
+    }
+  }
+
+  const todayFocusMinutes = computed(() => getFocusSummary('today').totalMinutes)
+  const dayStreak = computed(() => computeStreaks().dayStreak)
+  const weekStreak = computed(() => computeStreaks().weekStreak)
+
+  // ===== Task 6 C. AI 自适应：根据 distractionRate 调整 work 时长 =====
+  const computeAIAdaptiveDuration = (range = 'last7') => {
+    const summary = getFocusSummary(range)
+    const base = settingsStore.pomodoroWorkMinutes
+    let delta = 0
+    if (summary.sessions === 0) return base
+    if (summary.distractionRate > 0.2) delta = -Math.max(1, Math.round(base * 0.1))
+    else if (summary.distractionRate < 0.05) delta = Math.max(1, Math.round(base * 0.1))
+    // ±10min 钳制（delta）；整体结果落在 [1,180] 间与 setDuration 一致
+    delta = Math.max(-10, Math.min(10, delta))
+    return Math.max(1, Math.min(180, base + delta))
+  }
+  const applyAIAdaptiveDuration = () => {
+    const mins = computeAIAdaptiveDuration()
+    return setDuration('work', mins)
+  }
+
+  // ===== Task 6: startPause / skipStage 对外统一 API（供全局热键） =====
+  const startPause = () => toggleTimer()
+  const skipStage = () => skipTimer()
+
+  // ===== 摘要与干扰持久化 =====
+  const saveSummaryToStorage = () => {
+    if (isSlaveWindow) return
+    try {
+      if (typeof localStorage === 'undefined') return
+      localStorage.setItem(
+        SUMMARY_STORAGE_KEY,
+        JSON.stringify({
+          sessionDistractions: sessionDistractions.value,
+          interruptionLog: interruptionLog.value,
+          sessionHistory: sessionHistory.value,
+          currentTaskId: currentTaskId.value
+        })
+      )
+    } catch (e) {
+      console.warn('[Pomodoro] Failed to save summary:', e)
+    }
+  }
+
+  const loadSummaryFromStorage = () => {
+    if (isSlaveWindow) return
+    try {
+      if (typeof localStorage === 'undefined') return
+      const raw = localStorage.getItem(SUMMARY_STORAGE_KEY)
+      if (!raw) return
+      const data = JSON.parse(raw)
+      if (typeof data.sessionDistractions === 'number') {
+        sessionDistractions.value = Math.max(0, data.sessionDistractions)
+      }
+      if (Array.isArray(data.interruptionLog)) {
+        interruptionLog.value = data.interruptionLog
+          .filter(
+            (l) =>
+              l &&
+              typeof l.at === 'number' &&
+              ['appSwitch', 'focusLost', 'manual', 'userMarked'].includes(l.kind)
+          )
+          .slice(-INTERRUPTION_LOG_LIMIT)
+      }
+      if (Array.isArray(data.sessionHistory)) {
+        sessionHistory.value = data.sessionHistory
+          .filter((h) => h && typeof h.at === 'number')
+          .slice(-SESSION_HISTORY_LIMIT)
+      }
+      if (data.currentTaskId !== undefined) {
+        currentTaskId.value = data.currentTaskId
+      }
+    } catch (e) {
+      console.warn('[Pomodoro] Failed to load summary:', e)
     }
   }
 
@@ -561,6 +888,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
 
     if (!isSlaveWindow) {
       loadFromStorage()
+      loadSummaryFromStorage()
     }
 
     if (window.electronAPI?.onPomodoroStateUpdated) {
@@ -615,6 +943,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const initWebMode = () => {
     if (isElectron) return
     loadFromStorage()
+    loadSummaryFromStorage()
   }
 
   const setupWatchers = (watchFn) => {
@@ -685,6 +1014,17 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const currentNoise = ref(null)
   const noiseVolume = ref(0.5)
   const isNoisePlaying = ref(false)
+
+  // ===== Task 6 A. 专注摘要 & 干扰检测 =====
+  const sessionDistractions = ref(0)
+  const interruptionLog = ref([])
+  // 历史已完成 session：{ at, mode, durationMin, distractions, taskId, deep: boolean, dateStr }
+  const sessionHistory = ref([])
+  // dayStreak / weekStreak / todayFocusMinutes 为计算值（派生状态），避免重复持久化
+  const currentTaskId = ref(null)
+  // session 开始时 distractions 计数快照（用于完成时判断 deepFocus）
+  let sessionStartDistractions = 0
+  let sessionStartAt = null
 
   let noiseNode = null
   let noiseGainNode = null
@@ -866,6 +1206,28 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     currentNoise,
     noiseVolume,
     isNoisePlaying,
+    // Task 6 新增 state & computed
+    sessionDistractions,
+    interruptionLog,
+    sessionHistory,
+    currentTaskId,
+    modeDurations,
+    todayFocusMinutes,
+    dayStreak,
+    weekStreak,
+    // Task 6 新增 actions
+    setDuration,
+    markDistraction,
+    getFocusSummary,
+    bindCurrentTask,
+    unbindCurrentTask,
+    computeAIAdaptiveDuration,
+    applyAIAdaptiveDuration,
+    startPause,
+    skipStage,
+    // 内部工具（用于测试）
+    completeSessionInternal,
+    // 原有
     toggleTimer,
     resetTimer,
     skipTimer,

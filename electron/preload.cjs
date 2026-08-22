@@ -30,6 +30,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('notification:taskClick', listener)
     return () => ipcRenderer.removeListener('notification:taskClick', listener)
   },
+  // Task 5: 高级通知 + actions 回调
+  onReminderAction: (callback) => {
+    const listener = (event, payload) => callback(payload)
+    ipcRenderer.on('reminder:action', listener)
+    return () => ipcRenderer.removeListener('reminder:action', listener)
+  },
   onTaskNew: (callback) => {
     const listener = () => callback()
     ipcRenderer.on('task:new', listener)
@@ -171,5 +177,54 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const listener = (_, err) => callback(err)
     ipcRenderer.on('updater:error', listener)
     return () => ipcRenderer.removeListener('updater:error', listener)
+  },
+
+  // ===== Task 6 A: App 焦点事件（Electron 主进程空桩广播） =====
+  onAppFocusLost: (callback) => {
+    const listener = (_, payload) => callback(payload)
+    ipcRenderer.on('app:focus-lost', listener)
+    return () => ipcRenderer.removeListener('app:focus-lost', listener)
+  },
+  onAppFocusGained: (callback) => {
+    const listener = (_, payload) => callback(payload)
+    ipcRenderer.on('app:focus-gained', listener)
+    return () => ipcRenderer.removeListener('app:focus-gained', listener)
+  },
+  onAppWindowHidden: (callback) => {
+    const listener = (_, payload) => callback(payload)
+    ipcRenderer.on('app:window-hidden', listener)
+    return () => ipcRenderer.removeListener('app:window-hidden', listener)
+  },
+
+  // ===== Task 6 B: 全局热键动态注册/反注册 =====
+  registerHotkeys: (binds) => ipcRenderer.invoke('hotkey:register', binds),
+  unregisterAllHotkeys: () => ipcRenderer.invoke('hotkey:unregisterAll'),
+  onHotkeyPressed: (callback) => {
+    const listener = (_, payload) => callback(payload)
+    ipcRenderer.on('hotkey:pressed', listener)
+    return () => ipcRenderer.removeListener('hotkey:pressed', listener)
   }
 })
+
+// Task 5: 额外暴露 ct 命名空间（window.ct），以 invoke 风格提供高级能力
+contextBridge.exposeInMainWorld('ct', {
+  invoke: (channel, payload) => {
+    if (typeof channel !== 'string') return Promise.reject(new Error('invalid channel'))
+    switch (channel) {
+      case 'notification:show':
+        return ipcRenderer.invoke('notification:show', payload)
+      default:
+        return Promise.reject(new Error(`unknown channel: ${channel}`))
+    }
+  },
+  on: (channel, callback) => {
+    if (typeof channel !== 'string') throw new Error('invalid channel')
+    if (channel === 'reminder:action') {
+      const listener = (event, payload) => callback(payload)
+      ipcRenderer.on('reminder:action', listener)
+      return () => ipcRenderer.removeListener('reminder:action', listener)
+    }
+    throw new Error(`unknown channel: ${channel}`)
+  }
+})
+

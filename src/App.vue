@@ -107,6 +107,7 @@
     </Teleport>
 
     <Snackbar />
+    <CommandPalette />
     <ConfirmModal />
     <ReminderModal />
     <ThemeTransition
@@ -117,6 +118,14 @@
       @complete="onThemeTransitionComplete"
     />
     <UpdateModal ref="updateModalRef" />
+
+    <!-- Task 6 C: 番茄钟 FAB（Web 模式和 Electron 主窗口非 slave 时挂载；独立 FAB 窗口不挂载） -->
+    <Teleport to="body">
+      <PomodoroFAB
+        v-if="!isStandaloneRoute && !isSlaveWindow"
+        :preferSeparateWindow="false"
+      />
+    </Teleport>
 
     <div
       v-if="bingWallpaperUrl"
@@ -151,12 +160,21 @@ import ConfirmModal from './components/ConfirmModal.vue'
 import ReminderModal from './components/ReminderModal.vue'
 import ThemeTransition from './components/ThemeTransition.vue'
 import UpdateModal from './components/UpdateModal.vue'
+import PomodoroFAB from './components/PomodoroFAB.vue'
+import CommandPalette from './components/CommandPalette.vue'
+import { useGlobalHotkeys } from './composables/useGlobalHotkeys'
+import { useCommandPalette } from './composables/useCommandPalette'
+import { useFocusDistractionDetector } from './composables/useFocusDistractionDetector'
 
 const route = useRoute()
 const router = useRouter()
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
 const pomodoroStore = usePomodoroStore()
+
+const { open: openCommandPalette } = useCommandPalette({
+  bridges: { router, taskStore, settingsStore, pomodoroStore }
+})
 
 const isMobile = ref(false)
 const showTaskModal = ref(false)
@@ -175,6 +193,25 @@ let updateCheckTimer = null
 let updateCleanupListeners = []
 
 const { start: startReminderScheduler, stop: stopReminderScheduler } = useReminderScheduler()
+
+// Task 6 B + A：初始化全局热键 + 干扰检测（若在非 slave、非 standalone 页面启动）
+let destroyHotkeys = null
+let destroyDetector = null
+const setupTask6Composables = () => {
+  try {
+    const { destroyGlobalHotkeys } = useGlobalHotkeys({ router })
+    destroyHotkeys = destroyGlobalHotkeys
+  } catch (e) {
+    console.warn('[App] useGlobalHotkeys failed:', e)
+  }
+  try {
+    const { destroyFocusDistractionDetector, init } = useFocusDistractionDetector({})
+    if (typeof init === 'function') init()
+    destroyDetector = destroyFocusDistractionDetector
+  } catch (e) {
+    console.warn('[App] useFocusDistractionDetector failed:', e)
+  }
+}
 
 const bingWallpaperUrl = ref('')
 const bingWallpaperLoaded = ref(false)
@@ -282,6 +319,10 @@ const isStandaloneRoute = computed(
 )
 
 const isWebMode = computed(() => !window.electronAPI)
+
+const isSlaveWindow = computed(
+  () => !!(window.location && new URLSearchParams(window.location.search).has('slave'))
+)
 
 const showMobileCats = computed(() => route.name === 'Home')
 const showFab = computed(() => route.name === 'Home' || route.name === 'Calendar')
@@ -435,7 +476,8 @@ const handleKeyDown = (e) => {
 
   if (modifier && e.key.toLowerCase() === 'k') {
     e.preventDefault()
-    focusSearchInput()
+    // Ctrl+K → 打开命令面板
+    openCommandPalette()
     return
   }
 
@@ -639,6 +681,7 @@ onMounted(() => {
   syncTasksToTray()
   checkForUpdatesOnStartup()
   startReminderScheduler()
+  setupTask6Composables()
 
   if (settingsStore.bingWallpaperEnabled) {
     fetchBingWallpaper()
@@ -679,6 +722,22 @@ onUnmounted(() => {
   updateCleanupListeners.forEach((fn) => fn?.())
   updateCleanupListeners = []
   stopReminderScheduler()
+  if (destroyHotkeys) {
+    try {
+      destroyHotkeys()
+    } catch (e) {
+      /* ignore */
+    }
+    destroyHotkeys = null
+  }
+  if (destroyDetector) {
+    try {
+      destroyDetector()
+    } catch (e) {
+      /* ignore */
+    }
+    destroyDetector = null
+  }
   // Cleanup store resources (timers, listeners, etc.)
   pomodoroStore.cleanup?.()
   settingsStore.cleanup?.()
