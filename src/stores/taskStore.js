@@ -1307,8 +1307,8 @@ export const useTaskStore = defineStore('task', () => {
     // 重载：区分 moves 数组 vs (fromId, toId)
     if (args.length === 1 && Array.isArray(args[0])) {
       const moves = args[0]
-      // 空数组视为 no-op，返回 false 方便调用方检测无效参数场景
-      if (moves.length === 0) return false
+      // 空数组视为 no-op，返回 true（表示已"成功处理 0 条 move"），符合 UI 批量拖拽空选场景
+      if (moves.length === 0) return true
       // 原子性校验：先把所有目标 task 找到，并确认 parentId/listId 更新后的深度合法
       // Stage 1: 预校验
       const snapshot = new Map()
@@ -2452,7 +2452,7 @@ export const useTaskStore = defineStore('task', () => {
     try {
       data = JSON.parse(jsonStr)
     } catch (_parseErr) {
-      return null
+      return { success: false, error: '非法的 JSON 数据', errors: [{ path: 'root', msg: 'JSON parse error' }] }
     }
     try {
       if (!data || typeof data !== 'object') {

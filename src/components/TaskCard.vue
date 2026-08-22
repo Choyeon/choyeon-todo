@@ -287,7 +287,8 @@ import {
   ChevronDown,
   ChevronUp,
   Trash2,
-  Check
+  Check,
+  Bell
 } from '@lucide/vue'
 import { buildDropIndex, validateDrop, applyDrop } from '../utils/dragDropTasks'
 

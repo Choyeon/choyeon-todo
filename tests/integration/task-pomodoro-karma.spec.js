@@ -534,7 +534,7 @@ describe('TaskPomodoroKarma — importData v2→v3 迁移后 karma & badges 累�
     expect(true).toBe(true)
   })
 
-  test('importData 非法 JSON：返回 falsy/throw', () => {
+  test('importData 非法 JSON：返回 falsy/throw 或 success=false 对象', () => {
     let threw = false
     let res = true
     try {
@@ -542,6 +542,7 @@ describe('TaskPomodoroKarma — importData v2→v3 迁移后 karma & badges 累�
     } catch (_e) {
       threw = true
     }
-    expect(threw || !res).toBe(true)
+    // 三种契约都可：抛异常 / 返回 falsy / 返回 {success:false} 对象
+    expect(threw || !res || (typeof res === 'object' && res && res.success === false)).toBe(true)
   })
 })

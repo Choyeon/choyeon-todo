@@ -363,9 +363,9 @@ describe('TaskDrag.e2e — applyDrop + taskStore.reorderTasks', () => {
     expect(ok).toBe(false)
   })
 
-  test('moves 空数组：返回 false（无 id）', () => {
+  test('moves 空数组：返回 true（无 move 也视为处理成功）', () => {
     const ok = store.reorderTasks([])
-    expect(ok).toBe(false)
+    expect(ok).toBe(true)
   })
 })
 
