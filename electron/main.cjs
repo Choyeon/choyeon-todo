@@ -33,6 +33,52 @@ const autoUpdaterListeners = []
 
 const ALLOWED_EXTERNAL_DOMAINS = ['github.com', 'www.github.com', 'chuyuchoyeon.github.io']
 
+// 子窗口统一安全钩子：禁用外部导航 & 外部链接走系统浏览器；返回可选 cleanup（用于 close 时避免内存引用）
+const applyChildWindowSecurity = (win, { allowDevNavigationTo } = {}) => {
+  if (!win || win.isDestroyed()) return
+  const wc = win.webContents
+  if (!wc || wc.isDestroyed()) return
+
+  // 1) 阻止外部 / 非同源导航
+  wc.on('will-navigate', (e, url) => {
+    if (!url) return
+    // file:// 不允许（子窗口不接受拖入文件）
+    if (url.startsWith('file://')) {
+      e.preventDefault()
+      return
+    }
+    // 开发服务器：允许 dev 页内同源跳转（hash 路由不会触发 will-navigate，但保险处理）
+    if (
+      allowDevNavigationTo &&
+      typeof allowDevNavigationTo === 'string' &&
+      url.startsWith(allowDevNavigationTo)
+    ) {
+      return
+    }
+    e.preventDefault()
+  })
+
+  // 2) 新窗口一律系统浏览器（http/https 白名单）或直接拒绝
+  wc.setWindowOpenHandler(({ url }) => {
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      try {
+        const parsedUrl = new URL(url)
+        const isAllowed = ALLOWED_EXTERNAL_DOMAINS.some(
+          (domain) => parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`)
+        )
+        if (isAllowed) {
+          shell.openExternal(url)
+        } else {
+          console.warn('[Main] Blocked external URL from child window:', url)
+        }
+      } catch (e) {
+        console.warn('[Main] Failed to parse external URL from child window:', url, e)
+      }
+    }
+    return { action: 'deny' }
+  })
+}
+
 let renderCrashCount = 0
 let lastCrashTime = 0
 const MAX_CRASH_BEFORE_SAFE_MODE = 3
@@ -781,6 +827,10 @@ function createPomodoroWindow() {
   pomodoroWindow.setAlwaysOnTop(true, 'screen-saver')
   pomodoroWindow.setVisibleOnAllWorkspaces(true)
 
+  applyChildWindowSecurity(pomodoroWindow, {
+    allowDevNavigationTo: process.env.VITE_DEV_SERVER_URL || undefined
+  })
+
   const loadPromise = process.env.VITE_DEV_SERVER_URL
     ? pomodoroWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fullscreen?slave=1')
     : pomodoroWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
@@ -852,6 +902,10 @@ function createPomodoroFabWindow() {
   pomodoroFabWindow.setAlwaysOnTop(true, 'floating')
   pomodoroFabWindow.setVisibleOnAllWorkspaces(true)
 
+  applyChildWindowSecurity(pomodoroFabWindow, {
+    allowDevNavigationTo: process.env.VITE_DEV_SERVER_URL || undefined
+  })
+
   const loadPromise = process.env.VITE_DEV_SERVER_URL
     ? pomodoroFabWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/pomodoro-fab?slave=1')
     : pomodoroFabWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
@@ -922,6 +976,10 @@ function createMiniWindow() {
 
   miniWindow.setAlwaysOnTop(true, 'floating')
   miniWindow.setVisibleOnAllWorkspaces(true)
+
+  applyChildWindowSecurity(miniWindow, {
+    allowDevNavigationTo: process.env.VITE_DEV_SERVER_URL || undefined
+  })
 
   const loadPromise = process.env.VITE_DEV_SERVER_URL
     ? miniWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/mini-window?slave=1')
@@ -997,10 +1055,15 @@ function createQuickAddWindow() {
 
   quickAddWindow.setAlwaysOnTop(true, 'floating')
 
+  applyChildWindowSecurity(quickAddWindow, {
+    allowDevNavigationTo: process.env.VITE_DEV_SERVER_URL || undefined
+  })
+
   const loadPromise = process.env.VITE_DEV_SERVER_URL
-    ? quickAddWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/quick-add')
+    ? quickAddWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/quick-add?slave=1')
     : quickAddWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), {
-        hash: 'quick-add'
+        hash: 'quick-add',
+        query: { slave: '1' }
       })
 
   loadPromise.catch((err) => {
@@ -1681,6 +1744,15 @@ const isFromPomodoroFab = (event) => {
   )
 }
 
+// 发送方校验：确保 IPC 来自快速添加窗口
+const isFromQuickAdd = (event) => {
+  return (
+    quickAddWindow &&
+    !quickAddWindow.isDestroyed() &&
+    event.sender === quickAddWindow.webContents
+  )
+}
+
 ipcMain.on('window:minimize', (event) => {
   if (!isFromMain(event)) return
   mainWindow.minimize()
@@ -2051,7 +2123,7 @@ ipcMain.on('pomodoro:action', (event, action) => {
 })
 
 ipcMain.on('pomodoro:setDuration', (event, { mode, minutes }) => {
-  if (!isFromMain(event) && !isFromPomodoroFullscreen(event) && !isFromPomodoroFab(event) && !isFromMini(event)) return
+  if (!isFromMain(event) && !isFromPomodoroFullscreen(event) && !isFromPomodoroFab(event) && !isFromMini(event) && !isFromQuickAdd(event)) return
   if (!mode || typeof minutes !== 'number') return
   if (!['work', 'shortBreak', 'longBreak'].includes(mode)) return
   const clamped = Math.max(1, Math.min(180, minutes))
@@ -2430,32 +2502,22 @@ ipcMain.on('notification:send', (event, { title, body, taskId }) => {
 })
 
 // Task 5: 新的高级通知通道（带 actions），通过 ipcMain.handle + send 回发 reminder:action
-// 兼容 window-management（若主窗口未创建则也能发送回调到最近的 sender）
-const sendToAllAppWindows = (channel, payload, preferredSender) => {
-  const sent = new Set()
-  const allWindows = [
-    mainWindow,
-    debugWindow,
-    pomodoroWindow,
-    pomodoroFabWindow,
-    miniWindow,
-    quickAddWindow
-  ]
+// reminder:action 只会回发到 mainWindow（提醒调度器只在 mainWindow 运行、所有变更/导航的真实载体也是它），
+// 避免 slave 子窗口（pomodoroFab/fullscreen/mini/quick-add）重复收到后通过它们的全局监听器再次触发副作用。
+const sendReminderAction = (payload, preferredSender) => {
+  const channel = 'reminder:action'
+  // 首选 mainWindow：提醒调度、store mutations 与任务导航的真实载体
+  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents && !mainWindow.webContents.isDestroyed()) {
+    try {
+      mainWindow.webContents.send(channel, payload)
+      return
+    } catch {
+      /* fallback to preferredSender */
+    }
+  }
   if (preferredSender && !preferredSender.isDestroyed()) {
     try {
       preferredSender.send(channel, payload)
-      sent.add(preferredSender.id)
-    } catch {
-      /* ignore */
-    }
-  }
-  for (const win of allWindows) {
-    if (!win || win.isDestroyed()) continue
-    if (!win.webContents || win.webContents.isDestroyed()) continue
-    if (sent.has(win.webContents.id)) continue
-    try {
-      win.webContents.send(channel, payload)
-      sent.add(win.webContents.id)
     } catch {
       /* ignore */
     }
@@ -2487,13 +2549,14 @@ const parseSnoozeActionToMinutes = (action) => {
 
 ipcMain.handle('notification:show', (event, payload) => {
   try {
-    // 允许所有本 app 窗口（主端/调试/番茄钟/迷你窗口）发送通知
+    // 允许所有本 app 窗口（主端/调试/番茄钟/迷你/快速添加窗口）发送通知
     const allowed =
       isFromMain(event) ||
       isFromDebug(event) ||
       isFromMini(event) ||
       isFromPomodoroFullscreen(event) ||
-      isFromPomodoroFab(event)
+      isFromPomodoroFab(event) ||
+      isFromQuickAdd(event)
     if (!allowed) return { success: false, error: 'forbidden' }
 
     if (!payload || typeof payload !== 'object') {
@@ -2541,11 +2604,7 @@ ipcMain.handle('notification:show', (event, payload) => {
     notification.on('click', () => {
       showAndFocusWindow()
       if (taskId) {
-        sendToAllAppWindows(
-          'reminder:action',
-          { taskId, action: 'openTask' },
-          event.sender
-        )
+        sendReminderAction({ taskId, action: 'openTask' }, event.sender)
       }
       try {
         notification.removeAllListeners()
@@ -2564,7 +2623,7 @@ ipcMain.handle('notification:show', (event, payload) => {
         action: act.action,
         snoozeMinutes: snoozeMinutes ?? null
       }
-      sendToAllAppWindows('reminder:action', outPayload, event.sender)
+      sendReminderAction(outPayload, event.sender)
       try {
         notification.removeAllListeners()
       } catch {

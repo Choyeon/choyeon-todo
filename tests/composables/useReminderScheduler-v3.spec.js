@@ -118,12 +118,18 @@ describe('resolveSnoozePreset', () => {
     expect(resolveSnoozePreset({ preset: '1h' }).minutes).toBe(60)
   })
 
-  test('tomorrow_9am 返回 kind === tomorrow9am 且偏移在 18-30 小时之间', () => {
+  test('tomorrow_9am 返回 kind === tomorrow9am 且偏移在 0-48 小时之间（覆盖当前 00:xx～23:xx 所有时刻）', () => {
     const r = resolveSnoozePreset({ preset: 'tomorrow_9am' })
     expect(r.kind).toBe('tomorrow9am')
     expect(typeof r.customDateTs).toBe('number')
-    expect(r.offsetMs).toBeGreaterThanOrEqual(18 * 3600 * 1000)
-    expect(r.offsetMs).toBeLessThanOrEqual(30 * 3600 * 1000)
+    // 当前时间在凌晨 00:00 之前（其实就是任意时刻）：
+    //   - 00:00-09:00 → 明天 9am 距 now 约 0-9h
+    //   - 09:00-23:59 → 明天 9am 距 now 约 9.xx～≈33h（跨 1 天）
+    // 加 15h 余量覆盖跨夏令时 / 时区差异：0..48h 都判定合法
+    expect(r.offsetMs).toBeGreaterThanOrEqual(0)
+    expect(r.offsetMs).toBeLessThanOrEqual(48 * 3600 * 1000)
+    // 但不能是下下个 9am，否则超 48h，所以还要 ≤32h + 1h 余量
+    expect(r.offsetMs).toBeLessThanOrEqual(33 * 3600 * 1000 + 60 * 1000)
   })
 
   test('next_week 返回 kind === nextWeek 且偏移 >= 6.5 天', () => {

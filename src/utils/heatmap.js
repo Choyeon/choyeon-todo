@@ -53,6 +53,10 @@ export const buildHeatmapGrid = ({
   weeks = null,
   startOfWeek = 1
 } = {}) => {
+  // 是否显式指定了"具体区间起点 + 周数"（周报/月报等固定区间）。
+  // 若是：未来日期也应标记为 inRange=true；否则以今天为上限，未来日不展示。
+  const explicitFixedRange = !!cellStart && Number.isFinite(weeks) && weeks > 0
+
   // 1) 确定天数范围
   const today = getTodayStr()
   let endDate = today
@@ -151,19 +155,27 @@ export const buildHeatmapGrid = ({
       }
       totalTasks += tc
       totalMinutes += pm
+      // inRange 语义：
+      //   - 默认/显式传入 weeks 但没传 cellStart 时，以今天为 end 锚点（向后填充对齐到周尾），未来日统一标记 false
+      //   - 显式传 cellStart + weeks（周报/月报等固定区间）时，未来日也属于区间，标记 true
+      const inRange = explicitFixedRange
+        ? d >= cellStart && d <= endDate
+        : d <= today
       cells.push({
         date: d,
         tasksCompleted: tc,
         pomodoroMinutes: pm,
         score,
-        inRange: d <= today
+        inRange
       })
     }
     weeksArr.push({ weekStart, cells })
   }
 
   // 5) Streak：当前连续天 + 历史最长连续天（去重，避免同日多条记录打散 streak）
-  const uniqueDays = Array.from(new Set(activitySet)).sort()
+  //    streak 只能包含"今天及以前"的日期，避免未来活动误算当前连续
+  const uniqueDaysAll = Array.from(new Set(activitySet)).sort()
+  const uniqueDays = uniqueDaysAll.filter((d) => d <= today)
   let currentStreakDays = 0
   let longestStreakDays = 0
   if (uniqueDays.length > 0) {

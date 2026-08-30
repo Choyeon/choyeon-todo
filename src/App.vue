@@ -32,6 +32,7 @@
     </div>
 
     <TaskModal
+      v-if="!isSlaveWindow"
       :visible="showTaskModal"
       :task="editingTask"
       @close="closeTaskModal"
@@ -39,7 +40,11 @@
     />
 
     <Teleport to="body">
-      <div v-if="showShortcutsHelp" class="shortcuts-overlay" @click="showShortcutsHelp = false">
+      <div
+        v-if="showShortcutsHelp && !isSlaveWindow"
+        class="shortcuts-overlay"
+        @click="showShortcutsHelp = false"
+      >
         <div
           class="shortcuts-modal scale-in-center"
           @click.stop
@@ -116,19 +121,20 @@
       </div>
     </Teleport>
 
-    <Snackbar />
-    <CommandPalette />
-    <OnboardingCarousel />
-    <ConfirmModal />
-    <ReminderModal />
+    <Snackbar v-if="!isSlaveWindow" />
+    <CommandPalette v-if="!isSlaveWindow" />
+    <OnboardingCarousel v-if="!isSlaveWindow" />
+    <ConfirmModal v-if="!isSlaveWindow" />
+    <ReminderModal v-if="!isSlaveWindow" />
     <ThemeTransition
+      v-if="!isSlaveWindow"
       :trigger="themeTransitionTrigger"
       :start-x="themeTransitionX"
       :start-y="themeTransitionY"
       :target-theme="themeTransitionTarget"
       @complete="onThemeTransitionComplete"
     />
-    <UpdateModal ref="updateModalRef" />
+    <UpdateModal v-if="!isSlaveWindow" ref="updateModalRef" />
 
     <div
       v-if="bingWallpaperUrl"
@@ -321,14 +327,34 @@ const isStandaloneRoute = computed(
     route.name === 'Debug' ||
     route.name === 'PomodoroFullscreen' ||
     route.name === 'PomodoroFab' ||
-    route.name === 'MiniWindow'
+    route.name === 'MiniWindow' ||
+    route.name === 'QuickAdd'
 )
 
 const isWebMode = computed(() => !window.electronAPI)
 
-const isSlaveWindow = computed(
-  () => !!(window.location && new URLSearchParams(window.location.search).has('slave'))
-)
+// slave 参数可能来自两处：
+// 1) 开发环境 VITE_DEV_SERVER_URL: http://host:port#/pomodoro-fab?slave=1 → 查 hash.query
+// 2) 生产 loadFile(hash, query): BrowserWindow 的 query 注入到 window.location.search → 查 search
+const hasSlaveParam = () => {
+  if (typeof window === 'undefined' || !window.location) return false
+  const { search, hash } = window.location
+  try {
+    if (search && new URLSearchParams(search).has('slave')) return true
+  } catch {
+    /* ignore */
+  }
+  if (hash) {
+    const queryIndex = hash.indexOf('?')
+    if (queryIndex >= 0) {
+      const q = hash.substring(queryIndex + 1)
+      if (new URLSearchParams(q).has('slave')) return true
+    }
+  }
+  return false
+}
+
+const isSlaveWindow = computed(() => hasSlaveParam())
 
 const showMobileCats = computed(() => route.name === 'Home')
 const showFab = computed(() => route.name === 'Home' || route.name === 'Calendar')
@@ -469,6 +495,8 @@ const openFocusedTaskDate = () => {
 }
 
 const handleKeyDown = (e) => {
+  // slave 子窗口不响应主窗口的全局任务/搜索/导航快捷键，避免误触发主窗口内容 UI
+  if (isSlaveWindow.value) return
   const tag = e.target.tagName
   const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
   const isContentEditable = e.target.isContentEditable
@@ -684,27 +712,36 @@ onMounted(() => {
   window.focusTask = focusTask
 
   setupElectronListeners()
-  syncTasksToTray()
-  checkForUpdatesOnStartup()
-  if (!isSlaveWindow.value) startReminderScheduler()
-  setupTask6Composables()
+  if (!isSlaveWindow.value) {
+    syncTasksToTray()
+    checkForUpdatesOnStartup()
+    startReminderScheduler()
+    setupTask6Composables()
+  }
 
-  if (settingsStore.bingWallpaperEnabled) {
+  if (!isSlaveWindow.value && settingsStore.bingWallpaperEnabled) {
     fetchBingWallpaper()
   }
 
-  watch(() => [taskStore.tasks, taskStore.categories], syncTasksToTray, { deep: true })
+  if (!isSlaveWindow.value) {
+    watch(() => [taskStore.tasks, taskStore.categories], syncTasksToTray, { deep: true })
 
-  watch(
-    () => settingsStore.doNotDisturb,
-    (newVal) => {
-      window.electronAPI?.setDoNotDisturb?.(newVal)
-    }
-  )
+    watch(
+      () => settingsStore.doNotDisturb,
+      (newVal) => {
+        window.electronAPI?.setDoNotDisturb?.(newVal)
+      }
+    )
+  }
 
   watch(
     () => settingsStore.bingWallpaperEnabled,
     (newVal) => {
+      if (isSlaveWindow.value) {
+        bingWallpaperUrl.value = ''
+        setBingWallpaperClass(false)
+        return
+      }
       if (newVal) {
         setBingWallpaperClass(true)
         fetchBingWallpaper()
@@ -713,7 +750,7 @@ onMounted(() => {
         setBingWallpaperClass(false)
       }
     },
-    { immediate: true }
+    { immediate: false }
   )
 })
 
@@ -727,22 +764,24 @@ onUnmounted(() => {
   cleanupFns = []
   updateCleanupListeners.forEach((fn) => fn?.())
   updateCleanupListeners = []
-  stopReminderScheduler()
-  if (destroyHotkeys) {
-    try {
-      destroyHotkeys()
-    } catch (e) {
-      /* ignore */
+  if (!isSlaveWindow.value) {
+    stopReminderScheduler()
+    if (destroyHotkeys) {
+      try {
+        destroyHotkeys()
+      } catch (e) {
+        /* ignore */
+      }
+      destroyHotkeys = null
     }
-    destroyHotkeys = null
-  }
-  if (destroyDetector) {
-    try {
-      destroyDetector()
-    } catch (e) {
-      /* ignore */
+    if (destroyDetector) {
+      try {
+        destroyDetector()
+      } catch (e) {
+        /* ignore */
+      }
+      destroyDetector = null
     }
-    destroyDetector = null
   }
   // Cleanup store resources (timers, listeners, etc.)
   pomodoroStore.cleanup?.()
