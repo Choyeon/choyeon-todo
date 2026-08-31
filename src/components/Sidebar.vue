@@ -57,7 +57,6 @@
               : item.label
           "
         >
-          <span class="active-indicator" aria-hidden="true"></span>
           <component :is="item.icon" :size="20" aria-hidden="true" />
           <span class="nav-label">{{ item.label }}</span>
           <span class="nav-count" :key="'dv-' + item.id + '-' + defaultCount(item.id)">{{
@@ -122,7 +121,6 @@
                     : f.name
                 "
               >
-                <span class="active-indicator" aria-hidden="true"></span>
                 <Pin :size="18" class="pin-icon" aria-hidden="true" />
                 <Filter :size="18" aria-hidden="true" />
                 <span class="nav-label">{{ f.name }}</span>
@@ -144,7 +142,6 @@
                     : f.name
                 "
               >
-                <span class="active-indicator" aria-hidden="true"></span>
                 <Filter :size="18" aria-hidden="true" />
                 <span class="nav-label">{{ f.name }}</span>
                 <span class="nav-count" :key="'flu-' + f.id">{{ filterCount(f.id) }}</span>
@@ -161,8 +158,8 @@
 
       <div class="nav-divider" aria-hidden="true"></div>
 
-      <!-- 区 / 列表分组（可折叠；右键菜单；受 sidebarShowAreas 控制） -->
-      <div class="nav-section" role="listitem" :aria-label="$t('nav.areasAndLists')">
+      <!-- 分类（单层扁平；受 sidebarShowAreas 折叠控制） -->
+      <div class="nav-section" role="listitem" :aria-label="$t('nav.categories')">
         <button
           type="button"
           class="section-header"
@@ -185,9 +182,9 @@
           <button
             class="section-action"
             type="button"
-            @click.stop="addAreaQuick"
-            :aria-label="$t('areas.addArea')"
-            title="$t('areas.addArea')"
+            @click.stop="addListQuick()"
+            :aria-label="$t('lists.addList')"
+            title="$t('lists.addList')"
           >
             <Plus :size="14" aria-hidden="true" />
           </button>
@@ -195,82 +192,31 @@
 
         <Transition name="collapse">
           <div v-show="settingsStore.sidebarShowAreas" class="nav-section-body">
-            <template v-if="visibleAreas.length">
-              <div
-                v-for="area in visibleAreas"
-                :key="area.id"
-                class="area-group"
-                :data-area-id="area.id"
+            <template v-if="visibleLists.length">
+              <button
+                v-for="list in visibleLists"
+                :key="list.id"
+                class="nav-btn list-btn cat-btn"
+                :class="{ active: isListActive(list.id) }"
+                @click="navigateList(list.id)"
+                @contextmenu.prevent="onListContextMenu($event, list)"
+                @dragover.prevent="onListDragOver($event, list.id)"
+                @dragleave="onListDragLeave"
+                @drop="onListDrop($event, list.id)"
+                :aria-label="
+                  isListActive(list.id)
+                    ? `${list.name}，${$t('common.currentlySelected')}`
+                    : list.name
+                "
               >
-                <button
-                  type="button"
-                  class="area-header"
-                  @click="toggleAreaCollapsed(area.id)"
-                  @contextmenu.prevent="onAreaContextMenu($event, area)"
-                  :aria-expanded="!areaCollapsed[area.id]"
-                  :aria-label="area.name"
-                >
-                  <ChevronDown
-                    class="section-chevron"
-                    :class="{ collapsed: areaCollapsed[area.id] }"
-                    :size="14"
-                    aria-hidden="true"
-                  />
-                  <span class="area-icon-dot" :style="{ background: area.color }" aria-hidden="true"></span>
-                  <component :is="getAreaIcon(area.icon)" :size="16" aria-hidden="true" />
-                  <span class="area-label">{{ area.name }}</span>
-                  <span class="area-count">{{ areaListCount(area.id) }}</span>
-                  <button
-                    class="section-action mini"
-                    type="button"
-                    @click.stop="addListQuick(area.id)"
-                    :aria-label="$t('lists.addList')"
-                    :title="$t('lists.addList')"
-                  >
-                    <Plus :size="13" aria-hidden="true" />
-                  </button>
-                </button>
-
-                <Transition name="collapse">
-                  <div v-show="!areaCollapsed[area.id]" class="list-group" role="group">
-                    <template v-if="areaLists(area.id).length">
-                      <button
-                        v-for="list in areaLists(area.id)"
-                        :key="list.id"
-                        class="nav-btn list-btn cat-btn"
-                        :class="{ active: isListActive(list.id) }"
-                        @click="navigateList(list.id)"
-                        @contextmenu.prevent="onListContextMenu($event, list, area)"
-                        @dragover.prevent="onListDragOver($event, list.id)"
-                        @dragleave="onListDragLeave"
-                        @drop="onListDrop($event, list.id)"
-                        :aria-label="
-                          isListActive(list.id)
-                            ? `${list.name}，${$t('common.currentlySelected')}`
-                            : list.name
-                        "
-                      >
-                        <span class="active-indicator" aria-hidden="true"></span>
-                        <span
-                          class="list-indent"
-                          aria-hidden="true"
-                        ></span>
-                        <component :is="getListIcon(list.icon)" :size="18" aria-hidden="true" />
-                        <span class="nav-label">{{ list.name }}</span>
-                        <span class="nav-count" :key="'lst-' + list.id">{{ listCount(list.id) }}</span>
-                        <span class="nav-tooltip">{{ list.name }}</span>
-                      </button>
-                    </template>
-                    <div v-else class="empty-inline" role="status">
-                      <EmptyState kind="list" :mini="true" @primary="addListQuick(area.id)" />
-                    </div>
-                  </div>
-                </Transition>
-              </div>
+                <component :is="getListIcon(list.icon)" :size="18" aria-hidden="true" />
+                <span class="nav-label">{{ list.name }}</span>
+                <span class="nav-count" :key="'lst-' + list.id">{{ listCount(list.id) }}</span>
+                <span class="nav-tooltip">{{ list.name }}</span>
+              </button>
             </template>
-            <!-- 无 area 空状态 -->
             <div v-else class="empty-inline" role="status">
-              <EmptyState kind="area" :mini="true" @primary="addAreaQuick" />
+              <EmptyState kind="category" :mini="true" @primary="addListQuick()" />
             </div>
           </div>
         </Transition>
@@ -324,7 +270,6 @@
                   isTagActive(tag.id) ? `${tag.name}，${$t('common.currentlySelected')}` : tag.name
                 "
               >
-                <span class="active-indicator" aria-hidden="true"></span>
                 <Tag :size="18" aria-hidden="true" />
                 <span class="tag-dot" :style="{ background: tag.color }" aria-hidden="true"></span>
                 <span class="nav-label">{{ tag.name }}</span>
@@ -574,7 +519,6 @@ provide('sidebarSettings', {
 
 const scrollRef = ref(null)
 const searchInput = ref('')
-const areaCollapsed = reactive({})
 const tagsCollapsed = ref(false)
 const dragOverListId = ref(null)
 
@@ -730,39 +674,13 @@ const addFilterQuick = () => {
   if (f) navigateFilter(f.id)
 }
 
-// ================= 区 / 列表 =================
-const visibleAreas = computed(() => {
+// ================= 分类（单层扁平） =================
+const visibleLists = computed(() => {
   const q = searchInput.value.trim().toLowerCase()
-  const areas = (areaStore.areas || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0))
-  if (!q) return areas
-  // 搜索匹配：area 名 / 任一子 list 名
-  const listMap = new Map()
-  for (const l of listStore.lists || []) {
-    const arr = listMap.get(l.areaId) || []
-    arr.push(l)
-    listMap.set(l.areaId, arr)
-  }
-  return areas.filter((a) => {
-    if (a.name.toLowerCase().includes(q)) return true
-    const ls = listMap.get(a.id) || []
-    return ls.some((l) => l.name.toLowerCase().includes(q))
-  })
+  const lists = (listStore.lists || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0))
+  if (!q) return lists
+  return lists.filter((l) => l.name.toLowerCase().includes(q))
 })
-
-const areaLists = (areaId) => {
-  const all = listStore.getListsByArea(areaId) || []
-  const q = searchInput.value.trim().toLowerCase()
-  if (!q) return all
-  return all.filter((l) => l.name.toLowerCase().includes(q))
-}
-
-const areaListCount = (areaId) => {
-  return (listStore.getListsByArea(areaId) || []).length
-}
-
-const toggleAreaCollapsed = (areaId) => {
-  areaCollapsed[areaId] = !areaCollapsed[areaId]
-}
 
 const listCount = (listId) => {
   if (taskStore.getCategoryCount) {
@@ -792,19 +710,10 @@ const navigateList = (id) => {
   router.push('/')
 }
 
-const addAreaQuick = async () => {
-  const name = window.prompt(t('areas.namePrompt'))
-  if (!name) return
-  areaStore.addArea(name.trim().slice(0, 60), {
-    color: pickAccentColor()
-  })
-}
-
-const addListQuick = (areaId) => {
+const addListQuick = () => {
   const name = window.prompt(t('lists.namePrompt'))
   if (!name) return
   const list = listStore.addList(name.trim().slice(0, 60), {
-    areaId: areaId || 'default-area',
     color: pickAccentColor()
   })
   if (list) navigateList(list.id)
@@ -924,13 +833,12 @@ const onAreaContextMenu = (e, area) => {
   contextMenu.type = 'area'
   contextMenu.area = area
 }
-const onListContextMenu = (e, list, area) => {
+const onListContextMenu = (e, list) => {
   contextMenu.visible = true
   contextMenu.x = e.clientX
   contextMenu.y = e.clientY
   contextMenu.type = 'list'
   contextMenu.list = list
-  contextMenu.area = area
 }
 const onCategoryContextMenu = (e, cat) => {
   contextMenu.visible = true
@@ -1099,14 +1007,6 @@ watch(
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick)
-  nextTick(() => {
-    // 首次加载：若 area 仅默认一个，保持展开；其余默认折叠
-    for (const a of areaStore.areas || []) {
-      if (areaCollapsed[a.id] === undefined) {
-        areaCollapsed[a.id] = false
-      }
-    }
-  })
 })
 
 onUnmounted(() => {
@@ -1430,16 +1330,6 @@ onUnmounted(() => {
   color: var(--color-primary-dark);
   font-weight: 500;
 }
-.nav-btn.active .active-indicator {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  border-radius: 0 3px 3px 0;
-  background: var(--color-primary);
-}
 
 .nav-btn svg:first-of-type {
   width: 20px;
@@ -1491,78 +1381,6 @@ onUnmounted(() => {
   color: var(--color-text-on-primary);
 }
 
-/* 区 / 列表组 */
-.area-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.area-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 4px 10px;
-  min-height: 32px;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  transition: background-color var(--transition-micro), color var(--transition-micro);
-}
-.area-header:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-}
-.area-header:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--color-primary-ring);
-}
-.area-icon-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.area-label {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: left;
-}
-.area-count {
-  font-size: var(--font-size-2xs);
-  color: var(--color-text-tertiary);
-  background: var(--sidebar-count-bg);
-  padding: 1px 6px;
-  border-radius: 999px;
-  min-width: 18px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.list-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-left: 6px;
-}
-.list-indent {
-  width: 4px;
-  border-left: 2px solid var(--color-border-light);
-  align-self: stretch;
-  margin-left: 8px;
-  margin-right: 4px;
-  border-radius: 2px;
-}
-.list-btn:hover .list-indent {
-  border-left-color: var(--color-primary);
-}
 .pin-icon {
   color: var(--color-primary);
 }
@@ -1717,7 +1535,6 @@ onUnmounted(() => {
   .sidebar-search,
   .section-header,
   .nav-section-label,
-  .area-group,
   .nav-btn .nav-label,
   .nav-btn .nav-count {
     display: none;
