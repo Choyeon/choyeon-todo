@@ -694,9 +694,6 @@ const goBack = () => {
   background: var(--color-bg);
 }
 
-.task-item.overdue {
-  border-left: 3px solid #ef4444;
-}
 
 .task-checkbox {
   flex-shrink: 0;

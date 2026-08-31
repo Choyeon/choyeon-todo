@@ -535,7 +535,9 @@ describe('集成：snoozeTask / scheduleSmartReminder / handleAction', () => {
     const ret = handleAction({ taskId: id, action: 'snoozeTmr' })
     expect(ret).toBe(true)
     const off = taskStore.getTaskById(id).nextReminderAt - Date.now()
-    expect(off).toBeGreaterThanOrEqual(18 * 3600 * 1000)
+    // snoozeTmr 目标是明天 9am：当前 23:59 → 次日 9:00 ≈ 9h，当前 09:00 → 次日 9:00 ≈ 24h
+    expect(off).toBeGreaterThanOrEqual(9 * 3600 * 1000)
+    expect(off).toBeLessThanOrEqual(25 * 3600 * 1000)
   })
 
   test('handleAction("snoozeCustom", snoozeMinutes=42) 生效', () => {

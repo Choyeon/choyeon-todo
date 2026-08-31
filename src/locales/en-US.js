@@ -700,7 +700,9 @@ export default {
     levelIntermediate: 'Intermediate',
     levelAdvanced: 'Advanced',
     levelExpert: 'Expert',
-    levelMaster: 'Master'
+    levelMaster: 'Master',
+    checkInSuccess: 'Check-in Success!',
+    continuousDays: '{days} days in a row'
   },
   review: {
     title: 'Review Report',

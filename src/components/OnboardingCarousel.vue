@@ -130,7 +130,7 @@
                       <rect width="60" height="32" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
                       <text x="30" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#1d4ed8">N</text>
                     </g>
-                    <g transform="translate(200, 46)">
+                    <g transform="translate(200, 61)">
                       <text font-family="ui-sans-serif" font-size="13" fill="#334155">新建任务</text>
                     </g>
                   </g>
@@ -143,7 +143,7 @@
                       <rect width="60" height="32" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
                       <text x="30" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#166534">K</text>
                     </g>
-                    <g transform="translate(200, 92)">
+                    <g transform="translate(200, 107)">
                       <text font-family="ui-sans-serif" font-size="13" fill="#334155">命令面板</text>
                     </g>
                   </g>
@@ -160,7 +160,7 @@
                       <rect width="60" height="32" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
                       <text x="30" y="21" text-anchor="middle" font-family="ui-monospace" font-size="11" font-weight="700" fill="#92400e">Space</text>
                     </g>
-                    <g transform="translate(192, 138)">
+                    <g transform="translate(192, 153)">
                       <text font-family="ui-sans-serif" font-size="13" fill="#334155">上下移动 / 完成</text>
                     </g>
                   </g>
@@ -173,7 +173,7 @@
                       <rect width="40" height="32" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1"/>
                       <text x="20" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#9d174d">/</text>
                     </g>
-                    <g transform="translate(180, 184)">
+                    <g transform="translate(180, 199)">
                       <text font-family="ui-sans-serif" font-size="13" fill="#334155">查看全部快捷键</text>
                     </g>
                   </g>
@@ -458,17 +458,19 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
 .stage-0 .ob-svg circle:nth-child(5) { animation-delay: 460ms; }
 .stage-0 .ob-svg circle:nth-child(6) { animation-delay: 520ms; }
 
-.stage-1 .ob-svg > *:not(defs) { animation: ob-rise 520ms both; }
-.stage-1 .ob-svg rect[fill="white"] { animation-delay: 30ms; }
-.stage-1 .ob-svg text { animation-delay: 120ms; }
-.stage-1 .ob-svg g:nth-of-type(1) rect { animation-delay: 220ms; }
-.stage-1 .ob-svg g:nth-of-type(2) rect { animation-delay: 300ms; }
-.stage-1 .ob-svg g:nth-of-type(3) rect { animation-delay: 380ms; }
+/* Step 1 (第二页智能输入): rect/text 用 rise，带 SVG transform 的 g 只用 fade-in */
+.stage-1 .ob-svg rect[fill="white"] { animation: ob-rise 520ms 30ms both; }
+.stage-1 .ob-svg text { animation: ob-rise 520ms 120ms both; }
+.stage-1 .ob-svg > g { animation: ob-fade-in 520ms both; }
+.stage-1 .ob-svg > g:nth-of-type(1) { animation-delay: 220ms; }
+.stage-1 .ob-svg > g:nth-of-type(2) { animation-delay: 300ms; }
+.stage-1 .ob-svg > g:nth-of-type(3) { animation-delay: 380ms; }
 
 .stage-2 .ob-svg circle, .stage-2 .ob-svg path { animation: ob-pop 520ms both; transform-origin: center; }
 .stage-2 .ob-svg text { animation: ob-pop 480ms 200ms both; }
 
-.stage-3 .ob-svg g { animation: ob-rise 520ms both; }
+/* Step 3 (第四页快捷键): 只选 SVG 直接子 g，避免影响内部带 SVG transform 的嵌套 g */
+.stage-3 .ob-svg > g { animation: ob-rise 520ms both; }
 .stage-3 .ob-svg > g:nth-of-type(1) { animation-delay: 20ms; }
 .stage-3 .ob-svg > g:nth-of-type(2) { animation-delay: 120ms; }
 .stage-3 .ob-svg > g:nth-of-type(3) { animation-delay: 220ms; }
@@ -481,6 +483,10 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
 @keyframes ob-rise {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ob-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ---- Body text ---- */

@@ -339,21 +339,7 @@ const getCategoryName = (categoryId) => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.quadrant-card.urgent-important {
-  border-left: 4px solid #ef4444;
-}
 
-.quadrant-card.not-urgent-important {
-  border-left: 4px solid #3b82f6;
-}
-
-.quadrant-card.urgent-not-important {
-  border-left: 4px solid #f59e0b;
-}
-
-.quadrant-card.not-urgent-not-important {
-  border-left: 4px solid #6b7280;
-}
 
 .quadrant-header {
   display: flex;

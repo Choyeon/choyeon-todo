@@ -386,9 +386,6 @@ const goBack = () => {
   opacity: 0.7;
 }
 
-.task-item.overdue {
-  border-left: 3px solid var(--color-danger);
-}
 
 .task-content {
   flex: 1;

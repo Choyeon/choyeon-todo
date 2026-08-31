@@ -686,7 +686,9 @@ export default {
     levelIntermediate: '中級者',
     levelAdvanced: '上級者',
     levelExpert: 'エキスパート',
-    levelMaster: 'マスター'
+    levelMaster: 'マスター',
+    checkInSuccess: 'チェックイン成功！',
+    continuousDays: '{days} 日連続チェックイン'
   },
   review: {
     title: 'レビューレポート',

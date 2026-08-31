@@ -596,8 +596,8 @@ const defaultViews = computed(() => [
   { id: 'pomodoro', icon: Timer, label: t('nav.pomodoro'), external: () => router.push('/pomodoro') },
   { id: 'review', icon: ClipboardCheck, label: t('nav.review'), external: () => router.push('/review') },
   { id: 'dailyReview', icon: Sunrise, label: t('nav.dailyReview'), external: () => router.push('/daily-review') },
-  { id: 'habitTracker', icon: Target, label: t('nav.habitTracker'), external: () => router.push('/habits') },
-  { id: 'achievement', icon: TrendingUp, label: t('nav.achievement'), external: () => router.push('/achievements') },
+  { id: 'habitTracker', icon: Target, label: t('nav.habitTracker'), external: () => router.push('/habit-tracker') },
+  { id: 'achievement', icon: TrendingUp, label: t('nav.achievement'), external: () => router.push('/achievement') },
   { id: 'quadrant', icon: LayoutGrid, label: t('nav.quadrant'), external: () => router.push('/quadrant') }
 ])
 

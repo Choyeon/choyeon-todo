@@ -697,7 +697,9 @@ export default {
     levelIntermediate: '进阶',
     levelAdvanced: '高级',
     levelExpert: '专家',
-    levelMaster: '大师'
+    levelMaster: '大师',
+    checkInSuccess: '打卡成功！',
+    continuousDays: '连续打卡 {days} 天'
   },
   review: {
     title: '回顾报告',
