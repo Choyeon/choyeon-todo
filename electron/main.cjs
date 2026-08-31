@@ -461,15 +461,17 @@ const saveWindowState = () => {
   }
 }
 
-// 获取应用图标路径
+// 获取应用图标路径（优先 .ico，Windows 任务栏/托盘多尺寸显示更清晰）
 function getIconPath() {
   if (app.isPackaged) {
+    const ico = path.join(process.resourcesPath, 'icon.ico')
+    if (fs.existsSync(ico)) return ico
     return path.join(process.resourcesPath, 'icon.png')
   }
-  const devIcon = path.join(__dirname, '../build/icon.png')
-  if (fs.existsSync(devIcon)) {
-    return devIcon
-  }
+  const devIco = path.join(__dirname, '../build/icon.ico')
+  if (fs.existsSync(devIco)) return devIco
+  const devPng = path.join(__dirname, '../build/icon.png')
+  if (fs.existsSync(devPng)) return devPng
   return null
 }
 

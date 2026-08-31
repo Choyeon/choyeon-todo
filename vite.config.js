@@ -13,7 +13,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       disable: !pwaEnabled,
-      includeAssets: ['favicon.svg', 'favicon.png'],
+      includeAssets: ['favicon.png', 'icon-16x16.png', 'icon-32x32.png', 'icon-48x48.png', 'icon-64x64.png', 'icon-128x128.png', 'icon-256x256.png'],
       manifest: {
         name: 'Choyeon To Do',
         short_name: 'To Do',
@@ -24,12 +24,8 @@ export default defineConfig({
         start_url: './',
         scope: './',
         icons: [
-          {
-            src: './favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any maskable'
-          }
+          { src: './icon-128x128.png', sizes: '128x128', type: 'image/png' },
+          { src: './icon-256x256.png', sizes: '256x256', type: 'image/png' }
         ]
       },
       workbox: {

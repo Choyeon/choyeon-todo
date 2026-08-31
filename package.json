@@ -75,6 +75,10 @@
     ],
     "extraResources": [
       {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      },
+      {
         "from": "build/icon.png",
         "to": "icon.png"
       }
@@ -102,7 +106,10 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Choyeon To Do",
-      "artifactName": "Choyeon-To-Do-Setup-${version}.${ext}"
+      "artifactName": "Choyeon-To-Do-Setup-${version}.${ext}",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
     },
     "portable": {
       "artifactName": "Choyeon-To-Do-Portable-${version}.${ext}"
@@ -168,6 +175,7 @@
       "provider": "github",
       "owner": "Choyeon",
       "repo": "choyeon-todo"
-    }
+    },
+    "icon": "build/icon"
   }
 }
