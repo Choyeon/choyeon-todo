@@ -246,9 +246,19 @@ export default {
     batchDelete: '一括削除'
   },
   tags: {
+    addTag: 'タグを追加',
     editTag: 'タグを編集',
     deleteTag: 'タグを削除',
-    deleteConfirm: 'タグ"{name}"を削除しますか？'
+    deleteConfirm: 'タグ"{name}"を削除しますか？',
+    namePrompt: 'タグ名を入力してください'
+  },
+  lists: {
+    addList: 'カテゴリを追加',
+    rename: '名前変更',
+    delete: 'カテゴリを削除',
+    namePrompt: 'カテゴリ名を入力してください',
+    renamePrompt: 'カテゴリ"{name}"の名前を変更',
+    deleteConfirm: 'カテゴリ"{name}"を削除しますか？'
   },
   sidebar: {
     expand: '展開',

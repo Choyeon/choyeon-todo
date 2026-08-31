@@ -260,9 +260,19 @@ export default {
     batchDelete: 'Batch Delete'
   },
   tags: {
+    addTag: 'Add Tag',
     editTag: 'Edit Tag',
     deleteTag: 'Delete Tag',
-    deleteConfirm: 'Delete tag "{name}"?'
+    deleteConfirm: 'Delete tag "{name}"?',
+    namePrompt: 'Enter tag name'
+  },
+  lists: {
+    addList: 'Add Category',
+    rename: 'Rename',
+    delete: 'Delete Category',
+    namePrompt: 'Enter category name',
+    renamePrompt: 'Rename category "{name}"',
+    deleteConfirm: 'Delete category "{name}"?'
   },
   sidebar: {
     expand: 'Expand',

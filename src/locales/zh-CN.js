@@ -259,9 +259,19 @@ export default {
     batchDelete: '批量删除'
   },
   tags: {
+    addTag: '添加标签',
     editTag: '编辑标签',
     deleteTag: '删除标签',
-    deleteConfirm: '确定要删除标签"{name}"吗？'
+    deleteConfirm: '确定要删除标签"{name}"吗？',
+    namePrompt: '请输入标签名称'
+  },
+  lists: {
+    addList: '添加分类',
+    rename: '重命名',
+    delete: '删除分类',
+    namePrompt: '请输入分类名称',
+    renamePrompt: '重命名分类"{name}"',
+    deleteConfirm: '确定要删除分类"{name}"吗？'
   },
   sidebar: {
     expand: '展开',
