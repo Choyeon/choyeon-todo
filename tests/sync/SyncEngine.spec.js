@@ -219,7 +219,7 @@ describe('SyncEngine / 基础流程', () => {
       lists: taskStore.exportData().lists,
       categories: taskStore.exportData().categories,
       settings: { tasksVersion: 3 },
-      meta: { app: 'choyeon-todo', appVersion: '3.0.0', schemaRevision: 1 }
+      meta: { app: 'choyeon-todo', appVersion: '1.0.0', schemaRevision: 1 }
     }
     // 让 remote snapshot 与 local 内容完全相同（hash match）
     provider.snapshot = JSON.parse(JSON.stringify(localPkg))

@@ -186,7 +186,7 @@ const collectSnapshot = (opts = {}) => {
     templates,
     meta: {
       app: 'choyeon-todo',
-      appVersion: '3.0.0',
+      appVersion: '1.0.0',
       schemaRevision: SCHEMA_REVISION,
       fromLocalSnapshot: true
     }

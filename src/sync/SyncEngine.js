@@ -63,7 +63,7 @@ const emptyPkg = () => ({
   lists: [],
   categories: [],
   settings: { tasksVersion: 3 },
-  meta: { app: 'choyeon-todo', appVersion: '3.0.0', schemaRevision: 1 }
+  meta: { app: 'choyeon-todo', appVersion: '1.0.0', schemaRevision: 1 }
 })
 
 /**
@@ -136,7 +136,7 @@ export class SyncEngine {
             : { tasksVersion: 3 },
         meta: {
           app: 'choyeon-todo',
-          appVersion: '3.0.0',
+          appVersion: '1.0.0',
           schemaRevision: 1
         }
       }
@@ -158,7 +158,7 @@ export class SyncEngine {
       lists,
       categories,
       settings,
-      meta: { app: 'choyeon-todo', appVersion: '3.0.0', schemaRevision: 1 }
+      meta: { app: 'choyeon-todo', appVersion: '1.0.0', schemaRevision: 1 }
     }
   }
 
@@ -333,7 +333,7 @@ export class SyncEngine {
         settings: mergedSettings,
         meta: (localPkg.meta && Object.keys(localPkg.meta).length && localPkg.meta)
           || (remoteSnapshot.meta && Object.keys(remoteSnapshot.meta).length && remoteSnapshot.meta)
-          || { app: 'choyeon-todo', appVersion: '3.0.0', schemaRevision: 1 }
+          || { app: 'choyeon-todo', appVersion: '1.0.0', schemaRevision: 1 }
       }
 
       // 合并后 schema 校验（失败则并入 conflicts，不中断同步流程本身）

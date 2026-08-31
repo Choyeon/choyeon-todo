@@ -63,7 +63,7 @@ export class MemoryProvider extends SyncProvider {
       settings: { tasksVersion: 3 },
       meta: {
         app: 'choyeon-todo',
-        appVersion: '3.0.0',
+        appVersion: '1.0.0',
         schemaRevision: 1
       }
     }
@@ -151,7 +151,7 @@ export class LocalStorageProvider extends SyncProvider {
       settings: { tasksVersion: 3 },
       meta: {
         app: 'choyeon-todo',
-        appVersion: '3.0.0',
+        appVersion: '1.0.0',
         schemaRevision: 1
       }
     }

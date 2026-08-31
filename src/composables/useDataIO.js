@@ -8,7 +8,7 @@ import { useTaskStore, generateId } from '../stores/taskStore'
 
 // 项目内未通过 import package.json 读取版本，硬编码兜底 3.0.0
 // （不修改 package.json / vite 配置；避免跨层 import 构建失败）
-export const FALLBACK_APP_VERSION = '3.0.0'
+export const FALLBACK_APP_VERSION = '1.0.0'
 export const FALLBACK_APP = 'choyeon-todo'
 
 // CSV 列（B 规格要求）

@@ -32,12 +32,8 @@ try {
   err(`读取 package.json 失败: ${e.message}`)
 }
 if (pkg) {
-  if (pkg.version !== '3.0.0') {
-    warn(`package.json version 为 ${pkg.version}，期望 3.0.0（仅内存修复，不写盘）`)
-    // 内存修复
-    pkg.version = '3.0.0'
-  }
-  log(`  version (内存): ${pkg.version}`)
+  // 版本号以 package.json 为准，不再硬编码期望值；允许任意 semver
+  log(`  version (package.json): ${pkg.version}`)
 }
 
 // ===== 2. electron-builder 配置（package.build 或独立文件）=====

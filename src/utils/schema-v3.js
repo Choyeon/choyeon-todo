@@ -349,7 +349,7 @@ export const normalizeDataPackage = (raw) => {
       templates: isArr(raw.templates) ? raw.templates : [],
       meta: {
         app: 'choyeon-todo',
-        appVersion: '3.0.0',
+        appVersion: '1.0.0',
         schemaRevision: SCHEMA_REVISION,
         normalizedFrom: { version, tasksVersion }
       }
@@ -370,7 +370,7 @@ export const normalizeDataPackage = (raw) => {
   const baseMeta = isObj(raw.meta)
     ? {
         app: raw.meta.app || 'choyeon-todo',
-        appVersion: raw.meta.appVersion || '3.0.0',
+        appVersion: raw.meta.appVersion || '1.0.0',
         schemaRevision: isNum(raw.meta.schemaRevision)
           ? raw.meta.schemaRevision
           : SCHEMA_REVISION,
@@ -378,7 +378,7 @@ export const normalizeDataPackage = (raw) => {
       }
     : {
         app: 'choyeon-todo',
-        appVersion: '3.0.0',
+        appVersion: '1.0.0',
         schemaRevision: SCHEMA_REVISION
       }
   const normalized = {
