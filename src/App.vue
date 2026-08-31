@@ -125,6 +125,7 @@
     <CommandPalette v-if="!isSlaveWindow" />
     <OnboardingCarousel v-if="!isSlaveWindow" />
     <ConfirmModal v-if="!isSlaveWindow" />
+    <PromptModal v-if="!isSlaveWindow" />
     <ReminderModal v-if="!isSlaveWindow" />
     <ThemeTransition
       v-if="!isSlaveWindow"
@@ -166,6 +167,7 @@ import MobileFab from './components/MobileFab.vue'
 import TaskModal from './components/TaskModal.vue'
 import Snackbar from './components/Snackbar.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
+import PromptModal from './components/PromptModal.vue'
 import ReminderModal from './components/ReminderModal.vue'
 import ThemeTransition from './components/ThemeTransition.vue'
 import UpdateModal from './components/UpdateModal.vue'

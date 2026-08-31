@@ -435,6 +435,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 import { useListStore } from '../stores/listStore'
 import { useFilterStore } from '../stores/filterStore'
 import { useConfirm } from '../composables/useConfirm'
+import { usePrompt } from '../composables/usePrompt'
 import EmptyState from './EmptyState.vue'
 import {
   Sun,
@@ -486,6 +487,7 @@ const settingsStore = useSettingsStore()
 const listStore = useListStore()
 const filterStore = useFilterStore()
 const { confirm: confirmDialog } = useConfirm()
+const { prompt: promptDialog } = usePrompt()
 
 provide('sidebarSettings', {
   get density() {
@@ -640,8 +642,8 @@ const navigateFilter = (id) => {
   router.push('/')
 }
 
-const addFilterQuick = () => {
-  const name = window.prompt(t('filters.namePrompt'))
+const addFilterQuick = async () => {
+  const name = await promptDialog({ message: t('filters.namePrompt'), maxLength: 100 })
   if (!name) return
   const f = filterStore.addFilter({
     name: name.trim().slice(0, 100),
@@ -686,8 +688,8 @@ const navigateList = (id) => {
   router.push('/')
 }
 
-const addListQuick = () => {
-  const name = window.prompt(t('lists.namePrompt'))
+const addListQuick = async () => {
+  const name = await promptDialog({ message: t('lists.namePrompt'), maxLength: 60 })
   if (!name) return
   const list = listStore.addList(name.trim().slice(0, 60), {
     color: pickAccentColor()
@@ -695,8 +697,8 @@ const addListQuick = () => {
   if (list) navigateList(list.id)
 }
 
-const addTagQuick = () => {
-  const name = window.prompt(t('tags.namePrompt') || '标签名称')
+const addTagQuick = async () => {
+  const name = await promptDialog({ message: t('tags.namePrompt') || '标签名称', maxLength: 30 })
   if (!name) return
   taskStore.addTag({
     name: name.trim().slice(0, 30),
@@ -869,11 +871,15 @@ const handleTagDelete = async () => {
   if (confirmed) taskStore.deleteTag(tag.id)
 }
 
-const handleListRename = () => {
+const handleListRename = async () => {
   const list = contextMenu.list
   closeContextMenu()
   if (!list) return
-  const nextName = window.prompt(t('lists.renamePrompt', { name: list.name }), list.name)
+  const nextName = await promptDialog({
+    message: t('lists.renamePrompt', { name: list.name }),
+    defaultValue: list.name,
+    maxLength: 60
+  })
   if (nextName) listStore.renameList(list.id, nextName)
 }
 const handleListDelete = async () => {
@@ -897,11 +903,15 @@ const handleListDelete = async () => {
   }
 }
 
-const handleFilterRename = () => {
+const handleFilterRename = async () => {
   const f = contextMenu.filter
   closeContextMenu()
   if (!f) return
-  const nextName = window.prompt(t('filters.renamePrompt', { name: f.name }), f.name)
+  const nextName = await promptDialog({
+    message: t('filters.renamePrompt', { name: f.name }),
+    defaultValue: f.name,
+    maxLength: 100
+  })
   if (nextName) filterStore.updateFilter(f.id, { name: nextName })
 }
 const handleFilterTogglePin = () => {
