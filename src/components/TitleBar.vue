@@ -49,21 +49,13 @@
       <div class="title-bar-drag">
         <div class="title-bar-brand">
           <div class="brand-icon">
-            <svg width="16" height="16" viewBox="0 0 512 512">
-              <rect width="512" height="512" rx="112" fill="#4C8BF5" />
-              <text
-                x="256"
-                y="320"
-                font-family="'Segoe UI',Arial,sans-serif"
-                font-size="200"
-                font-weight="700"
-                fill="#ffffff"
-                text-anchor="middle"
-                letter-spacing="-4"
-              >
-                ToDo
-              </text>
-            </svg>
+            <img
+              src="/icon-32x32.png"
+              alt="Choyeon To Do"
+              width="16"
+              height="16"
+              style="display:block;width:100%;height:100%;object-fit:contain;border-radius:2px"
+            />
           </div>
           <span class="title-bar-text">Choyeon To Do</span>
         </div>

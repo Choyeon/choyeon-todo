@@ -36,18 +36,8 @@
                   class="ob-svg"
                   aria-hidden="true"
                 >
-                  <defs>
-                    <linearGradient id="g1" x1="0" x2="1">
-                      <stop offset="0%" stop-color="#60a5fa" />
-                      <stop offset="100%" stop-color="#8b5cf6" />
-                    </linearGradient>
-                    <linearGradient id="g2" x1="0" x2="1">
-                      <stop offset="0%" stop-color="#34d399" />
-                      <stop offset="100%" stop-color="#22d3ee" />
-                    </linearGradient>
-                  </defs>
-                  <rect x="40" y="50" width="140" height="110" rx="18" fill="url(#g1)" opacity="0.9"/>
-                  <rect x="200" y="30" width="170" height="70" rx="14" fill="url(#g2)" opacity="0.85"/>
+                  <rect x="40" y="50" width="140" height="110" rx="18" fill="#60a5fa" opacity="0.9"/>
+                  <rect x="200" y="30" width="170" height="70" rx="14" fill="#34d399" opacity="0.85"/>
                   <rect x="200" y="110" width="170" height="56" rx="14" fill="#fbbf24" opacity="0.78"/>
                   <circle cx="90" cy="180" r="12" fill="#f87171"/>
                   <circle cx="130" cy="190" r="8" fill="#22c55e"/>
@@ -61,13 +51,7 @@
                   class="ob-svg"
                   aria-hidden="true"
                 >
-                  <defs>
-                    <linearGradient id="ob-input-g" x1="0" x2="1">
-                      <stop offset="0%" stop-color="#38bdf8" />
-                      <stop offset="100%" stop-color="#818cf8" />
-                    </linearGradient>
-                  </defs>
-                  <rect x="40" y="60" width="340" height="48" rx="14" fill="white" stroke="url(#ob-input-g)" stroke-width="2"/>
+                  <rect x="40" y="60" width="340" height="48" rx="14" fill="white" stroke="#3b82f6" stroke-width="2"/>
                   <text x="60" y="92" font-family="ui-sans-serif" font-size="15" fill="#334155">明天下午3点 开会 重要</text>
                   <g transform="translate(40,130)">
                     <rect width="110" height="38" rx="10" fill="#bae6fd"/>
@@ -90,13 +74,7 @@
                   class="ob-svg"
                   aria-hidden="true"
                 >
-                  <defs>
-                    <radialGradient id="pom-g" cx="0.5" cy="0.5" r="0.5">
-                      <stop offset="0%" stop-color="#ef4444" />
-                      <stop offset="100%" stop-color="#b91c1c" />
-                    </radialGradient>
-                  </defs>
-                  <circle cx="210" cy="115" r="86" fill="url(#pom-g)"/>
+                  <circle cx="210" cy="115" r="86" fill="#ef4444"/>
                   <circle cx="210" cy="115" r="72" fill="#fff7ed" stroke="#fecaca" stroke-width="3"/>
                   <text x="210" y="130" text-anchor="middle" font-family="ui-monospace" font-size="40" font-weight="700" fill="#991b1b">25:00</text>
                   <g transform="translate(60, 60)">
@@ -359,20 +337,16 @@ defineExpose({
 
 <style scoped>
 .ob-overlay {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at top,
-    rgba(37, 99, 235, 0.18),
-    rgba(15, 23, 42, 0.55)
-  );
-  backdrop-filter: blur(8px) saturate(1.1);
-  -webkit-backdrop-filter: blur(8px) saturate(1.1);
-  z-index: 9996;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+position: fixed;
+inset: 0;
+background: rgba(15, 23, 42, 0.55);
+backdrop-filter: blur(8px) saturate(1.1);
+-webkit-backdrop-filter: blur(8px) saturate(1.1);
+z-index: 9996;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 24px;
 }
 
 .ob-panel {
@@ -428,19 +402,17 @@ html[data-theme='dark'] .ob-panel {
 
 /* ---- Stage / SVG ---- */
 .ob-stage {
-  padding: 32px 24px 8px 24px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.06), transparent 70%);
+padding: 32px 24px 8px 24px;
+background: transparent;
 }
 .ob-stage-inner {
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(59, 130, 246, 0.08), transparent 60%),
-    radial-gradient(circle at 80% 90%, rgba(139, 92, 246, 0.08), transparent 60%);
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+border-radius: 18px;
+background: rgba(127, 127, 127, 0.04);
+height: 220px;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
 }
 .ob-svg {
   width: 100%;

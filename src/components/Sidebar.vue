@@ -276,12 +276,11 @@
         </Transition>
       </div>
 
-      <div class="nav-divider" v-show="taskStore.tags.length > 0" aria-hidden="true"></div>
+      <div class="nav-divider" aria-hidden="true"></div>
 
       <!-- 标签（保留旧版可折叠分组；受 sidebarShowAreas 折叠不影响，但保持独立） -->
       <div
         class="nav-section tags-section"
-        v-show="taskStore.tags.length > 0"
         role="listitem"
       >
         <button
@@ -301,29 +300,43 @@
             aria-hidden="true"
           />
           <span class="nav-section-label">{{ $t('nav.tags') }}</span>
+          <button
+            class="section-action"
+            type="button"
+            @click.stop="addTagQuick"
+            :aria-label="$t('tags.addTag')"
+            title="$t('tags.addTag')"
+          >
+            <Plus :size="14" aria-hidden="true" />
+          </button>
         </button>
         <Transition name="collapse">
           <div v-show="!tagsCollapsed" class="nav-section-body">
-            <button
-              v-for="tag in visibleTags"
-              :key="tag.id"
-              class="nav-btn tag-btn"
-              :class="{ active: isTagActive(tag.id) }"
-              @click="navigateToTag(tag.id)"
-              @contextmenu.prevent="onTagContextMenu($event, tag)"
-              :aria-label="
-                isTagActive(tag.id) ? `${tag.name}，${$t('common.currentlySelected')}` : tag.name
-              "
-            >
-              <span class="active-indicator" aria-hidden="true"></span>
-              <Tag :size="18" aria-hidden="true" />
-              <span class="tag-dot" :style="{ background: tag.color }" aria-hidden="true"></span>
-              <span class="nav-label">{{ tag.name }}</span>
-              <span class="nav-count" :key="'tg-' + tag.id">{{
-                taskStore.getTagCount(tag.id)
-              }}</span>
-              <span class="nav-tooltip">{{ tag.name }}</span>
-            </button>
+            <template v-if="visibleTags.length">
+              <button
+                v-for="tag in visibleTags"
+                :key="tag.id"
+                class="nav-btn tag-btn"
+                :class="{ active: isTagActive(tag.id) }"
+                @click="navigateToTag(tag.id)"
+                @contextmenu.prevent="onTagContextMenu($event, tag)"
+                :aria-label="
+                  isTagActive(tag.id) ? `${tag.name}，${$t('common.currentlySelected')}` : tag.name
+                "
+              >
+                <span class="active-indicator" aria-hidden="true"></span>
+                <Tag :size="18" aria-hidden="true" />
+                <span class="tag-dot" :style="{ background: tag.color }" aria-hidden="true"></span>
+                <span class="nav-label">{{ tag.name }}</span>
+                <span class="nav-count" :key="'tg-' + tag.id">{{
+                  taskStore.getTagCount(tag.id)
+                }}</span>
+                <span class="nav-tooltip">{{ tag.name }}</span>
+              </button>
+            </template>
+            <div v-else class="empty-inline" role="status">
+              <EmptyState kind="tag" :mini="true" @primary="addTagQuick" />
+            </div>
           </div>
         </Transition>
       </div>
@@ -795,6 +808,15 @@ const addListQuick = (areaId) => {
     color: pickAccentColor()
   })
   if (list) navigateList(list.id)
+}
+
+const addTagQuick = () => {
+  const name = window.prompt(t('tags.namePrompt') || '标签名称')
+  if (!name) return
+  taskStore.addTag({
+    name: name.trim().slice(0, 30),
+    color: pickAccentColor()
+  })
 }
 
 const visibleTags = computed(() => {
