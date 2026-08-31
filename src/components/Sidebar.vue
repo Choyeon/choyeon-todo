@@ -333,29 +333,8 @@
           @click.stop
           @keydown.escape="closeContextMenu"
         >
-          <!-- Area -->
-          <template v-if="contextMenu.type === 'area'">
-            <button class="context-menu-item" role="menuitem" :aria-label="$t('areas.rename')" @click="handleAreaRename">
-              <Pencil :size="14" aria-hidden="true" />
-              <span>{{ $t('areas.rename') }}</span>
-            </button>
-            <button
-              v-if="contextMenu.area && areaStore.areas.length > 1"
-              class="context-menu-item danger"
-              role="menuitem"
-              :aria-label="$t('areas.delete')"
-              @click="handleAreaDelete"
-            >
-              <Trash2 :size="14" aria-hidden="true" />
-              <span>{{ $t('areas.delete') }}</span>
-            </button>
-            <button class="context-menu-item" role="menuitem" :aria-label="$t('lists.addList')" @click="handleAreaAddList">
-              <FolderPlus :size="14" aria-hidden="true" />
-              <span>{{ $t('lists.addList') }}</span>
-            </button>
-          </template>
           <!-- List -->
-          <template v-else-if="contextMenu.type === 'list'">
+          <template v-if="contextMenu.type === 'list'">
             <button class="context-menu-item" role="menuitem" :aria-label="$t('lists.rename')" @click="handleListRename">
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('lists.rename') }}</span>
@@ -453,7 +432,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
-import { useAreaStore } from '../stores/areaStore'
 import { useListStore } from '../stores/listStore'
 import { useFilterStore } from '../stores/filterStore'
 import { useConfirm } from '../composables/useConfirm'
@@ -493,7 +471,6 @@ import {
   BarChart2,
   Pin,
   Filter,
-  FolderPlus,
   X,
   Copy,
   Layers,
@@ -506,7 +483,6 @@ const router = useRouter()
 const { t } = useI18n()
 const taskStore = useTaskStore()
 const settingsStore = useSettingsStore()
-const areaStore = useAreaStore()
 const listStore = useListStore()
 const filterStore = useFilterStore()
 const { confirm: confirmDialog } = useConfirm()
@@ -640,7 +616,7 @@ const filterCount = (id) => {
     const tasks = taskStore.tasks || []
     const res = filterStore.runFilter(id, {
       tasks,
-      areas: areaStore.areas,
+      areas: [],
       lists: listStore.lists,
       now: new Date()
     })
@@ -809,7 +785,6 @@ const contextMenu = reactive({
   x: 0,
   y: 0,
   type: null,
-  area: null,
   list: null,
   category: null,
   tag: null,
@@ -818,7 +793,6 @@ const contextMenu = reactive({
 
 const closeContextMenu = () => {
   contextMenu.visible = false
-  contextMenu.area = null
   contextMenu.list = null
   contextMenu.category = null
   contextMenu.tag = null
@@ -826,13 +800,6 @@ const closeContextMenu = () => {
   contextMenu.type = null
 }
 
-const onAreaContextMenu = (e, area) => {
-  contextMenu.visible = true
-  contextMenu.x = e.clientX
-  contextMenu.y = e.clientY
-  contextMenu.type = 'area'
-  contextMenu.area = area
-}
 const onListContextMenu = (e, list) => {
   contextMenu.visible = true
   contextMenu.x = e.clientX
@@ -900,34 +867,6 @@ const handleTagDelete = async () => {
     danger: true
   })
   if (confirmed) taskStore.deleteTag(tag.id)
-}
-
-const handleAreaRename = async () => {
-  const area = contextMenu.area
-  closeContextMenu()
-  if (!area) return
-  const nextName = window.prompt(t('areas.renamePrompt', { name: area.name }), area.name)
-  if (nextName) areaStore.renameArea(area.id, nextName)
-}
-const handleAreaDelete = async () => {
-  const area = contextMenu.area
-  closeContextMenu()
-  if (!area) return
-  const confirmed = await confirmDialog({
-    message: t('areas.deleteConfirm', { name: area.name }),
-    confirmLabel: t('common.delete'),
-    danger: true
-  })
-  if (!confirmed) return
-  // 先迁移 lists 到 default-area，再删除 area
-  listStore.moveListsToArea(area.id)
-  areaStore.removeArea(area.id)
-}
-const handleAreaAddList = () => {
-  const area = contextMenu.area
-  closeContextMenu()
-  if (!area) return
-  addListQuick(area.id)
 }
 
 const handleListRename = () => {
