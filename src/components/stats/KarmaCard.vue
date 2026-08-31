@@ -118,7 +118,7 @@ const badgeDescText = (b) => badgeText(b, effectiveLocale.value).desc
 
 <style scoped>
 .karma-card {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 45%, #f59e0b 100%);
+  background: #fde68a;
   color: #1f2937;
   border-radius: var(--radius-xl);
   padding: 20px;
@@ -128,7 +128,7 @@ const badgeDescText = (b) => badgeText(b, effectiveLocale.value).desc
   min-width: 0;
 }
 :global([data-theme='dark']) .karma-card {
-  background: linear-gradient(135deg, #312e81 0%, #4338ca 50%, #7c3aed 100%);
+  background: #4338ca;
   color: #f5f3ff;
 }
 

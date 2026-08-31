@@ -658,14 +658,10 @@ html[data-theme='dark'] .task-card {
 }
 .task-card.tc-blocked {
   opacity: 0.92;
-  background:
-    linear-gradient(180deg, rgba(251, 191, 36, 0.06), transparent),
-    var(--tc-bg);
+  background: rgba(251, 191, 36, 0.08);
 }
 .task-card.tc-overdue {
-  background:
-    linear-gradient(180deg, rgba(239, 68, 68, 0.08), transparent),
-    var(--tc-bg);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 /* ---------- Grip ---------- */
@@ -739,7 +735,7 @@ html[data-theme='dark'] .task-card {
   to { stroke-dashoffset: 0; }
 }
 .tc-check.checked {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: #16a34a;
   border-color: transparent;
   animation: tc-pop 220ms ease;
 }
@@ -938,7 +934,7 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
 .tc-pomo-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #ef4444, #f97316);
+  background: #ef4444;
   border-radius: inherit;
   transition: width 0.3s ease;
 }
@@ -970,7 +966,7 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
 .tc-sub-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #22c55e);
+  background: #22c55e;
   border-radius: inherit;
   transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }

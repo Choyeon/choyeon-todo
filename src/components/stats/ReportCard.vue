@@ -278,11 +278,11 @@ defineExpose({ report, markdown, data, mode })
   min-width: 0;
 }
 .metric.big {
-  background: linear-gradient(135deg, var(--color-primary-lightest), #fff);
+  background: var(--color-primary-lightest);
   border: 1px solid var(--color-primary-lighter);
 }
 :global([data-theme='dark']) .metric.big {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.02));
+  background: rgba(59, 130, 246, 0.12);
 }
 .metric-label {
   font-size: 11px;

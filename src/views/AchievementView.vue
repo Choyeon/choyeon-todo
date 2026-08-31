@@ -564,7 +564,7 @@ onMounted(() => {
   width: 120px;
   height: 120px;
   margin: 0 auto 24px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #059669;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -922,7 +922,7 @@ onMounted(() => {
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -957,7 +957,7 @@ onMounted(() => {
 }
 
 .level-progress-bar .progress-fill {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--color-primary);
 }
 
 .level-stats {

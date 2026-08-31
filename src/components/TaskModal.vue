@@ -1547,7 +1547,7 @@ const handleSave = () => {
   gap: 6px;
   padding: 8px 12px;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  background: rgba(59, 130, 246, 0.08);
   border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 8px;
   font-size: 13px;
@@ -3080,7 +3080,7 @@ const handleSave = () => {
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: var(--color-primary);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -3172,7 +3172,7 @@ const handleSave = () => {
 .activity-tab:hover { color: var(--color-text); background: rgba(127,127,127,0.1); }
 .activity-tab.active {
   color: #fff;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: var(--color-primary);
 }
 .activity-tab:focus-visible {
   outline: none;

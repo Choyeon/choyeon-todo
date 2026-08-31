@@ -471,13 +471,13 @@ onMounted(async () => {
 }
 
 .pomodoro-fullscreen.mode-work {
-  background: linear-gradient(135deg, #1a0505 0%, #2d0a0a 50%, #1a0505 100%);
+  background: #2d0a0a;
 }
 .pomodoro-fullscreen.mode-shortBreak {
-  background: linear-gradient(135deg, #051a0a 0%, #0a2d12 50%, #051a0a 100%);
+  background: #0a2d12;
 }
 .pomodoro-fullscreen.mode-longBreak {
-  background: linear-gradient(135deg, #051520 0%, #0a2535 50%, #051520 100%);
+  background: #0a2535;
 }
 
 .fullscreen-content {

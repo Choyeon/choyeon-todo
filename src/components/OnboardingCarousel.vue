@@ -531,7 +531,7 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
 .ob-dot:hover { background: rgba(59, 130, 246, 0.4); }
 .ob-dot.active {
   width: 26px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  background: #3b82f6;
 }
 
 /* ---- Footer buttons ---- */
@@ -578,9 +578,9 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
   background: rgba(127, 127, 127, 0.12);
 }
 .ob-btn-primary {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: #3b82f6;
   color: white;
-  box-shadow: 0 10px 20px -12px rgba(59, 130, 246, 0.6);
+  box-shadow: 0 10px 20px -12px rgba(59, 130, 246, 0.5);
 }
 .ob-btn-primary:hover {
   box-shadow: 0 14px 26px -12px rgba(59, 130, 246, 0.72);

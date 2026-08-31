@@ -245,10 +245,10 @@ onBeforeUnmount(() => clearTimer())
 .toast--bottom-right { bottom: 24px; right: 24px; }
 .toast--top-center { top: 24px; left: 50%; transform: translateX(-50%); }
 
-.toast--success { background: var(--toast-success-bg, linear-gradient(135deg,#26a364,#1f8a55)); }
-.toast--warning { background: var(--toast-warning-bg, linear-gradient(135deg,#d98a1e,#c77a14)); }
-.toast--danger  { background: var(--toast-danger-bg,  linear-gradient(135deg,#c73e3e,#a83030)); }
-.toast--info    { background: var(--toast-info-bg,    linear-gradient(135deg,#2d7bd1,#2469b5)); }
+.toast--success { background: var(--toast-success-bg, #1f8a55); }
+.toast--warning { background: var(--toast-warning-bg, #c77a14); }
+.toast--danger  { background: var(--toast-danger-bg,  #a83030); }
+.toast--info    { background: var(--toast-info-bg,    #2469b5); }
 
 .toast-icon {
   flex-shrink: 0;

@@ -995,7 +995,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-card.primary-card {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--color-primary);
   border: none;
   color: var(--color-text-on-primary);
 }
@@ -1714,7 +1714,7 @@ const weekdayStats = computed(() => {
 
 .weekday-bar {
   width: 100%;
-  background: linear-gradient(180deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--color-primary);
   border-radius: var(--radius-sm);
   transition: height var(--duration-slow) var(--ease-spring-soft);
   min-height: 4px;

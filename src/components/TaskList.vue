@@ -980,9 +980,9 @@ html[data-theme='dark'] .tl-toolbar {
 }
 .tl-seg-btn:hover { color: var(--tl-text); background: rgba(127, 127, 127, 0.08); }
 .tl-seg-btn.active {
-  background: linear-gradient(135deg, rgba(59,130,246,0.9), rgba(139,92,246,0.9));
+  background: #3b82f6;
   color: white;
-  box-shadow: 0 6px 16px -8px rgba(59, 130, 246, 0.7);
+  box-shadow: 0 6px 16px -8px rgba(59, 130, 246, 0.5);
 }
 .tl-seg-btn:focus-visible {
   outline: none;
