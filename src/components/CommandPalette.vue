@@ -9,21 +9,16 @@
         aria-modal="true"
         aria-label="命令面板"
       >
-        <Transition
-          appear
-          name="cp-panel"
-          @after-enter="focusInput"
-          @before-leave="beforeLeave"
-        >
+        <Transition appear name="cp-panel" @after-enter="focusInput" @before-leave="beforeLeave">
           <div
-          v-if="visible"
-          class="cp-panel"
-          ref="panelRef"
-          role="search"
-          :aria-label="t('palette.a11yLabel')"
-          @keydown.esc.prevent="close"
-          tabindex="-1"
-        >
+            v-if="visible"
+            class="cp-panel"
+            ref="panelRef"
+            role="search"
+            :aria-label="t('palette.a11yLabel')"
+            @keydown.esc.prevent="close"
+            tabindex="-1"
+          >
             <!-- 搜索栏 -->
             <div class="cp-header">
               <span class="cp-search-icon" aria-hidden="true">
@@ -55,20 +50,12 @@
             <!-- 三栏主内容 -->
             <div class="cp-body" :class="{ 'cp-body-single': !!query.trim() }">
               <!-- 左：最近执行 -->
-              <aside
-                v-if="!query.trim()"
-                class="cp-col cp-col-recent"
-                aria-label="最近使用"
-              >
+              <aside v-if="!query.trim()" class="cp-col cp-col-recent" aria-label="最近使用">
                 <div class="cp-col-title">
                   <Clock :size="14" class="cp-col-title-icon" />
                   <span>{{ t('palette.recent') }}</span>
                 </div>
-                <ul
-                  class="cp-list"
-                  role="listbox"
-                  aria-label="最近使用的命令"
-                >
+                <ul class="cp-list" role="listbox" aria-label="最近使用的命令">
                   <li v-if="recentList.length === 0" class="cp-empty-hint">
                     {{ t('palette.noRecent') }}
                   </li>
@@ -91,11 +78,7 @@
               </aside>
 
               <!-- 中：分组（命令数量 ≤ 999 展示） -->
-              <aside
-                v-if="!query.trim()"
-                class="cp-col cp-col-groups"
-                aria-label="分组"
-              >
+              <aside v-if="!query.trim()" class="cp-col cp-col-groups" aria-label="分组">
                 <div class="cp-col-title">
                   <Layers :size="14" class="cp-col-title-icon" />
                   <span>{{ t('palette.groups') }}</span>
@@ -125,10 +108,7 @@
               </aside>
 
               <!-- 右：全部命令（有查询时，占满；无查询时显示当前分组的全部命令） -->
-              <section
-                class="cp-col cp-col-results"
-                aria-label="搜索结果"
-              >
+              <section class="cp-col cp-col-results" aria-label="搜索结果">
                 <div class="cp-col-title">
                   <template v-if="query.trim()">
                     <Search :size="14" class="cp-col-title-icon" />
@@ -197,11 +177,7 @@
                       </span>
                     </span>
                     <span class="cp-item-rhs">
-                      <kbd
-                        v-if="cmd.shortcut"
-                        class="cp-kbd cp-kbd-sm"
-                        aria-label="快捷键"
-                      >
+                      <kbd v-if="cmd.shortcut" class="cp-kbd cp-kbd-sm" aria-label="快捷键">
                         {{ cmd.shortcut }}
                       </kbd>
                       <kbd class="cp-kbd cp-kbd-sm" aria-label="执行">↵</kbd>
@@ -232,14 +208,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  computed,
-  watch,
-  nextTick,
-  defineExpose,
-  onMounted
-} from 'vue'
+import { ref, computed, watch, nextTick, defineExpose } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Search,
@@ -259,14 +228,9 @@ import { useCommandPalette } from '../composables/useCommandPalette'
 
 const { t } = useI18n()
 
-const {
-  visible,
-  close,
-  registry,
-  runCommand,
-  onOpen,
-  onClose
-} = useCommandPalette({ registerGlobalShortcut: false })
+const { visible, close, registry, runCommand, onOpen, onClose } = useCommandPalette({
+  registerGlobalShortcut: false
+})
 
 const panelRef = ref(null)
 const inputRef = ref(null)
@@ -308,9 +272,7 @@ const recentList = computed(() => {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 7)
   const map = new Map(allCommands.value.map((c) => [c.id, c]))
-  return entries
-    .map(([id]) => map.get(id))
-    .filter(Boolean)
+  return entries.map(([id]) => map.get(id)).filter(Boolean)
 })
 
 // 分组（全部命令按 section 聚合）
@@ -321,7 +283,10 @@ const groups = computed(() => {
     if (!sections[s]) sections[s] = 0
     sections[s]++
   }
-  const keys = [...SECTION_ORDER, ...Object.keys(sections).filter((k) => !SECTION_ORDER.includes(k))]
+  const keys = [
+    ...SECTION_ORDER,
+    ...Object.keys(sections).filter((k) => !SECTION_ORDER.includes(k))
+  ]
   return keys
     .filter((k) => sections[k])
     .map((k) => ({
@@ -359,13 +324,20 @@ const filteredList = computed(() => {
 // --- Icons ---
 const sectionIcon = (sec) => {
   switch (sec) {
-    case 'nav': return Compass
-    case 'action': return Sparkles
-    case 'pomodoro': return Timer
-    case 'settings': return Settings
-    case 'data': return Database
-    case 'help': return HelpCircle
-    default: return MoreHorizontal
+    case 'nav':
+      return Compass
+    case 'action':
+      return Sparkles
+    case 'pomodoro':
+      return Timer
+    case 'settings':
+      return Settings
+    case 'data':
+      return Database
+    case 'help':
+      return HelpCircle
+    default:
+      return MoreHorizontal
   }
 }
 const groupIcon = (key) => sectionIcon(key)
@@ -373,19 +345,28 @@ const groupIcon = (key) => sectionIcon(key)
 // --- Keyboard + selection helpers ---
 const clampActive = () => {
   const len = filteredList.value.length
-  if (len === 0) { activeIndex.value = -1; return }
+  if (len === 0) {
+    activeIndex.value = -1
+    return
+  }
   if (activeIndex.value < 0) activeIndex.value = 0
   if (activeIndex.value >= len) activeIndex.value = len - 1
 }
 const clampRecent = () => {
   const len = recentList.value.length
-  if (len === 0) { activeRecentIndex.value = -1; return }
+  if (len === 0) {
+    activeRecentIndex.value = -1
+    return
+  }
   if (activeRecentIndex.value < 0) activeRecentIndex.value = 0
   if (activeRecentIndex.value >= len) activeRecentIndex.value = len - 1
 }
 const clampGroup = () => {
   const len = groups.value.length
-  if (len === 0) { activeGroupIndex.value = -1; return }
+  if (len === 0) {
+    activeGroupIndex.value = -1
+    return
+  }
   if (activeGroupIndex.value < 0) activeGroupIndex.value = 0
   if (activeGroupIndex.value >= len) activeGroupIndex.value = len - 1
 }
@@ -394,9 +375,7 @@ const scrollActiveIntoView = () => {
   nextTick(() => {
     const idx = activeIndex.value
     if (idx < 0) return
-    const node = Array.isArray(itemRefs.value)
-      ? itemRefs.value[idx]
-      : itemRefs.value[`${idx}`]
+    const node = Array.isArray(itemRefs.value) ? itemRefs.value[idx] : itemRefs.value[`${idx}`]
     const target = node?.$el || node
     if (target && typeof target.scrollIntoView === 'function') {
       target.scrollIntoView({ block: 'nearest' })
@@ -414,7 +393,7 @@ const run = async (idx) => {
     } else {
       close()
     }
-  } catch (_e) {
+  } catch {
     // ignore
   }
 }
@@ -476,7 +455,10 @@ const onInputKeydown = (e) => {
       e.preventDefault()
       if (activePane.value === 'recent' && activeRecentIndex.value >= 0) {
         const cmd = recentList.value[activeRecentIndex.value]
-        if (cmd) runCommand(cmd.id).then((res) => { if (res.ok) close() })
+        if (cmd)
+          runCommand(cmd.id).then((res) => {
+            if (res.ok) close()
+          })
       } else if (activePane.value === 'groups' && activeGroupIndex.value >= 0) {
         activePane.value = 'results'
         activeIndex.value = 0
@@ -509,7 +491,9 @@ const onInputChange = () => {
 const selectRecent = (idx) => {
   const cmd = recentList.value[idx]
   if (!cmd) return
-  runCommand(cmd.id).then((res) => { if (res.ok) close() })
+  runCommand(cmd.id).then((res) => {
+    if (res.ok) close()
+  })
 }
 
 const selectGroup = (idx) => {
@@ -557,15 +541,19 @@ onClose(() => {
   if (_searchRaf) cancelAnimationFrame(_searchRaf)
 })
 
-watch([filteredList, activePane], () => {
-  if (activePane.value === 'results') {
-    clampActive()
-  } else if (activePane.value === 'recent') {
-    clampRecent()
-  } else {
-    clampGroup()
-  }
-}, { immediate: true })
+watch(
+  [filteredList, activePane],
+  () => {
+    if (activePane.value === 'results') {
+      clampActive()
+    } else if (activePane.value === 'recent') {
+      clampRecent()
+    } else {
+      clampGroup()
+    }
+  },
+  { immediate: true }
+)
 
 defineExpose({
   open: () => {}, // kept for compatibility; use composable
@@ -591,9 +579,7 @@ const Highlight = _defineComponent({
         'span',
         { class: 'cp-highlight-wrap' },
         parts.map((p, i) =>
-          re.test(p)
-            ? _h('mark', { class: 'cp-highlight', key: i }, p)
-            : _h('span', { key: i }, p)
+          re.test(p) ? _h('mark', { class: 'cp-highlight', key: i }, p) : _h('span', { key: i }, p)
         )
       )
     }
@@ -673,7 +659,9 @@ html[data-theme='light'] .cp-panel,
   font-size: 15px;
   color: var(--cp-text);
   outline: none;
-  transition: border-color 0.18s ease, background 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
   font-family: inherit;
 }
 .cp-search-input::placeholder {
@@ -738,7 +726,9 @@ html[data-theme='light'] .cp-panel,
   background: rgba(127, 127, 127, 0.18);
   border-radius: 8px;
 }
-.cp-col::-webkit-scrollbar-track { background: transparent; }
+.cp-col::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 .cp-col-title {
   position: sticky;
@@ -755,7 +745,9 @@ html[data-theme='light'] .cp-panel,
   background: var(--cp-bg);
   z-index: 1;
 }
-.cp-col-title-icon { opacity: 0.9; }
+.cp-col-title-icon {
+  opacity: 0.9;
+}
 .cp-col-title-count {
   font-weight: 500;
   font-style: normal;
@@ -770,7 +762,9 @@ html[data-theme='light'] .cp-panel,
   flex-direction: column;
   gap: 2px;
 }
-.cp-list-results { padding-bottom: 14px; }
+.cp-list-results {
+  padding-bottom: 14px;
+}
 
 .cp-list-item {
   display: flex;
@@ -781,7 +775,10 @@ html[data-theme='light'] .cp-panel,
   font-size: 13px;
   color: var(--cp-text);
   cursor: pointer;
-  transition: background 0.14s ease, color 0.14s ease, transform 0.1s ease;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease,
+    transform 0.1s ease;
   border: 1px solid transparent;
   user-select: none;
   min-height: 34px;
@@ -864,7 +861,10 @@ html[data-theme='dark'] .cp-item-icon {
 }
 
 /* ---- highlight ---- */
-.cp-highlight-wrap { font: inherit; color: inherit; }
+.cp-highlight-wrap {
+  font: inherit;
+  color: inherit;
+}
 .cp-highlight {
   background: rgba(250, 204, 21, 0.32);
   color: inherit;
@@ -893,7 +893,10 @@ html[data-theme='dark'] .cp-highlight {
   gap: 8px;
   color: var(--cp-muted);
 }
-.cp-empty-icon { opacity: 0.6; margin-bottom: 6px; }
+.cp-empty-icon {
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
 .cp-empty-title {
   font-size: 14px;
   font-weight: 600;
@@ -940,7 +943,9 @@ html[data-theme='dark'] .cp-highlight {
   border-radius: 5px;
   border-bottom-width: 2px;
 }
-.cp-footnote-text { white-space: nowrap; }
+.cp-footnote-text {
+  white-space: nowrap;
+}
 
 /* ---- transitions ---- */
 .cp-overlay-enter-active,
@@ -994,10 +999,21 @@ html[data-theme='dark'] .cp-highlight {
 
 /* ---- mobile ---- */
 @media (max-width: 720px) {
-  .cp-body { grid-template-columns: 1fr; }
-  .cp-col { border-right: none; border-bottom: 1px solid var(--cp-divider); }
-  .cp-col:last-child { border-bottom: none; }
-  .cp-overlay { padding-top: 6vh; }
-  .cp-footer { display: none; }
+  .cp-body {
+    grid-template-columns: 1fr;
+  }
+  .cp-col {
+    border-right: none;
+    border-bottom: 1px solid var(--cp-divider);
+  }
+  .cp-col:last-child {
+    border-bottom: none;
+  }
+  .cp-overlay {
+    padding-top: 6vh;
+  }
+  .cp-footer {
+    display: none;
+  }
 }
 </style>

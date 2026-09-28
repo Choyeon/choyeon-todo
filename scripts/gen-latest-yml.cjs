@@ -1,49 +1,61 @@
 // 生成 electron-updater 所需 latest.yml
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+// 用法: node scripts/gen-latest-yml.cjs [输出目录] [版本号]
+// 未指定输出目录时，按 electron-builder 的 directories.output 约定推导 (C:/choyeon-todo/<version>)
+const fs = require('fs')
+const path = require('path')
+const crypto = require('crypto')
 
-const outDir = process.argv[2] || 'C:/choyeon-todo/3.0.1';
-const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
-const version = pkg.version;
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'))
+const version = process.argv[3] || pkg.version
+const outDir = process.argv[2] || path.posix.join('C:/choyeon-todo', version)
 
-const setupName = `Choyeon-To-Do-Setup-${version}.exe`;
-const blockmapName = `${setupName}.blockmap`;
-const portableName = `Choyeon-To-Do-Portable-${version}.exe`;
+if (!fs.existsSync(outDir)) {
+  console.error(`[ERROR] 输出目录不存在: ${outDir}`)
+  console.error('请先运行打包，或通过参数指定正确的输出目录。')
+  process.exit(1)
+}
+
+const setupName = `Choyeon-To-Do-Setup-${version}.exe`
+const blockmapName = `${setupName}.blockmap`
+const portableName = `Choyeon-To-Do-Portable-${version}.exe`
 
 const sha512Of = (file) => {
-  const buf = fs.readFileSync(file);
-  return crypto.createHash('sha512').update(buf).digest('base64');
-};
-const sizeOf = (file) => fs.statSync(file).size;
+  const buf = fs.readFileSync(file)
+  return crypto.createHash('sha512').update(buf).digest('base64')
+}
+const sizeOf = (file) => fs.statSync(file).size
 
-const setupPath = path.join(outDir, setupName);
-const blockmapPath = path.join(outDir, blockmapName);
-const portablePath = path.join(outDir, portableName);
+const resolve = (name, required) => {
+  const full = path.join(outDir, name)
+  if (!fs.existsSync(full)) {
+    if (required) {
+      console.error(`[ERROR] 缺少必需产物: ${full}`)
+      console.error('latest.yml 必须描述真实存在的安装文件，否则客户端更新会失败。')
+      process.exit(1)
+    }
+    return null
+  }
+  return { url: name, sha512: sha512Of(full), size: sizeOf(full) }
+}
 
-const setupSha = sha512Of(setupPath);
-const setupSize = sizeOf(setupPath);
-const blockmapSha = sha512Of(blockmapPath);
-const blockmapSize = sizeOf(blockmapPath);
-const portableSha = sha512Of(portablePath);
-const portableSize = sizeOf(portablePath);
+const setup = resolve(setupName, true)
+const blockmap = resolve(blockmapName, false)
+const portable = resolve(portableName, false)
 
-const yml = `version: ${version}
-files:
-  - url: ${setupName}
-    sha512: ${setupSha}
-    size: ${setupSize}
-  - url: ${blockmapName}
-    sha512: ${blockmapSha}
-    size: ${blockmapSize}
-  - url: ${portableName}
-    sha512: ${portableSha}
-    size: ${portableSize}
-path: ${setupName}
-sha512: ${setupSha}
-releaseDate: ${new Date().toISOString()}
-`;
+// electron-updater 依赖 files 列表里的 sha512/size 做完整性校验，顺序无关但必须齐全
+const files = [setup, blockmap, portable].filter(Boolean)
 
-fs.writeFileSync(path.join(outDir, 'latest.yml'), yml, 'utf8');
-console.log('[OK] latest.yml generated');
-console.log(yml);
+const lines = [
+  `version: ${version}`,
+  'files:',
+  ...files.map((f) => `  - url: ${f.url}\n    sha512: ${f.sha512}\n    size: ${f.size}`),
+  `path: ${setup.url}`,
+  `sha512: ${setup.sha512}`,
+  `releaseDate: ${new Date().toISOString()}`,
+  ''
+]
+
+const yml = lines.join('\n')
+fs.writeFileSync(path.join(outDir, 'latest.yml'), yml, 'utf8')
+console.log(`[OK] latest.yml generated -> ${path.join(outDir, 'latest.yml')}`)
+console.log(yml)

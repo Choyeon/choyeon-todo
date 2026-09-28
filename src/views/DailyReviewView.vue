@@ -127,11 +127,7 @@
     </div>
 
     <div class="review-actions">
-      <button
-        class="btn primary"
-        :aria-label="$t('dailyReview.continueWorking')"
-        @click="goBack"
-      >
+      <button class="btn primary" :aria-label="$t('dailyReview.continueWorking')" @click="goBack">
         {{ $t('dailyReview.continueWorking') }}
       </button>
     </div>
@@ -385,7 +381,6 @@ const goBack = () => {
 .task-item.completed {
   opacity: 0.7;
 }
-
 
 .task-content {
   flex: 1;

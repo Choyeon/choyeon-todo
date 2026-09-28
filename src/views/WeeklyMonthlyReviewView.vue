@@ -12,10 +12,20 @@
 
     <!-- 时间范围选择 -->
     <div class="period-selector">
-      <button class="period-btn" :class="{ active: period === 'week' }" :aria-label="$t('review.thisWeek')" @click="period = 'week'">
+      <button
+        class="period-btn"
+        :class="{ active: period === 'week' }"
+        :aria-label="$t('review.thisWeek')"
+        @click="period = 'week'"
+      >
         {{ $t('review.thisWeek') }}
       </button>
-      <button class="period-btn" :class="{ active: period === 'month' }" :aria-label="$t('review.thisMonth')" @click="period = 'month'">
+      <button
+        class="period-btn"
+        :class="{ active: period === 'month' }"
+        :aria-label="$t('review.thisMonth')"
+        @click="period = 'month'"
+      >
         {{ $t('review.thisMonth') }}
       </button>
       <button
@@ -693,7 +703,6 @@ const goBack = () => {
 .task-item:hover {
   background: var(--color-bg);
 }
-
 
 .task-checkbox {
   flex-shrink: 0;

@@ -1,13 +1,20 @@
 <template>
   <div class="tl-wrapper task-list">
     <!-- 顶部工具栏：视图切换 + Group By + 统计 -->
-    <header v-if="!hideHeader" class="tl-toolbar" role="toolbar" :aria-label="t('task.listToolbar')">
+    <header
+      v-if="!hideHeader"
+      class="tl-toolbar"
+      role="toolbar"
+      :aria-label="t('task.listToolbar')"
+    >
       <div class="tl-toolbar-left">
         <strong class="tl-count" :aria-label="t('task.taskCount', { count: tasks.length })">
-          <ListTodo :size="16"/>
+          <ListTodo :size="16" />
           <span>{{ tasks.length }}</span>
         </strong>
-        <span v-if="completedCount" class="tl-count-sub">· {{ completedCount }} {{ t('task.completed').toLowerCase() }}</span>
+        <span v-if="completedCount" class="tl-count-sub"
+          >· {{ completedCount }} {{ t('task.completed').toLowerCase() }}</span
+        >
       </div>
 
       <div class="tl-toolbar-right">
@@ -24,12 +31,12 @@
             :title="v.label"
             @click="viewMode = v.id"
           >
-            <component :is="v.icon" :size="15"/>
+            <component :is="v.icon" :size="15" />
             <span class="tl-seg-label">{{ v.label }}</span>
           </button>
         </div>
 
-        <div class="tl-divider"/>
+        <div class="tl-divider" />
 
         <button
           type="button"
@@ -39,7 +46,7 @@
           :title="t('task.groupBy')"
           @click="cycleGroup"
         >
-          <Group :size="15"/>
+          <Group :size="15" />
           <span>{{ groupByLabel }}</span>
         </button>
 
@@ -50,7 +57,7 @@
           :title="t('task.clearCompleted')"
           @click="onClearCompleted"
         >
-          <Eraser :size="15"/>
+          <Eraser :size="15" />
         </button>
       </div>
     </header>
@@ -81,12 +88,7 @@
       </Transition>
 
       <!-- 分组 / 列表渲染 -->
-      <TransitionGroup
-        v-if="groupBuckets.length"
-        name="tl-group"
-        tag="div"
-        class="tl-groups"
-      >
+      <TransitionGroup v-if="groupBuckets.length" name="tl-group" tag="div" class="tl-groups">
         <section
           v-for="bucket in groupBuckets"
           :key="bucket.key"
@@ -107,10 +109,12 @@
             <button
               class="tl-group-caret"
               type="button"
-              :aria-label="collapsedGroups.has(bucket.key) ? t('common.expand') : t('common.collapse')"
+              :aria-label="
+                collapsedGroups.has(bucket.key) ? t('common.expand') : t('common.collapse')
+              "
               tabindex="-1"
             >
-              <ChevronRight :size="14" :class="{ 'tl-rot90': !collapsedGroups.has(bucket.key) }"/>
+              <ChevronRight :size="14" :class="{ 'tl-rot90': !collapsedGroups.has(bucket.key) }" />
             </button>
             <span class="tl-group-title">{{ bucket.label }}</span>
             <span class="tl-group-count">{{ bucket.items.length }}</span>
@@ -125,25 +129,25 @@
             role="list"
           >
             <TaskCard
-              v-for="t in bucket.items"
-              :key="t.id"
-              :ref="(el) => setCardRef(t.id, el)"
-              :task="t"
+              v-for="task in bucket.items"
+              :key="task.id"
+              :ref="(el) => setCardRef(task.id, el)"
+              :task="task"
               view="board"
               :density="density"
               :current-list="bucket.items"
-              :is-focused="taskStore.focusedTaskId === t.id"
-              :is-dragging="draggedTaskId === t.id"
-              :is-drag-over="dragOverTaskId === t.id"
-              :is-new="newTaskIds.has(t.id)"
-              :is-overdue-ext="isTaskOverdue(t)"
+              :is-focused="taskStore.focusedTaskId === task.id"
+              :is-dragging="draggedTaskId === task.id"
+              :is-drag-over="dragOverTaskId === task.id"
+              :is-new="newTaskIds.has(task.id)"
+              :is-overdue-ext="isTaskOverdue(task)"
               @edit="onEditTask"
               @toggle-complete="toggleComplete"
               @toggle-important="toggleImportant"
               @reorder="onCardReorder"
               @dragstart="onCardDragStart"
               @dragend="onCardDragEnd"
-              @contextmenu.prevent.stop="(e) => onContextMenu(e, t)"
+              @contextmenu.prevent.stop="(e) => onContextMenu(e, task)"
               @sub-toggle="onSubToggle"
               @sub-reorder="onSubReorder"
               @sub-remove="onSubRemove"
@@ -161,34 +165,28 @@
           >
             <!-- 虚拟滚动占位：如果超过 VIRTUAL_THRESHOLD 才启用 -->
             <template v-if="bucket.items.length > VIRTUAL_THRESHOLD">
-              <div
-                class="tl-virtual-spacer"
-                :style="{ height: virtualTotalHeight(bucket) + 'px' }"
-              >
-                <div
-                  class="tl-virtual-window"
-                  :style="virtualWindowStyle(bucket)"
-                >
+              <div class="tl-virtual-spacer" :style="{ height: virtualTotalHeight(bucket) + 'px' }">
+                <div class="tl-virtual-window" :style="virtualWindowStyle(bucket)">
                   <TaskCard
-                    v-for="t in virtualItems(bucket)"
-                    :key="t.id"
-                    :ref="(el) => setCardRef(t.id, el)"
-                    :task="t"
+                    v-for="task in virtualItems(bucket)"
+                    :key="task.id"
+                    :ref="(el) => setCardRef(task.id, el)"
+                    :task="task"
                     :view="viewMode"
                     :density="density"
                     :current-list="bucket.items"
-                    :is-focused="taskStore.focusedTaskId === t.id"
-                    :is-dragging="draggedTaskId === t.id"
-                    :is-drag-over="dragOverTaskId === t.id"
-                    :is-new="newTaskIds.has(t.id)"
-                    :is-overdue-ext="isTaskOverdue(t)"
+                    :is-focused="taskStore.focusedTaskId === task.id"
+                    :is-dragging="draggedTaskId === task.id"
+                    :is-drag-over="dragOverTaskId === task.id"
+                    :is-new="newTaskIds.has(task.id)"
+                    :is-overdue-ext="isTaskOverdue(task)"
                     @edit="onEditTask"
                     @toggle-complete="toggleComplete"
                     @toggle-important="toggleImportant"
                     @reorder="onCardReorder"
                     @dragstart="onCardDragStart"
                     @dragend="onCardDragEnd"
-                    @contextmenu.prevent.stop="(e) => onContextMenu(e, t)"
+                    @contextmenu.prevent.stop="(e) => onContextMenu(e, task)"
                     @sub-toggle="onSubToggle"
                     @sub-reorder="onSubReorder"
                     @sub-remove="onSubRemove"
@@ -199,25 +197,25 @@
 
             <template v-else>
               <TaskCard
-                v-for="(t, idx) in bucket.items"
-                :key="t.id"
-                :ref="(el) => setCardRef(t.id, el)"
-                :task="t"
+                v-for="(task, idx) in bucket.items"
+                :key="task.id"
+                :ref="(el) => setCardRef(task.id, el)"
+                :task="task"
                 :view="viewMode"
                 :density="density"
                 :current-list="bucket.items"
-                :is-focused="taskStore.focusedTaskId === t.id"
-                :is-dragging="draggedTaskId === t.id"
-                :is-drag-over="dragOverTaskId === t.id && dragOverGroupKey === bucket.key"
-                :is-new="newTaskIds.has(t.id)"
-                :is-overdue-ext="isTaskOverdue(t)"
+                :is-focused="taskStore.focusedTaskId === task.id"
+                :is-dragging="draggedTaskId === task.id"
+                :is-drag-over="dragOverTaskId === task.id && dragOverGroupKey === bucket.key"
+                :is-new="newTaskIds.has(task.id)"
+                :is-overdue-ext="isTaskOverdue(task)"
                 @edit="onEditTask"
                 @toggle-complete="toggleComplete"
                 @toggle-important="toggleImportant"
                 @reorder="onCardReorder"
-                @dragstart="(e) => onCardDragStart(e, t, idx, bucket.key)"
-                @dragend="(e) => onCardDragEnd(e, t, bucket.key)"
-                @contextmenu.prevent.stop="(e) => onContextMenu(e, t)"
+                @dragstart="(e) => onCardDragStart(e, task, idx, bucket.key)"
+                @dragend="(e) => onCardDragEnd(e, task, bucket.key)"
+                @contextmenu.prevent.stop="(e) => onContextMenu(e, task)"
                 @sub-toggle="onSubToggle"
                 @sub-reorder="onSubReorder"
                 @sub-remove="onSubRemove"
@@ -231,13 +229,7 @@
     <!-- 上下文菜单（右键 / 长按） -->
     <Teleport to="body">
       <Transition name="tl-cm-fade">
-        <ul
-          v-if="contextMenu.visible"
-          class="tl-ctx-menu"
-          role="menu"
-          :style="cmStyle"
-          @click.stop
-        >
+        <ul v-if="contextMenu.visible" class="tl-ctx-menu" role="menu" :style="cmStyle" @click.stop>
           <li
             v-for="(item, idx) in contextMenu.items"
             :key="idx"
@@ -271,16 +263,7 @@
 </template>
 
 <script setup>
-import {
-  computed,
-  inject,
-  onBeforeUnmount,
-  onMounted,
-  reactive,
-  ref,
-  shallowRef,
-  watch
-} from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
@@ -382,9 +365,9 @@ const pendingTimers = []
 
 // ------ Toolbar view options ------
 const viewOptions = computed(() => [
-  { id: 'list',    icon: List,       label: t('task.viewList') },
-  { id: 'compact', icon: Rows3,      label: t('task.viewCompact') },
-  { id: 'board',   icon: LayoutGrid, label: t('task.viewBoard') }
+  { id: 'list', icon: List, label: t('task.viewList') },
+  { id: 'compact', icon: Rows3, label: t('task.viewCompact') },
+  { id: 'board', icon: LayoutGrid, label: t('task.viewBoard') }
 ])
 
 watch(viewMode, (v) => {
@@ -395,11 +378,16 @@ watch(viewMode, (v) => {
 // ------ Group By logic ------
 const groupByLabel = computed(() => {
   switch (groupBy.value) {
-    case 'status':   return t('task.groupStatus')
-    case 'priority': return t('task.groupPriority')
-    case 'date':     return t('task.groupDate')
-    case 'list':     return t('task.groupList')
-    default:         return t('task.groupNone')
+    case 'status':
+      return t('task.groupStatus')
+    case 'priority':
+      return t('task.groupPriority')
+    case 'date':
+      return t('task.groupDate')
+    case 'list':
+      return t('task.groupList')
+    default:
+      return t('task.groupNone')
   }
 })
 const cycleGroup = () => {
@@ -409,7 +397,8 @@ const cycleGroup = () => {
 }
 const toggleGroupCollapse = (key) => {
   const s = new Set(collapsedGroups.value)
-  if (s.has(key)) s.delete(key); else s.add(key)
+  if (s.has(key)) s.delete(key)
+  else s.add(key)
   collapsedGroups.value = s
 }
 
@@ -436,18 +425,54 @@ const groupBuckets = computed(() => {
   if (mode === 'none') {
     push('all', t('task.tasksAll'), tasks)
   } else if (mode === 'status') {
-    push('todo', t('task.statusTodo'), tasks.filter((t) => !t.completed))
-    push('done', t('task.statusDone'), tasks.filter((t) => t.completed))
+    push(
+      'todo',
+      t('task.statusTodo'),
+      tasks.filter((t) => !t.completed)
+    )
+    push(
+      'done',
+      t('task.statusDone'),
+      tasks.filter((t) => t.completed)
+    )
   } else if (mode === 'priority') {
-    push('p1', t('task.p1'), tasks.filter((t) => t.priority === 1 && !t.completed))
-    push('p2', t('task.p2'), tasks.filter((t) => t.priority === 2 && !t.completed))
-    push('p3', t('task.p3'), tasks.filter((t) => t.priority === 3 && !t.completed))
-    push('p4', t('task.p4'), tasks.filter((t) => (t.priority ?? 4) >= 4 && !t.completed))
-    push('done', t('task.statusDone'), tasks.filter((t) => t.completed))
+    push(
+      'p1',
+      t('task.p1'),
+      tasks.filter((t) => t.priority === 1 && !t.completed)
+    )
+    push(
+      'p2',
+      t('task.p2'),
+      tasks.filter((t) => t.priority === 2 && !t.completed)
+    )
+    push(
+      'p3',
+      t('task.p3'),
+      tasks.filter((t) => t.priority === 3 && !t.completed)
+    )
+    push(
+      'p4',
+      t('task.p4'),
+      tasks.filter((t) => (t.priority ?? 4) >= 4 && !t.completed)
+    )
+    push(
+      'done',
+      t('task.statusDone'),
+      tasks.filter((t) => t.completed)
+    )
   } else if (mode === 'date') {
     const today = getTodayStr()
-    push('overdue', t('task.overdue'), tasks.filter((t) => !t.completed && isTaskOverdue(t)))
-    push('today', t('task.today'), tasks.filter((t) => !t.completed && t.date === today))
+    push(
+      'overdue',
+      t('task.overdue'),
+      tasks.filter((t) => !t.completed && isTaskOverdue(t))
+    )
+    push(
+      'today',
+      t('task.today'),
+      tasks.filter((t) => !t.completed && t.date === today)
+    )
     const todayT = new Date(today).getTime()
     const tomorrow = new Date(todayT + 86400000)
     const next7 = new Date(todayT + 7 * 86400000)
@@ -456,23 +481,52 @@ const groupBuckets = computed(() => {
       return new Date(y, m - 1, dd).getTime()
     }
     const tmrStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`
-    push('tomorrow', t('task.tomorrowLabel'), tasks.filter((t) => !t.completed && t.date === tmrStr))
-    push('week', t('task.nextWeek'), tasks.filter((t) => {
-      if (t.completed || !t.date) return false
-      const ts = fmt(t.date); return ts > tomorrow.getTime() && ts <= next7.getTime()
-    }).sort((a, b) => compareDateRev(a.date, b.date)))
-    push('later', t('task.later'), tasks.filter((t) => {
-      if (t.completed || !t.date) return false
-      return fmt(t.date) > next7.getTime()
-    }).sort((a, b) => compareDateRev(a.date, b.date)))
-    push('noDate', t('task.noDate'), tasks.filter((t) => !t.completed && !t.date))
-    push('done', t('task.statusDone'), tasks.filter((t) => t.completed))
+    push(
+      'tomorrow',
+      t('task.tomorrowLabel'),
+      tasks.filter((t) => !t.completed && t.date === tmrStr)
+    )
+    push(
+      'week',
+      t('task.nextWeek'),
+      tasks
+        .filter((t) => {
+          if (t.completed || !t.date) return false
+          const ts = fmt(t.date)
+          return ts > tomorrow.getTime() && ts <= next7.getTime()
+        })
+        .sort((a, b) => compareDateRev(a.date, b.date))
+    )
+    push(
+      'later',
+      t('task.later'),
+      tasks
+        .filter((t) => {
+          if (t.completed || !t.date) return false
+          return fmt(t.date) > next7.getTime()
+        })
+        .sort((a, b) => compareDateRev(a.date, b.date))
+    )
+    push(
+      'noDate',
+      t('task.noDate'),
+      tasks.filter((t) => !t.completed && !t.date)
+    )
+    push(
+      'done',
+      t('task.statusDone'),
+      tasks.filter((t) => t.completed)
+    )
   } else if (mode === 'list') {
     const ids = [...new Set(tasks.map((t) => t.listId || t.category).filter(Boolean))]
     for (const id of ids) {
       const list = (taskStore.lists || taskStore.categories || []).find((l) => l.id === id)
       const name = list?.name || (id === 'inbox' ? t('nav.inbox') : id)
-      push(`list-${id}`, name, tasks.filter((t) => (t.listId || t.category) === id))
+      push(
+        `list-${id}`,
+        name,
+        tasks.filter((t) => (t.listId || t.category) === id)
+      )
     }
   }
   return buckets
@@ -486,24 +540,37 @@ const emptyKind = computed(() => {
 const emptyTitle = computed(() => {
   if (taskStore.searchQuery) return t('empty.search')
   switch (props.emptyType) {
-    case 'today': return t('empty.todayTitle')
-    case 'important': return t('empty.importantTitle')
-    case 'planned': return t('empty.plannedTitle')
-    case 'completed': return t('empty.completed')
-    case 'category': return t('empty.categoryTitle')
-    case 'myday': return t('empty.mydayTitle') || t('empty.todayTitle')
-    default: return t('empty.defaultTitle')
+    case 'today':
+      return t('empty.todayTitle')
+    case 'important':
+      return t('empty.importantTitle')
+    case 'planned':
+      return t('empty.plannedTitle')
+    case 'completed':
+      return t('empty.completed')
+    case 'category':
+      return t('empty.categoryTitle')
+    case 'myday':
+      return t('empty.mydayTitle') || t('empty.todayTitle')
+    default:
+      return t('empty.defaultTitle')
   }
 })
 const emptyDesc = computed(() => {
   if (taskStore.searchQuery) return t('empty.searchSubtitle')
   switch (props.emptyType) {
-    case 'today': return t('empty.todaySubtitle')
-    case 'important': return t('empty.importantSubtitle')
-    case 'planned': return t('empty.plannedSubtitle')
-    case 'completed': return t('empty.completedSubtitle')
-    case 'category': return t('empty.categorySubtitle')
-    default: return t('empty.defaultSubtitle')
+    case 'today':
+      return t('empty.todaySubtitle')
+    case 'important':
+      return t('empty.importantSubtitle')
+    case 'planned':
+      return t('empty.plannedSubtitle')
+    case 'completed':
+      return t('empty.completedSubtitle')
+    case 'category':
+      return t('empty.categorySubtitle')
+    default:
+      return t('empty.defaultSubtitle')
   }
 })
 const emptyActionLabel = computed(() => (taskStore.searchQuery ? '' : t('empty.action')))
@@ -530,7 +597,12 @@ onMounted(() => {
     if (scrollRef.value) _ro.observe(scrollRef.value)
   }
 })
-onBeforeUnmount(() => { if (_ro) { _ro.disconnect(); _ro = null } })
+onBeforeUnmount(() => {
+  if (_ro) {
+    _ro.disconnect()
+    _ro = null
+  }
+})
 
 const virtualTotalHeight = (bucket) => {
   const N = bucket.items.length
@@ -542,7 +614,6 @@ const virtualItems = (bucket) => {
   // 更精确：把整个 groups 的位置近似为相对 parent。这里用可见范围在当前 bucket 数组 index 上切片。
   const groupEl = scrollRef.value.querySelector?.(`[data-group-key="${bucket.key}"]`)
   if (!groupEl) return bucket.items
-  const groupTop = groupEl.offsetTop - scrollTop.value
   // group 起始在 scrollRef 内 offsetTop 绝对位置
   const absStart = groupEl.offsetTop + 80 // 80 为组标题 padding 估计
   const start = Math.max(0, scrollTop.value - absStart)
@@ -582,7 +653,9 @@ const toggleComplete = (id) => {
       }, 280)
     )
     pendingTimers.push(
-      setTimeout(() => { confettiTaskId.value = null }, 1000)
+      setTimeout(() => {
+        confettiTaskId.value = null
+      }, 1000)
     )
   } else {
     taskStore.toggleComplete(id)
@@ -608,7 +681,11 @@ const deleteTaskWithUndo = (id) => {
 }
 
 // Sub task actions delegated to store
-const onSubToggle = ({ taskId, subId }) => { try { taskStore.toggleSubTaskComplete(taskId, subId) } catch (_e) {} }
+const onSubToggle = ({ taskId, subId }) => {
+  try {
+    taskStore.toggleSubTaskComplete(taskId, subId)
+  } catch {}
+}
 const onSubReorder = ({ taskId, subId, dir }) => {
   try {
     const task = taskStore.getTaskById(taskId)
@@ -618,12 +695,16 @@ const onSubReorder = ({ taskId, subId, dir }) => {
     if (idx < 0) return
     const swapIdx = idx + dir
     if (swapIdx < 0 || swapIdx >= sorted.length) return
-    const tmp = sorted[idx].order; sorted[idx].order = sorted[swapIdx].order; sorted[swapIdx].order = tmp
+    const tmp = sorted[idx].order
+    sorted[idx].order = sorted[swapIdx].order
+    sorted[swapIdx].order = tmp
     taskStore.updateTask(taskId, { subTasks: [...task.subTasks] })
-  } catch (_e) {}
+  } catch {}
 }
 const onSubRemove = ({ taskId, subId }) => {
-  try { if (taskStore.removeSubTask) taskStore.removeSubTask(taskId, subId) } catch (_e) {}
+  try {
+    if (taskStore.removeSubTask) taskStore.removeSubTask(taskId, subId)
+  } catch {}
 }
 
 // ------ Clear completed ------
@@ -637,7 +718,11 @@ const onClearCompleted = () => {
     duration: 6000,
     onAction: () => {
       const count = taskStore.clearCompletedTasks ? taskStore.clearCompletedTasks() : -1
-      snackbarSuccess(typeof count === 'number' ? t('task.clearedMessage', { count }) : t('task.clearedMessage', { count: n }))
+      snackbarSuccess(
+        typeof count === 'number'
+          ? t('task.clearedMessage', { count })
+          : t('task.clearedMessage', { count: n })
+      )
     }
   })
 }
@@ -646,13 +731,15 @@ const onClearCompleted = () => {
 const onCardDragStart = (evt, task, idx = 0, groupKey = 'all') => {
   draggedTaskId.value = task.id
   dragPayload.value = { task, idx, groupKey }
-  const nativeEvt = (evt && evt.event) ? evt.event : (evt || {})
+  const nativeEvt = evt && evt.event ? evt.event : evt || {}
   try {
     if (nativeEvt?.dataTransfer) {
       nativeEvt.dataTransfer.setData('text/plain', task.id)
       nativeEvt.dataTransfer.effectAllowed = 'move'
     }
-  } catch (_e) { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 const onCardDragEnd = () => {
   draggedTaskId.value = null
@@ -673,10 +760,10 @@ const onScrollDragLeave = () => {
   dragOverTaskId.value = null
 }
 const onScrollDrop = (event) => {
-  const source = draggedTaskId.value || (event.dataTransfer?.getData?.('text/plain'))
+  const source = draggedTaskId.value || event.dataTransfer?.getData?.('text/plain')
   if (!source) return
   const bucketItems = dragPayload.value
-    ? (groupBuckets.value.find((b) => b.key === dragPayload.value.groupKey)?.items || props.tasks)
+    ? groupBuckets.value.find((b) => b.key === dragPayload.value.groupKey)?.items || props.tasks
     : props.tasks
   try {
     const rect = scrollRef.value.getBoundingClientRect()
@@ -690,9 +777,10 @@ const onScrollDrop = (event) => {
       draggedTaskIds: [source],
       target: {
         parentId: pos.parentId ?? null,
-        listId: dragOverGroupKey.value && dragOverGroupKey.value.startsWith('list-')
-          ? dragOverGroupKey.value.slice(5)
-          : (dragPayload.value?.task?.listId ?? null)
+        listId:
+          dragOverGroupKey.value && dragOverGroupKey.value.startsWith('list-')
+            ? dragOverGroupKey.value.slice(5)
+            : (dragPayload.value?.task?.listId ?? null)
       },
       tasks: taskStore.tasks,
       lists: taskStore.lists || taskStore.categories || []
@@ -707,7 +795,13 @@ const onScrollDrop = (event) => {
       ...pos,
       tasks: taskStore.tasks
     })
-    const adapted = moves.map((m) => ({ id: m.taskId, afterId: m.afterId, beforeId: m.beforeId, parentId: m.parentId, listId: m.listId }))
+    const adapted = moves.map((m) => ({
+      id: m.taskId,
+      afterId: m.afterId,
+      beforeId: m.beforeId,
+      parentId: m.parentId,
+      listId: m.listId
+    }))
     if (!adapted.length) return
     const ok = taskStore.reorderTasks(adapted)
     if (ok === false) snackbarError(t('task.reorderFailed'))
@@ -728,14 +822,17 @@ const onCardReorder = (moves) => {
 const onPaste = (e) => {
   const text = (e.clipboardData || window.clipboardData).getData('text')
   if (!text || !text.trim()) return
-  const lines = text.split(/\r?\n/).map((s) => s.trim()).filter(Boolean)
+  const lines = text
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean)
   if (lines.length <= 1) return
   e.preventDefault()
   for (const l of lines) {
     try {
       if (taskStore.addQuick) taskStore.addQuick(l)
       else taskStore.addTask({ title: l })
-    } catch (_e) {}
+    } catch {}
   }
   snackbarSuccess(t('task.pastedTasks', { count: lines.length }))
 }
@@ -747,27 +844,42 @@ const cmStyle = computed(() => ({
 }))
 const buildCtxItems = (task) => [
   {
-    icon: Edit3, label: t('task.editTask'), shortcut: 'Enter',
+    icon: Edit3,
+    label: t('task.editTask'),
+    shortcut: 'Enter',
     action: () => onEditTask(task)
   },
   {
-    icon: Star, label: task.important ? t('task.unstar') : t('task.markStar'), shortcut: 'I',
+    icon: Star,
+    label: task.important ? t('task.unstar') : t('task.markStar'),
+    shortcut: 'I',
     action: () => toggleImportant(task.id)
   },
   {
-    icon: Sun, label: (taskStore.isInMyDay?.(task.id) ? t('task.removeFromMyDay') : t('task.addToMyDay')),
-    action: () => { if (taskStore.toggleMyDay) taskStore.toggleMyDay(task.id) }
+    icon: Sun,
+    label: taskStore.isInMyDay?.(task.id) ? t('task.removeFromMyDay') : t('task.addToMyDay'),
+    action: () => {
+      if (taskStore.toggleMyDay) taskStore.toggleMyDay(task.id)
+    }
   },
   {
-    icon: Timer, label: t('task.startFocus'), shortcut: 'D',
-    action: () => { if (taskStore.focusTask) taskStore.focusTask(task.id) }
+    icon: Timer,
+    label: t('task.startFocus'),
+    shortcut: 'D',
+    action: () => {
+      if (taskStore.focusTask) taskStore.focusTask(task.id)
+    }
   },
-  { sepBefore: true,
-    icon: CheckCircle2, label: task.completed ? t('task.markIncomplete') : t('task.markComplete'), shortcut: 'Space',
+  {
+    sepBefore: true,
+    icon: CheckCircle2,
+    label: task.completed ? t('task.markIncomplete') : t('task.markComplete'),
+    shortcut: 'Space',
     action: () => toggleComplete(task.id)
   },
   {
-    icon: ArrowUp, label: t('task.moveUp'),
+    icon: ArrowUp,
+    label: t('task.moveUp'),
     disabled: !taskStore.reorderTasks,
     action: () => {
       const arr = props.tasks
@@ -778,7 +890,8 @@ const buildCtxItems = (task) => [
     }
   },
   {
-    icon: ArrowDown, label: t('task.moveDown'),
+    icon: ArrowDown,
+    label: t('task.moveDown'),
     disabled: !taskStore.reorderTasks,
     action: () => {
       const arr = props.tasks
@@ -789,32 +902,43 @@ const buildCtxItems = (task) => [
     }
   },
   {
-    icon: CalendarDays, label: t('task.setDate'),
+    icon: CalendarDays,
+    label: t('task.setDate'),
     action: () => onEditTask(task)
   },
   {
-    icon: Copy, label: t('task.duplicate'),
+    icon: Copy,
+    label: t('task.duplicate'),
     disabled: !taskStore.duplicateTask,
     action: () => {
       const id = taskStore.duplicateTask(task.id)
       if (id) {
         newTaskIds.value = new Set([...newTaskIds.value, id])
         setTimeout(() => {
-          const s = new Set(newTaskIds.value); s.delete(id); newTaskIds.value = s
+          const s = new Set(newTaskIds.value)
+          s.delete(id)
+          newTaskIds.value = s
         }, 600)
       }
     }
   },
-  { sepBefore: true, icon: Share, label: t('task.share'),
+  {
+    sepBefore: true,
+    icon: Share,
+    label: t('task.share'),
     disabled: !navigator.share,
     action: async () => {
       try {
         await navigator.share({ title: task.title, text: task.notes || task.title })
-      } catch (_e) {}
+      } catch {}
     }
   },
-  { sepBefore: true, danger: true,
-    icon: Trash2, label: t('task.deleteTask'), shortcut: 'Del',
+  {
+    sepBefore: true,
+    danger: true,
+    icon: Trash2,
+    label: t('task.deleteTask'),
+    shortcut: 'Del',
     action: () => deleteTaskWithUndo(task.id)
   }
 ]
@@ -826,8 +950,18 @@ const onContextMenu = (event, task) => {
   contextMenu.y = event.clientY + 1
   contextMenu.visible = true
 }
-const runCtxAction = (fn) => { try { if (typeof fn === 'function') fn() } catch (e) { snackbarError(e?.message || String(e)) } }
-const closeCtxMenu = () => { contextMenu.visible = false; contextMenu.items = []; contextMenu.task = null }
+const runCtxAction = (fn) => {
+  try {
+    if (typeof fn === 'function') fn()
+  } catch (e) {
+    snackbarError(e?.message || String(e))
+  }
+}
+const closeCtxMenu = () => {
+  contextMenu.visible = false
+  contextMenu.items = []
+  contextMenu.task = null
+}
 const onGlobalDocClick = () => closeCtxMenu()
 
 // ------ Completion sound (保留原行为) ------
@@ -839,17 +973,22 @@ const playCompletionSound = () => {
     const schedule = (freq, startDelay, dur) => {
       const osc = audioContext.createOscillator()
       const gain = audioContext.createGain()
-      osc.connect(gain); gain.connect(audioContext.destination)
-      osc.frequency.value = freq; osc.type = 'sine'
+      osc.connect(gain)
+      gain.connect(audioContext.destination)
+      osc.frequency.value = freq
+      osc.type = 'sine'
       const T0 = audioContext.currentTime + startDelay
       gain.gain.setValueAtTime(0.22, T0)
       gain.gain.exponentialRampToValueAtTime(0.01, T0 + dur)
-      osc.start(T0); osc.stop(T0 + dur)
+      osc.start(T0)
+      osc.stop(T0 + dur)
     }
     schedule(523, 0, 0.15)
     schedule(659, 0.15, 0.2)
     schedule(784, 0.3, 0.3)
-  } catch (_e) { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 // ------ Lifecycle ------
@@ -864,17 +1003,27 @@ onMounted(() => {
       const currIds = (taskStore.tasks || []).map((t) => t.id)
       for (const id of currIds) {
         if (!existingIds.has(id)) {
-          const s = new Set(newTaskIds.value); s.add(id); newTaskIds.value = s
+          const s = new Set(newTaskIds.value)
+          s.add(id)
+          newTaskIds.value = s
           existingIds.add(id)
           const captureId = id
-          pendingTimers.push(setTimeout(() => {
-            const s2 = new Set(newTaskIds.value); s2.delete(captureId); newTaskIds.value = s2
-          }, 700))
+          pendingTimers.push(
+            setTimeout(() => {
+              const s2 = new Set(newTaskIds.value)
+              s2.delete(captureId)
+              newTaskIds.value = s2
+            }, 700)
+          )
         }
       }
     }
   )
-  onBeforeUnmount(() => { try { unwatch() } catch (_e) {} })
+  onBeforeUnmount(() => {
+    try {
+      unwatch()
+    } catch {}
+  })
 })
 
 onBeforeUnmount(() => {
@@ -888,7 +1037,9 @@ onBeforeUnmount(() => {
 })
 
 defineExpose({
-  scrollToTop: () => { scrollRef.value?.scrollTo?.({ top: 0, behavior: 'smooth' }) },
+  scrollToTop: () => {
+    scrollRef.value?.scrollTo?.({ top: 0, behavior: 'smooth' })
+  },
   getCardRef: (id) => cardRefs.value.get(id)
 })
 </script>
@@ -939,8 +1090,14 @@ html[data-theme='dark'] .tl-toolbar {
   gap: 6px;
   color: var(--tl-text);
 }
-.tl-count span { font-variant-numeric: tabular-nums; }
-.tl-count-sub { font-weight: 500; font-size: 12px; color: var(--tl-muted); }
+.tl-count span {
+  font-variant-numeric: tabular-nums;
+}
+.tl-count-sub {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--tl-muted);
+}
 
 .tl-toolbar-right {
   display: inline-flex;
@@ -975,10 +1132,16 @@ html[data-theme='dark'] .tl-toolbar {
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.18s ease, transform 0.1s ease;
+  transition:
+    color 0.15s ease,
+    background 0.18s ease,
+    transform 0.1s ease;
   font-family: inherit;
 }
-.tl-seg-btn:hover { color: var(--tl-text); background: rgba(127, 127, 127, 0.08); }
+.tl-seg-btn:hover {
+  color: var(--tl-text);
+  background: rgba(127, 127, 127, 0.08);
+}
 .tl-seg-btn.active {
   background: #3b82f6;
   color: white;
@@ -989,8 +1152,12 @@ html[data-theme='dark'] .tl-toolbar {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 @media (max-width: 560px) {
-  .tl-seg-label { display: none; }
-  .tl-seg-btn { padding: 6px 8px; }
+  .tl-seg-label {
+    display: none;
+  }
+  .tl-seg-btn {
+    padding: 6px 8px;
+  }
 }
 
 .tl-btn {
@@ -1005,18 +1172,31 @@ html[data-theme='dark'] .tl-toolbar {
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
   font-family: inherit;
 }
-.tl-btn:hover { background: rgba(127, 127, 127, 0.08); }
+.tl-btn:hover {
+  background: rgba(127, 127, 127, 0.08);
+}
 .tl-btn.active {
   color: #1d4ed8;
   border-color: rgba(59, 130, 246, 0.4);
   background: rgba(59, 130, 246, 0.08);
 }
-html[data-theme='dark'] .tl-btn.active { color: #93c5fd; }
-.tl-btn-ghost { border-color: transparent; color: var(--tl-muted); }
-.tl-btn-ghost:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+html[data-theme='dark'] .tl-btn.active {
+  color: #93c5fd;
+}
+.tl-btn-ghost {
+  border-color: transparent;
+  color: var(--tl-muted);
+}
+.tl-btn-ghost:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
 .tl-btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
@@ -1033,7 +1213,9 @@ html[data-theme='dark'] .tl-btn.active { color: #93c5fd; }
   overscroll-behavior: contain;
   border-radius: 16px;
 }
-.tl-scroll::-webkit-scrollbar { width: 10px; }
+.tl-scroll::-webkit-scrollbar {
+  width: 10px;
+}
 .tl-scroll::-webkit-scrollbar-thumb {
   background: rgba(127, 127, 127, 0.22);
   border-radius: 999px;
@@ -1049,8 +1231,14 @@ html[data-theme='dark'] .tl-btn.active { color: #93c5fd; }
   animation: tl-appear 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes tl-appear {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tl-group {
@@ -1077,7 +1265,9 @@ html[data-theme='dark'] .tl-group {
   border-radius: 10px;
   user-select: none;
 }
-.tl-group-hd:hover { background: rgba(127, 127, 127, 0.06); }
+.tl-group-hd:hover {
+  background: rgba(127, 127, 127, 0.06);
+}
 .tl-group-hd:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.35);
@@ -1093,7 +1283,9 @@ html[data-theme='dark'] .tl-group {
   border-radius: 6px;
   transition: transform 0.2s ease;
 }
-.tl-rot90 { transform: rotate(90deg); }
+.tl-rot90 {
+  transform: rotate(90deg);
+}
 
 .tl-group-title {
   font-size: 13px;
@@ -1170,7 +1362,9 @@ html[data-theme='dark'] .tl-ctx-menu {
   --tl-cm-border: rgba(255, 255, 255, 0.08);
   --tl-cm-muted: #94a3b8;
 }
-:not(html[data-theme='dark']) .tl-ctx-menu { --tl-cm-muted: #64748b; }
+:not(html[data-theme='dark']) .tl-ctx-menu {
+  --tl-cm-muted: #64748b;
+}
 
 .tl-ctx-item {
   display: grid;
@@ -1183,21 +1377,35 @@ html[data-theme='dark'] .tl-ctx-menu {
   font-weight: 500;
   cursor: pointer;
   color: var(--tl-cm-text);
-  transition: background 0.13s ease, color 0.13s ease;
+  transition:
+    background 0.13s ease,
+    color 0.13s ease;
 }
-.tl-ctx-item.sepBefore { margin-top: 4px; border-top: 1px solid rgba(127,127,127,0.12); padding-top: 10px; }
+.tl-ctx-item.sepBefore {
+  margin-top: 4px;
+  border-top: 1px solid rgba(127, 127, 127, 0.12);
+  padding-top: 10px;
+}
 .tl-ctx-item:hover {
   background: rgba(59, 130, 246, 0.12);
   color: var(--tl-cm-text);
 }
-.tl-ctx-item.danger { color: #dc2626; }
-.tl-ctx-item.danger:hover { background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+.tl-ctx-item.danger {
+  color: #dc2626;
+}
+.tl-ctx-item.danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
 .tl-ctx-item.disabled {
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
 }
-.tl-ctx-icon { color: inherit; opacity: 0.85; }
+.tl-ctx-icon {
+  color: inherit;
+  opacity: 0.85;
+}
 .tl-kbd {
   display: inline-flex;
   align-items: center;
@@ -1216,27 +1424,39 @@ html[data-theme='dark'] .tl-ctx-menu {
   z-index: 9996;
 }
 
-.tl-cm-fade-enter-active, .tl-cm-fade-leave-active {
-  transition: opacity 150ms ease, transform 150ms ease;
+.tl-cm-fade-enter-active,
+.tl-cm-fade-leave-active {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
 }
-.tl-cm-fade-enter-from, .tl-cm-fade-leave-to {
+.tl-cm-fade-enter-from,
+.tl-cm-fade-leave-to {
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
 }
 
 /* Transitions */
-.tl-fade-enter-active, .tl-fade-leave-active {
-  transition: opacity 240ms ease, transform 240ms ease;
+.tl-fade-enter-active,
+.tl-fade-leave-active {
+  transition:
+    opacity 240ms ease,
+    transform 240ms ease;
 }
-.tl-fade-enter-from, .tl-fade-leave-to {
+.tl-fade-enter-from,
+.tl-fade-leave-to {
   opacity: 0;
   transform: translateY(8px);
 }
 
-.tl-group-enter-active, .tl-group-leave-active {
-  transition: opacity 280ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+.tl-group-enter-active,
+.tl-group-leave-active {
+  transition:
+    opacity 280ms ease,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-.tl-group-enter-from, .tl-group-leave-to {
+.tl-group-enter-from,
+.tl-group-leave-to {
   opacity: 0;
   transform: translateY(10px);
 }
@@ -1246,8 +1466,15 @@ html[data-theme='dark'] .tl-ctx-menu {
 
 /* Responsive */
 @media (max-width: 560px) {
-  .tl-toolbar { padding: 8px 10px; flex-wrap: wrap; }
-  .tl-toolbar-left { flex: 1 1 auto; }
-  .tl-board { grid-template-columns: 1fr; }
+  .tl-toolbar {
+    padding: 8px 10px;
+    flex-wrap: wrap;
+  }
+  .tl-toolbar-left {
+    flex: 1 1 auto;
+  }
+  .tl-board {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

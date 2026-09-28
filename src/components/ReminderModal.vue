@@ -24,10 +24,18 @@
               <span>{{ formatTime }}</span>
             </div>
             <div class="reminder-actions">
-              <button class="reminder-btn snooze-btn" :aria-label="$t('task.snooze')" @click="handleSnooze">
+              <button
+                class="reminder-btn snooze-btn"
+                :aria-label="$t('task.snooze')"
+                @click="handleSnooze"
+              >
                 {{ $t('task.snooze') }}
               </button>
-              <button class="reminder-btn primary-btn" :aria-label="$t('task.viewTask')" @click="handleView">
+              <button
+                class="reminder-btn primary-btn"
+                :aria-label="$t('task.viewTask')"
+                @click="handleView"
+              >
                 {{ $t('task.viewTask') }}
               </button>
             </div>

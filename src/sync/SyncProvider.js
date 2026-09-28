@@ -1,6 +1,5 @@
 // SyncProvider.js
 // Task 8-C: Sync 抽象接口 + 两种内置实现（Memory / LocalStorage）。
-import { validateDataPackageV3 } from '../utils/schema-v3'
 import { hashData } from '../utils/compress'
 
 const STORAGE_KEY_LOCAL = 'todo_sync_local_v3'

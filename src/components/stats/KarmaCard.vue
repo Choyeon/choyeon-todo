@@ -59,12 +59,16 @@
       </div>
       <div class="meta-item">
         <div class="meta-label">{{ t('karma.badges') || 'Badges' }}</div>
-        <div class="meta-value"><b>{{ stats.badgeCount }}</b></div>
+        <div class="meta-value">
+          <b>{{ stats.badgeCount }}</b>
+        </div>
         <div class="meta-cap">{{ t('karma.totalBadges') || 'total' }}</div>
       </div>
       <div class="meta-item">
         <div class="meta-label">{{ t('karma.streak') || 'Streak' }}</div>
-        <div class="meta-value"><b>{{ streakDay }}</b> {{ t('stats.dayUnit') || 'd' }}</div>
+        <div class="meta-value">
+          <b>{{ streakDay }}</b> {{ t('stats.dayUnit') || 'd' }}
+        </div>
         <div class="meta-cap">{{ longestStreak }} {{ t('karma.longest') || 'longest' }}</div>
       </div>
     </div>
@@ -99,11 +103,11 @@ const props = defineProps({
   locale: { type: String, default: null }
 })
 
-const { t, locale } = useI18n()
+const { t, locale: i18nLocale } = useI18n()
 const karmaStore = useKarmaStore()
 
 const stats = computed(() => karmaStore.getKarmaStats())
-const effectiveLocale = computed(() => props.locale || locale.value)
+const effectiveLocale = computed(() => props.locale || i18nLocale.value)
 
 const recentBadgeText = computed(() => {
   const list = stats.value.recentBadges || []

@@ -66,10 +66,9 @@ export const buildHeatmapGrid = ({
     if (weeks && weeks > 0) {
       dayCount = weeks * 7
       endDate = addDays(cellStart, dayCount - 1)
-    } else {
-      const delta = Math.round((parseDateStr(today) - parseDateStr(cellStart)) / 86400000)
-      dayCount = Math.max(7, Math.min(365 * 3, delta + 1))
     }
+    // 只传 cellStart 而未提供 weeks 时：区间即 cellStart..今天，
+    // 实际天数由下方按 cellStart→endDate 统一推导，此处无需预估。
   } else {
     // 若显式传了 weeks，则以"本周最后一天（按 startOfWeek）"作为 end 锚点向前对齐，
     // 保证今天永远落在 grid 最后一周内；否则走 range 默认天数
@@ -79,9 +78,12 @@ export const buildHeatmapGrid = ({
       // startOfWeek=1 (Mon首) → 周日为末；startOfWeek=0 (Sun首) → 周六为末
       const endD = parseDateStr(endDate) // today
       const dow = endD.getDay()
-      const offsetToWeekend = startOfWeek === 1
-        ? (dow === 0 ? 0 : 7 - dow)          // Mon首: 到下一个周六/周日
-        : (6 - dow + 7) % 7                 // Sun首: 到下一个周六
+      const offsetToWeekend =
+        startOfWeek === 1
+          ? dow === 0
+            ? 0
+            : 7 - dow // Mon首: 到下一个周六/周日
+          : (6 - dow + 7) % 7 // Sun首: 到下一个周六
       endDate = formatDateStr(new Date(endD.valueOf() + offsetToWeekend * 86400000))
       cellStart = addDays(endDate, -(dayCount - 1))
       // 再把 cellStart 对齐到 startOfWeek
@@ -158,9 +160,7 @@ export const buildHeatmapGrid = ({
       // inRange 语义：
       //   - 默认/显式传入 weeks 但没传 cellStart 时，以今天为 end 锚点（向后填充对齐到周尾），未来日统一标记 false
       //   - 显式传 cellStart + weeks（周报/月报等固定区间）时，未来日也属于区间，标记 true
-      const inRange = explicitFixedRange
-        ? d >= cellStart && d <= endDate
-        : d <= today
+      const inRange = explicitFixedRange ? d >= cellStart && d <= endDate : d <= today
       cells.push({
         date: d,
         tasksCompleted: tc,
@@ -269,12 +269,7 @@ export const findMostProductiveHour = (tasks = []) => {
 }
 
 // ===== calcProjectedAchievements：简单线性回归预测 =====
-export const calcProjectedAchievements = ({
-  karma = 0,
-  grid = null,
-  focusSummary = null,
-  nextDays = 30
-} = {}) => {
+export const calcProjectedAchievements = ({ karma = 0, grid = null, nextDays = 30 } = {}) => {
   // 1) 从 grid 的 totals 反推出历史每日均值
   let dailyTasksAvg = 0
   let dailyMinutesAvg = 0
@@ -285,15 +280,6 @@ export const calcProjectedAchievements = ({
     dailyTasksAvg = grid.totals.tasksCompleted / daysObserved
     dailyMinutesAvg = grid.totals.pomodoroMinutes / daysObserved
   }
-  // focusSummary 如果提供，优先更精确：
-  if (focusSummary && typeof focusSummary.totalMinutes === 'number') {
-    // last7 / last30 分别取对应天数
-    let days = 1
-    if (focusSummary && typeof focusSummary.tasksCompleted === 'number') {
-      // 不直接依赖，保持 grid 优先
-    }
-  }
-
   // 2) Karma 每任务 + 番茄平均估算分：取历史 karma / 活动日
   const dailyKarmaAvg = (Number(karma) || 0) / Math.max(1, daysObserved)
 
@@ -303,11 +289,8 @@ export const calcProjectedAchievements = ({
   const projectedKarma = Math.round(dailyKarmaAvg * nextDays) + (Number(karma) || 0)
 
   // 4) 等级预测
-  let projectedLevel = 0
-  let projectedProgressPct = 0
-  const info = _levelFromKarma(projectedKarma)
-  projectedLevel = info.level
-  projectedProgressPct = info.progressPct
+  const { level: projectedLevel, progressPct: projectedProgressPct } =
+    _levelFromKarma(projectedKarma)
 
   return {
     nextDays,

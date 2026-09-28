@@ -1,10 +1,7 @@
 <template>
   <aside
     class="sidebar"
-    :class="[
-      settingsStore.sidebarCollapsed ? 'collapsed' : '',
-      `density-${settingsStore.density}`
-    ]"
+    :class="[settingsStore.sidebarCollapsed ? 'collapsed' : '', `density-${settingsStore.density}`]"
     role="navigation"
     :aria-label="$t('nav.sidebarAriaLabel')"
   >
@@ -35,12 +32,7 @@
       </div>
     </div>
 
-    <nav
-      class="sidebar-nav"
-      ref="scrollRef"
-      role="list"
-      @scroll="maybeCloseAllCollapsedOnScroll"
-    >
+    <nav class="sidebar-nav" ref="scrollRef" role="list" @scroll="maybeCloseAllCollapsedOnScroll">
       <!-- 默认视图区（置顶，不可折叠） -->
       <div class="nav-section" role="listitem">
         <button
@@ -99,7 +91,7 @@
             type="button"
             @click.stop="addFilterQuick"
             :aria-label="$t('filters.addNew')"
-            title="$t('filters.addNew')"
+            :title="$t('filters.addNew')"
           >
             <Plus :size="14" aria-hidden="true" />
           </button>
@@ -116,9 +108,7 @@
                 @click="navigateFilter(f.id)"
                 @contextmenu.prevent="onFilterContextMenu($event, f)"
                 :aria-label="
-                  isFilterActive(f.id)
-                    ? `${f.name}，${$t('common.currentlySelected')}`
-                    : f.name
+                  isFilterActive(f.id) ? `${f.name}，${$t('common.currentlySelected')}` : f.name
                 "
               >
                 <Pin :size="18" class="pin-icon" aria-hidden="true" />
@@ -137,9 +127,7 @@
                 @click="navigateFilter(f.id)"
                 @contextmenu.prevent="onFilterContextMenu($event, f)"
                 :aria-label="
-                  isFilterActive(f.id)
-                    ? `${f.name}，${$t('common.currentlySelected')}`
-                    : f.name
+                  isFilterActive(f.id) ? `${f.name}，${$t('common.currentlySelected')}` : f.name
                 "
               >
                 <Filter :size="18" aria-hidden="true" />
@@ -149,7 +137,11 @@
               </button>
             </template>
             <!-- 过滤器空状态 -->
-            <div v-if="!visiblePinnedFilters.length && !visibleUnpinnedFilters.length" class="empty-inline" role="status">
+            <div
+              v-if="!visiblePinnedFilters.length && !visibleUnpinnedFilters.length"
+              class="empty-inline"
+              role="status"
+            >
               <EmptyState kind="filter" :mini="true" @primary="addFilterQuick" />
             </div>
           </div>
@@ -225,19 +217,14 @@
       <div class="nav-divider" aria-hidden="true"></div>
 
       <!-- 标签（保留旧版可折叠分组；受 sidebarShowAreas 折叠不影响，但保持独立） -->
-      <div
-        class="nav-section tags-section"
-        role="listitem"
-      >
+      <div class="nav-section tags-section" role="listitem">
         <button
           type="button"
           class="section-header"
           v-show="!settingsStore.sidebarCollapsed"
           @click="toggleTagsCollapsed()"
           :aria-expanded="!tagsCollapsed"
-          :aria-label="
-            tagsCollapsed ? $t('sidebar.expandSection') : $t('sidebar.collapseSection')
-          "
+          :aria-label="tagsCollapsed ? $t('sidebar.expandSection') : $t('sidebar.collapseSection')"
         >
           <ChevronDown
             class="section-chevron"
@@ -322,7 +309,7 @@
       </button>
     </div>
 
-    <!-- 上下文菜单（覆盖分类/标签/区/列表/过滤器） -->
+    <!-- 上下文菜单（覆盖分类条目/标签/过滤器） -->
     <Teleport to="body">
       <Transition name="ctx-menu">
         <div
@@ -335,7 +322,12 @@
         >
           <!-- List -->
           <template v-if="contextMenu.type === 'list'">
-            <button class="context-menu-item" role="menuitem" :aria-label="$t('lists.rename')" @click="handleListRename">
+            <button
+              class="context-menu-item"
+              role="menuitem"
+              :aria-label="$t('lists.rename')"
+              @click="handleListRename"
+            >
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('lists.rename') }}</span>
             </button>
@@ -350,51 +342,48 @@
               <span>{{ $t('lists.delete') }}</span>
             </button>
           </template>
-          <!-- Category (legacy) -->
-          <template v-else-if="contextMenu.type === 'category'">
-            <button
-              v-if="contextMenu.category && contextMenu.category.id !== 'other'"
-              class="context-menu-item"
-              role="menuitem"
-              :aria-label="$t('categories.editCategory')"
-              @click="handleContextEdit"
-            >
-              <Pencil :size="14" aria-hidden="true" />
-              <span>{{ $t('categories.editCategory') }}</span>
-            </button>
-            <button
-              v-if="contextMenu.category && contextMenu.category.id !== 'other'"
-              class="context-menu-item danger"
-              role="menuitem"
-              :aria-label="$t('categories.deleteCategory')"
-              @click="handleContextDelete"
-            >
-              <Trash2 :size="14" aria-hidden="true" />
-              <span>{{ $t('categories.deleteCategory') }}</span>
-            </button>
-            <button class="context-menu-item" role="menuitem" :aria-label="$t('categories.addNew')" @click="handleContextAdd">
-              <Plus :size="14" aria-hidden="true" />
-              <span>{{ $t('categories.addNew') }}</span>
-            </button>
-          </template>
           <!-- Tag -->
           <template v-else-if="contextMenu.type === 'tag'">
-            <button class="context-menu-item" role="menuitem" :aria-label="$t('tags.editTag')" @click="handleTagEdit">
+            <button
+              class="context-menu-item"
+              role="menuitem"
+              :aria-label="$t('tags.editTag')"
+              @click="handleTagEdit"
+            >
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('tags.editTag') }}</span>
             </button>
-            <button class="context-menu-item danger" role="menuitem" :aria-label="$t('tags.deleteTag')" @click="handleTagDelete">
+            <button
+              class="context-menu-item danger"
+              role="menuitem"
+              :aria-label="$t('tags.deleteTag')"
+              @click="handleTagDelete"
+            >
               <Trash2 :size="14" aria-hidden="true" />
               <span>{{ $t('tags.deleteTag') }}</span>
             </button>
           </template>
           <!-- Filter -->
           <template v-else-if="contextMenu.type === 'filter'">
-            <button class="context-menu-item" role="menuitem" :aria-label="$t('filters.rename')" @click="handleFilterRename">
+            <button
+              class="context-menu-item"
+              role="menuitem"
+              :aria-label="$t('filters.rename')"
+              @click="handleFilterRename"
+            >
               <Pencil :size="14" aria-hidden="true" />
               <span>{{ $t('filters.rename') }}</span>
             </button>
-            <button class="context-menu-item" role="menuitem" :aria-label="contextMenu.filter && contextMenu.filter.pinned ? $t('filters.unpin') : $t('filters.pin')" @click="handleFilterTogglePin">
+            <button
+              class="context-menu-item"
+              role="menuitem"
+              :aria-label="
+                contextMenu.filter && contextMenu.filter.pinned
+                  ? $t('filters.unpin')
+                  : $t('filters.pin')
+              "
+              @click="handleFilterTogglePin"
+            >
               <Pin :size="14" aria-hidden="true" />
               <span>{{
                 contextMenu.filter && contextMenu.filter.pinned
@@ -402,11 +391,21 @@
                   : $t('filters.pin')
               }}</span>
             </button>
-            <button class="context-menu-item" role="menuitem" :aria-label="$t('filters.duplicate')" @click="handleFilterDuplicate">
+            <button
+              class="context-menu-item"
+              role="menuitem"
+              :aria-label="$t('filters.duplicate')"
+              @click="handleFilterDuplicate"
+            >
               <Copy :size="14" aria-hidden="true" />
               <span>{{ $t('filters.duplicate') }}</span>
             </button>
-            <button class="context-menu-item danger" role="menuitem" :aria-label="$t('filters.delete')" @click="handleFilterDelete">
+            <button
+              class="context-menu-item danger"
+              role="menuitem"
+              :aria-label="$t('filters.delete')"
+              @click="handleFilterDelete"
+            >
               <Trash2 :size="14" aria-hidden="true" />
               <span>{{ $t('filters.delete') }}</span>
             </button>
@@ -418,16 +417,7 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  reactive,
-  watch,
-  computed,
-  onMounted,
-  onUnmounted,
-  provide,
-  nextTick
-} from 'vue'
+import { ref, reactive, watch, computed, onMounted, onUnmounted, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore } from '../stores/taskStore'
@@ -443,7 +433,6 @@ import {
   Calendar,
   ListTodo,
   CheckCircle,
-  CalendarDays,
   BarChart3,
   Timer,
   Settings,
@@ -465,11 +454,8 @@ import {
   Inbox,
   Sunrise,
   CalendarRange,
-  Grid2x2,
   Target,
   ClipboardCheck,
-  Award,
-  BarChart2,
   Pin,
   Filter,
   X,
@@ -500,18 +486,6 @@ const searchInput = ref('')
 const tagsCollapsed = ref(false)
 const dragOverListId = ref(null)
 
-const DEFAULT_VIEW_IDS = [
-  'myday',
-  'today',
-  'tomorrow',
-  'week',
-  'important',
-  'planned',
-  'all',
-  'inbox',
-  'completed'
-]
-
 const defaultViews = computed(() => [
   { id: 'myday', icon: Sun, label: t('nav.myDay') },
   { id: 'today', icon: Calendar, label: t('nav.today') },
@@ -528,12 +502,42 @@ const defaultViews = computed(() => [
     external: () => router.push('/completed')
   },
   { id: 'stats', icon: BarChart3, label: t('nav.stats'), external: () => router.push('/stats') },
-  { id: 'pomodoro', icon: Timer, label: t('nav.pomodoro'), external: () => router.push('/pomodoro') },
-  { id: 'review', icon: ClipboardCheck, label: t('nav.review'), external: () => router.push('/review') },
-  { id: 'dailyReview', icon: Sunrise, label: t('nav.dailyReview'), external: () => router.push('/daily-review') },
-  { id: 'habitTracker', icon: Target, label: t('nav.habitTracker'), external: () => router.push('/habit-tracker') },
-  { id: 'achievement', icon: TrendingUp, label: t('nav.achievement'), external: () => router.push('/achievement') },
-  { id: 'quadrant', icon: LayoutGrid, label: t('nav.quadrant'), external: () => router.push('/quadrant') }
+  {
+    id: 'pomodoro',
+    icon: Timer,
+    label: t('nav.pomodoro'),
+    external: () => router.push('/pomodoro')
+  },
+  {
+    id: 'review',
+    icon: ClipboardCheck,
+    label: t('nav.review'),
+    external: () => router.push('/review')
+  },
+  {
+    id: 'dailyReview',
+    icon: Sunrise,
+    label: t('nav.dailyReview'),
+    external: () => router.push('/daily-review')
+  },
+  {
+    id: 'habitTracker',
+    icon: Target,
+    label: t('nav.habitTracker'),
+    external: () => router.push('/habit-tracker')
+  },
+  {
+    id: 'achievement',
+    icon: TrendingUp,
+    label: t('nav.achievement'),
+    external: () => router.push('/achievement')
+  },
+  {
+    id: 'quadrant',
+    icon: LayoutGrid,
+    label: t('nav.quadrant'),
+    external: () => router.push('/quadrant')
+  }
 ])
 
 // ================= 搜索 (100ms debounce) =================
@@ -629,7 +633,9 @@ const filterCount = (id) => {
 }
 
 const isFilterActive = (id) => {
-  return route.name === 'Home' && taskStore.currentView === 'filter' && taskStore.currentFilterId === id
+  return (
+    route.name === 'Home' && taskStore.currentView === 'filter' && taskStore.currentFilterId === id
+  )
 }
 
 const navigateFilter = (id) => {
@@ -717,23 +723,9 @@ const toggleTagsCollapsed = () => {
   tagsCollapsed.value = !tagsCollapsed.value
 }
 
-const isCategoryActive = (catId) => {
-  if (route.name !== 'Home') return false
-  return taskStore.currentView === 'category' && taskStore.currentCategory === catId
-}
-
 const isTagActive = (tagId) => {
   if (route.name !== 'Home') return false
   return taskStore.currentView === 'tag' && taskStore.currentTag === tagId
-}
-
-const navigateToCategory = (catId) => {
-  taskStore.currentView = 'category'
-  taskStore.currentCategory = catId
-  taskStore.currentTag = null
-  taskStore.currentFilterId = null
-  taskStore.currentListId = null
-  router.push('/')
 }
 
 const navigateToTag = (tagId) => {
@@ -774,10 +766,18 @@ const areaIconMap = {
   layers: Layers
 }
 const listIconMap = { ...areaIconMap }
-const getAreaIcon = (name) => areaIconMap[name] || Layers
 const getListIcon = (name) => listIconMap[name] || Folder
 const pickAccentColor = () => {
-  const palette = ['#4A90D9', '#E91E8C', '#A855F7', '#22C55E', '#EF4444', '#F97316', '#06B6D4', '#9B8EBB']
+  const palette = [
+    '#4A90D9',
+    '#E91E8C',
+    '#A855F7',
+    '#22C55E',
+    '#EF4444',
+    '#F97316',
+    '#06B6D4',
+    '#9B8EBB'
+  ]
   return palette[Math.floor(Math.random() * palette.length)]
 }
 
@@ -788,7 +788,6 @@ const contextMenu = reactive({
   y: 0,
   type: null,
   list: null,
-  category: null,
   tag: null,
   filter: null
 })
@@ -796,7 +795,6 @@ const contextMenu = reactive({
 const closeContextMenu = () => {
   contextMenu.visible = false
   contextMenu.list = null
-  contextMenu.category = null
   contextMenu.tag = null
   contextMenu.filter = null
   contextMenu.type = null
@@ -808,13 +806,6 @@ const onListContextMenu = (e, list) => {
   contextMenu.y = e.clientY
   contextMenu.type = 'list'
   contextMenu.list = list
-}
-const onCategoryContextMenu = (e, cat) => {
-  contextMenu.visible = true
-  contextMenu.x = e.clientX
-  contextMenu.y = e.clientY
-  contextMenu.type = 'category'
-  contextMenu.category = cat
 }
 const onTagContextMenu = (e, tag) => {
   contextMenu.visible = true
@@ -841,20 +832,6 @@ const goSettingsAndDispatch = (eventName, detail) => {
   )
 }
 
-const handleContextEdit = () => {
-  const cat = contextMenu.category
-  closeContextMenu()
-  goSettingsAndDispatch('edit-category', cat)
-}
-const handleContextDelete = () => {
-  const cat = contextMenu.category
-  closeContextMenu()
-  goSettingsAndDispatch('delete-category', cat)
-}
-const handleContextAdd = () => {
-  closeContextMenu()
-  goSettingsAndDispatch('add-category')
-}
 const handleTagEdit = () => {
   const tag = contextMenu.tag
   closeContextMenu()
@@ -897,7 +874,10 @@ const handleListDelete = async () => {
     // 将指向被删 list 的任务迁回 defaultTargetId（兼容 category 字段）
     for (const task of taskStore.tasks) {
       if (task.listId === list.id || task.category === list.id) {
-        taskStore.updateTask(task.id, { listId: res.defaultTargetId, category: res.defaultTargetId })
+        taskStore.updateTask(task.id, {
+          listId: res.defaultTargetId,
+          category: res.defaultTargetId
+        })
       }
     }
   }

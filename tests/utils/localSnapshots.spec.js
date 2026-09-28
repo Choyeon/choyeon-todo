@@ -111,7 +111,8 @@ describe('localSnapshots / pruneSnapshots', () => {
     for (let i = 0; i < 10; i++) {
       createSnapshot({ label: `s${i}`, stores: makeFakeStores([{ id: `t${i}` }]) })
       const before = Date.now()
-      while (Date.now() - before < 2) {}
+      // 忙等待 2ms，确保相邻快照的时间戳可区分（否则排序/裁剪断言不稳定）
+      while (Date.now() - before < 2) { /* spin */ }
     }
     const r = pruneSnapshots({ max: 3, maxDays: 10000 })
     expect(r.ok).toBe(true)

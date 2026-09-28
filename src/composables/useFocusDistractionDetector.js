@@ -9,7 +9,8 @@ const DEFAULT_AWAY_COUNTDOWN_MS = 30000
 
 const isElectronEnv = () =>
   typeof window !== 'undefined' &&
-  (!!window.electronAPI || !!(typeof process !== 'undefined' && process.versions && process.versions.electron))
+  (!!window.electronAPI ||
+    !!(typeof process !== 'undefined' && process.versions && process.versions.electron))
 
 const hasElectronFocusApi = () =>
   typeof window !== 'undefined' &&
@@ -21,9 +22,8 @@ const hasElectronFocusApi = () =>
 export function useFocusDistractionDetector(options = {}) {
   // 参数合法性校验（至少 5000ms；便于测试但保留最低 5000ms 规范）
   const rawThreshold = Number(options.awayThresholdMs)
-  let awayThreshold = Number.isFinite(rawThreshold) && rawThreshold > 0
-    ? rawThreshold
-    : DEFAULT_AWAY_THRESHOLD_MS
+  let awayThreshold =
+    Number.isFinite(rawThreshold) && rawThreshold > 0 ? rawThreshold : DEFAULT_AWAY_THRESHOLD_MS
   if (awayThreshold < 5000) awayThreshold = 5000
   const rawCountdown = Number(options.awayCountdownMs)
   // 用户显式传非正数 → 视为要求最小值 1000；未传则用默认
@@ -60,7 +60,7 @@ export function useFocusDistractionDetector(options = {}) {
     if (countdownTimer) {
       try {
         clearInterval(countdownTimer)
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       countdownTimer = null
@@ -89,16 +89,16 @@ export function useFocusDistractionDetector(options = {}) {
 
   const tryMarkDistraction = (kind = 'focusLost') => {
     if (!pomodoroStore || typeof pomodoroStore.markDistraction !== 'function') return
-    let ok = false
+    let ok
     try {
       ok = pomodoroStore.markDistraction(kind) === true
-    } catch (e) {
+    } catch {
       ok = false
     }
     if (ok && typeof onDistraction === 'function') {
       try {
         onDistraction({ kind, at: Date.now() })
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -189,7 +189,7 @@ export function useFocusDistractionDetector(options = {}) {
       try {
         const unsub = api[fnName](cb)
         if (typeof unsub === 'function') electronCleanups.push(unsub)
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -201,7 +201,7 @@ export function useFocusDistractionDetector(options = {}) {
     electronCleanups.forEach((fn) => {
       try {
         fn && fn()
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     })
@@ -227,7 +227,7 @@ export function useFocusDistractionDetector(options = {}) {
     try {
       onMounted(init)
       onUnmounted(destroyFocusDistractionDetector)
-    } catch (e) {
+    } catch {
       // 在非 setup 环境调用：忽略，手动调用 init()
     }
   }

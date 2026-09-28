@@ -69,7 +69,9 @@
               class="category-modal"
               role="dialog"
               aria-modal="true"
-              :aria-label="editingCategory ? $t('categories.editCategory') : $t('categories.addNew')"
+              :aria-label="
+                editingCategory ? $t('categories.editCategory') : $t('categories.addNew')
+              "
               @keydown.esc="closeCategoryModal"
               tabindex="-1"
             >
@@ -102,10 +104,18 @@
                 </button>
               </div>
               <div class="modal-actions">
-                <button class="cancel-btn" :aria-label="$t('common.cancel')" @click="closeCategoryModal">
+                <button
+                  class="cancel-btn"
+                  :aria-label="$t('common.cancel')"
+                  @click="closeCategoryModal"
+                >
                   {{ $t('common.cancel') }}
                 </button>
-                <button class="save-btn" :aria-label="editingCategory ? $t('common.save') : $t('common.add')" @click="saveCategory">
+                <button
+                  class="save-btn"
+                  :aria-label="editingCategory ? $t('common.save') : $t('common.add')"
+                  @click="saveCategory"
+                >
                   {{ editingCategory ? $t('common.save') : $t('common.add') }}
                 </button>
               </div>
@@ -136,16 +146,28 @@
                 {{ deleteModalMessage }}
               </p>
               <div class="delete-options">
-                <button class="delete-option-btn move" :aria-label="$t('settings.moveToDefaultCategory')" @click="confirmDeleteWithMove">
+                <button
+                  class="delete-option-btn move"
+                  :aria-label="$t('settings.moveToDefaultCategory')"
+                  @click="confirmDeleteWithMove"
+                >
                   <ArrowRight :size="16" />
                   {{ $t('settings.moveToDefaultCategory') }}
                 </button>
-                <button class="delete-option-btn delete" :aria-label="$t('settings.deleteTasks')" @click="confirmDeleteWithRemove">
+                <button
+                  class="delete-option-btn delete"
+                  :aria-label="$t('settings.deleteTasks')"
+                  @click="confirmDeleteWithRemove"
+                >
                   <Trash2 :size="16" />
                   {{ $t('settings.deleteTasks') }}
                 </button>
               </div>
-              <button class="cancel-btn full-width" :aria-label="$t('common.cancel')" @click="closeDeleteModal">
+              <button
+                class="cancel-btn full-width"
+                :aria-label="$t('common.cancel')"
+                @click="closeDeleteModal"
+              >
                 {{ $t('common.cancel') }}
               </button>
             </div>

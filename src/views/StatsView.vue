@@ -434,10 +434,7 @@
 
       <!-- ===== Task 7 新增：KarmaCard + 摘要 ===== -->
       <div class="task7-row-2">
-        <KarmaCard
-          :streak-day="focusSummary.streakDay"
-          :longest-streak="stats.maxStreak"
-        />
+        <KarmaCard :streak-day="focusSummary.streakDay" :longest-streak="stats.maxStreak" />
         <div class="focus-summary-card chart-card">
           <div class="chart-header no-border">
             <h3 class="chart-title">{{ $t('stats.focusSummary') || 'Focus summary' }}</h3>
@@ -446,19 +443,30 @@
             <div class="summary-kv">
               <div class="kv-item">
                 <span class="kv-k">{{ $t('stats.todayFocus') || 'Today' }}</span>
-                <span class="kv-v"><b>{{ pomodoroStore.todayFocusMinutes }}</b> {{ $t('stats.minutesUnit') || 'min' }}</span>
+                <span class="kv-v"
+                  ><b>{{ pomodoroStore.todayFocusMinutes }}</b>
+                  {{ $t('stats.minutesUnit') || 'min' }}</span
+                >
               </div>
               <div class="kv-item">
                 <span class="kv-k">{{ $t('stats.streakWeek') || 'Week streak' }}</span>
-                <span class="kv-v"><b>{{ focusSummary.streakWeek }}</b> w</span>
+                <span class="kv-v"
+                  ><b>{{ focusSummary.streakWeek }}</b> w</span
+                >
               </div>
               <div class="kv-item">
                 <span class="kv-k">{{ $t('stats.deepFocus') || 'Deep focus' }}</span>
-                <span class="kv-v"><b>{{ focusSummary.deepFocusMinutes }}</b> {{ $t('stats.minutesUnit') || 'min' }}</span>
+                <span class="kv-v"
+                  ><b>{{ focusSummary.deepFocusMinutes }}</b>
+                  {{ $t('stats.minutesUnit') || 'min' }}</span
+                >
               </div>
               <div class="kv-item">
                 <span class="kv-k">{{ $t('stats.distractionRate') || 'Distraction' }}</span>
-                <span class="kv-v"><b>{{ Math.round(focusSummary.distractionRate * 100) }}</b>%</span>
+                <span class="kv-v"
+                  ><b>{{ Math.round(focusSummary.distractionRate * 100) }}</b
+                  >%</span
+                >
               </div>
             </div>
           </div>
@@ -518,7 +526,7 @@ import {
 } from '@lucide/vue'
 import { formatDateStr } from '../utils/date'
 
-const { t, tm, locale } = useI18n()
+const { t, tm } = useI18n()
 const taskStore = useTaskStore()
 const pomodoroStore = usePomodoroStore()
 const karmaStore = useKarmaStore()
@@ -555,7 +563,7 @@ const onHeatmapDateClick = (dateStr) => {
 
 // ===== Task 7: 专注摘要（基于 last7） =====
 const focusSummary = computed(() =>
-  (pomodoroStore && typeof pomodoroStore.getFocusSummary === 'function')
+  pomodoroStore && typeof pomodoroStore.getFocusSummary === 'function'
     ? pomodoroStore.getFocusSummary('last7')
     : {
         totalMinutes: 0,

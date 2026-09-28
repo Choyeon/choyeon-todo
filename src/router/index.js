@@ -53,16 +53,6 @@ const routes = [
     component: () => import(/* webpackChunkName: "mini-window" */ '../views/MiniWindowView.vue')
   },
   {
-    path: '/debug',
-    name: 'Debug',
-    component: () => import(/* webpackChunkName: "debug" */ '../views/DebugView.vue')
-  },
-  {
-    path: '/error-monitor',
-    name: 'ErrorMonitor',
-    component: () => import(/* webpackChunkName: "error-monitor" */ '../views/ErrorMonitorView.vue')
-  },
-  {
     path: '/quadrant',
     name: 'Quadrant',
     component: () => import(/* webpackChunkName: "quadrant" */ '../views/QuadrantView.vue')

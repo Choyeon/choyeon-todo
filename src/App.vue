@@ -263,7 +263,7 @@ const fetchBingWallpaper = async () => {
           img.src = cachedUrl
           return
         }
-      } catch (e) {
+      } catch {
         localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
       }
     }
@@ -311,7 +311,7 @@ const fetchBingWallpaper = async () => {
             BING_WALLPAPER_STORAGE_KEY,
             JSON.stringify({ date: today, url: imageUrl, copyright: imageCopyright })
           )
-        } catch (e) {}
+        } catch {}
       }
       img.onerror = () => {
         console.warn('[App] Failed to load Bing wallpaper image:', imageUrl)
@@ -771,7 +771,7 @@ onUnmounted(() => {
     if (destroyHotkeys) {
       try {
         destroyHotkeys()
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       destroyHotkeys = null
@@ -779,7 +779,7 @@ onUnmounted(() => {
     if (destroyDetector) {
       try {
         destroyDetector()
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       destroyDetector = null

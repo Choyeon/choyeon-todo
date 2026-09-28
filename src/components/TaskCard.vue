@@ -88,7 +88,7 @@
         </h3>
 
         <span class="tc-title-icons">
-          <RotateCw v-if="task.repeat" class="tc-icon-repeat" :size="14" aria-hidden="true"/>
+          <RotateCw v-if="task.repeat" class="tc-icon-repeat" :size="14" aria-hidden="true" />
           <button
             type="button"
             class="tc-star meta-icon important"
@@ -109,34 +109,34 @@
           class="tc-chip tc-chip-date"
           :class="{ overdue: isOverdue, today: isToday }"
         >
-          <CalendarDays :size="13" aria-hidden="true"/>
+          <CalendarDays :size="13" aria-hidden="true" />
           <b>{{ formatDateChip }}</b>
           <template v-if="task.time">
             <i class="tc-chip-sep">·</i>
-            <Clock :size="13" aria-hidden="true"/>
+            <Clock :size="13" aria-hidden="true" />
             <b>{{ task.time }}</b>
           </template>
           <template v-if="hasDueUntil">
             <i class="tc-chip-sep">·</i>
-            <Hourglass :size="12" aria-hidden="true"/>
+            <Hourglass :size="12" aria-hidden="true" />
             <span>{{ formatDueUntil }}</span>
           </template>
         </span>
 
         <span v-if="task.reminder" class="tc-chip tc-chip-mini" title="已设置提醒">
-          <Bell :size="13" aria-hidden="true"/>
+          <Bell :size="13" aria-hidden="true" />
         </span>
 
         <span v-if="listName" class="tc-chip tc-chip-list cat-pill">
-          <ListTodo :size="13" aria-hidden="true"/>
-          <span class="tc-chip-dot" :style="{ background: listColor || 'currentColor' }"/>
+          <ListTodo :size="13" aria-hidden="true" />
+          <span class="tc-chip-dot" :style="{ background: listColor || 'currentColor' }" />
           <b>{{ listName }}</b>
         </span>
 
         <span v-if="hasPomodoro" class="tc-chip tc-chip-pomo">
-          <Timer :size="13" aria-hidden="true"/>
+          <Timer :size="13" aria-hidden="true" />
           <span class="tc-pomo-bar" aria-hidden="true">
-            <span class="tc-pomo-fill" :style="pomoFillStyle"/>
+            <span class="tc-pomo-fill" :style="pomoFillStyle" />
           </span>
           <b>{{ pomodoroSessions }}/{{ pomodoroTarget }}</b>
         </span>
@@ -174,7 +174,7 @@
         :aria-valuenow="completedSubCount"
       >
         <div class="tc-sub-bar">
-          <div class="tc-sub-fill" :style="subFillStyle"/>
+          <div class="tc-sub-fill" :style="subFillStyle" />
         </div>
         <button
           type="button"
@@ -190,19 +190,10 @@
 
       <!-- 标签 pill -->
       <div v-if="!compact && displayTags.length" class="tc-tags">
-        <span
-          v-for="tg in displayTags"
-          :key="tg.id"
-          class="tc-tag"
-          :style="tagStyle(tg)"
-        >
+        <span v-for="tg in displayTags" :key="tg.id" class="tc-tag" :style="tagStyle(tg)">
           {{ tg.label }}
         </span>
-        <span
-          v-if="(task.tags?.length || 0) > 3"
-          class="tc-tag tc-tag-more"
-          aria-label="更多标签"
-        >
+        <span v-if="(task.tags?.length || 0) > 3" class="tc-tag tc-tag-more" aria-label="更多标签">
           +{{ (task.tags?.length || 0) - 3 }}
         </span>
       </div>
@@ -244,14 +235,18 @@
               @click.stop="reorderSub(st.id, -1)"
               :disabled="idx === 0"
               aria-label="上移子任务"
-            ><ChevronUp :size="13"/></button>
+            >
+              <ChevronUp :size="13" />
+            </button>
             <button
               type="button"
               class="tc-sub-btn"
               @click.stop="reorderSub(st.id, +1)"
               :disabled="idx === subTaskCount - 1"
               aria-label="下移子任务"
-            ><ChevronDown :size="13"/></button>
+            >
+              <ChevronDown :size="13" />
+            </button>
           </span>
           <button
             type="button"
@@ -268,7 +263,7 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, watch, onMounted, defineProps, defineEmits } from 'vue'
+import { ref, computed, inject, defineProps, defineEmits } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   GripVertical,
@@ -344,9 +339,15 @@ const useSettingsStore = inject('useSettingsStore', null) || (() => null)
 let taskStore = null
 let listStore = null
 let settingsStore = null
-try { taskStore = typeof useTaskStore === 'function' ? useTaskStore() : useTaskStore } catch {}
-try { listStore = typeof useListStore === 'function' ? useListStore() : useListStore } catch {}
-try { settingsStore = typeof useSettingsStore === 'function' ? useSettingsStore() : useSettingsStore } catch {}
+try {
+  taskStore = typeof useTaskStore === 'function' ? useTaskStore() : useTaskStore
+} catch {}
+try {
+  listStore = typeof useListStore === 'function' ? useListStore() : useListStore
+} catch {}
+try {
+  settingsStore = typeof useSettingsStore === 'function' ? useSettingsStore() : useSettingsStore
+} catch {}
 
 const compact = computed(() => props.view === 'compact')
 const boardLike = computed(() => props.view === 'board')
@@ -357,14 +358,20 @@ const priority = computed(() =>
 )
 const priorityLabel = computed(() => {
   switch (priority.value) {
-    case 1: return 'P1'
-    case 2: return 'P2'
-    case 3: return 'P3'
-    default: return ''
+    case 1:
+      return 'P1'
+    case 2:
+      return 'P2'
+    case 3:
+      return 'P3'
+    default:
+      return ''
   }
 })
 
-const blockedByLength = computed(() => (Array.isArray(props.task.blockedBy) ? props.task.blockedBy.length : 0))
+const blockedByLength = computed(() =>
+  Array.isArray(props.task.blockedBy) ? props.task.blockedBy.length : 0
+)
 const isBlocked = computed(() => {
   if (taskStore && typeof taskStore.isTaskBlocked === 'function') {
     return taskStore.isTaskBlocked(props.task)
@@ -373,10 +380,16 @@ const isBlocked = computed(() => {
   return blockedByLength.value > 0 // fall back: any deps → assume blocked if any defined
 })
 
-const commentsCount = computed(() => (Array.isArray(props.task.comments) ? props.task.comments.length : 0))
-const attachmentsCount = computed(() => (Array.isArray(props.task.attachments) ? props.task.attachments.length : 0))
+const commentsCount = computed(() =>
+  Array.isArray(props.task.comments) ? props.task.comments.length : 0
+)
+const attachmentsCount = computed(() =>
+  Array.isArray(props.task.attachments) ? props.task.attachments.length : 0
+)
 
-const subTaskCount = computed(() => (Array.isArray(props.task.subTasks) ? props.task.subTasks.length : 0))
+const subTaskCount = computed(() =>
+  Array.isArray(props.task.subTasks) ? props.task.subTasks.length : 0
+)
 const completedSubCount = computed(() =>
   Array.isArray(props.task.subTasks) ? props.task.subTasks.filter((s) => s.completed).length : 0
 )
@@ -408,7 +421,9 @@ const isOverdue = computed(() => {
   if (props.isOverdueExt) return true
   if (!props.task.date) return false
   const today = new Date()
-  const [y, m, d] = String(props.task.date).split('-').map((x) => parseInt(x, 10))
+  const [y, m, d] = String(props.task.date)
+    .split('-')
+    .map((x) => parseInt(x, 10))
   if (!y || !m || !d) return false
   const due = new Date(y, m - 1, d, 23, 59, 59)
   return due.getTime() < today.getTime()
@@ -483,7 +498,10 @@ const displayTags = computed(() => {
 })
 const tagStyle = (tg) => {
   const bg = tg.color || '#e0e7ff'
-  const isDark = settingsStore?.theme === 'dark' || (typeof document !== 'undefined' && document.documentElement?.getAttribute('data-theme') === 'dark')
+  const isDark =
+    settingsStore?.theme === 'dark' ||
+    (typeof document !== 'undefined' &&
+      document.documentElement?.getAttribute('data-theme') === 'dark')
   return {
     background: isDark ? blend(bg, 0.25) : blend(bg, 0.18),
     color: pickTextColor(bg),
@@ -499,7 +517,9 @@ const blend = (hex, alpha) => {
 const pickTextColor = (hex) => {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '')
   if (!m) return 'inherit'
-  const r = parseInt(m[1], 16), g = parseInt(m[2], 16), b = parseInt(m[3], 16)
+  const r = parseInt(m[1], 16),
+    g = parseInt(m[2], 16),
+    b = parseInt(m[3], 16)
   const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   return lum > 0.6 ? '#0f172a' : '#ffffff'
 }
@@ -521,7 +541,9 @@ const onDragStart = (event) => {
       event.dataTransfer.setData('text/plain', props.task.id)
       event.dataTransfer.effectAllowed = 'move'
     }
-  } catch (_e) { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   emit('dragstart', { taskId: props.task.id, event })
 }
 const onDragEnd = (event) => {
@@ -630,16 +652,26 @@ html[data-theme='dark'] .task-card {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
 }
 
-.task-card.tc-density-compact { padding: 6px 10px; }
-.task-card.tc-density-spacious { padding: 14px 16px; }
+.task-card.tc-density-compact {
+  padding: 6px 10px;
+}
+.task-card.tc-density-spacious {
+  padding: 14px 16px;
+}
 
 /* 新卡片 fade-in */
 .task-card.tc-new {
   animation: tc-fadein 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes tc-fadein {
-  from { opacity: 0; transform: translateY(8px) scale(0.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* 拖拽中 */
@@ -676,7 +708,10 @@ html[data-theme='dark'] .task-card {
   color: var(--tc-muted);
   cursor: grab;
   opacity: 0;
-  transition: opacity 0.18s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    opacity 0.18s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .task-card:hover .tc-grip,
 .tc-grip:focus-visible {
@@ -686,7 +721,9 @@ html[data-theme='dark'] .task-card {
   background: rgba(59, 130, 246, 0.08);
   color: var(--tc-accent);
 }
-.tc-grip:active { cursor: grabbing; }
+.tc-grip:active {
+  cursor: grabbing;
+}
 .tc-grip:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
@@ -732,7 +769,9 @@ html[data-theme='dark'] .task-card {
   animation: tc-check 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes tc-check {
-  to { stroke-dashoffset: 0; }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 .tc-check.checked {
   background: #16a34a;
@@ -746,14 +785,26 @@ html[data-theme='dark'] .task-card {
   border-color: #f59e0b;
   border-style: dashed;
 }
-.tc-check.check-p1 { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.22); }
-.tc-check.check-p2 { box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.22); }
-.tc-check.check-p3 { box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.22); }
+.tc-check.check-p1 {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.22);
+}
+.tc-check.check-p2 {
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.22);
+}
+.tc-check.check-p3 {
+  box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.22);
+}
 
 @keyframes tc-pop {
-  0% { transform: scale(0.8); }
-  60% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 .tc-check:focus-visible {
   outline: none;
@@ -790,8 +841,12 @@ html[data-theme='dark'] .task-card {
   gap: 6px;
   flex-shrink: 0;
 }
-.tc-badges-enter-active, .tc-badges-leave-active { transition: all 240ms ease; }
-.tc-badges-enter-from, .tc-badges-leave-to {
+.tc-badges-enter-active,
+.tc-badges-leave-active {
+  transition: all 240ms ease;
+}
+.tc-badges-enter-from,
+.tc-badges-leave-to {
   opacity: 0;
   transform: translateX(-6px);
 }
@@ -811,9 +866,21 @@ html[data-theme='dark'] .task-card {
   font-style: normal;
   letter-spacing: 0.02em;
 }
-.tc-prio-1 { background: rgba(239, 68, 68, 0.12); color: #dc2626; border-color: rgba(239, 68, 68, 0.3); }
-.tc-prio-2 { background: rgba(249, 115, 22, 0.12); color: #c2410c; border-color: rgba(249, 115, 22, 0.3); }
-.tc-prio-3 { background: rgba(234, 179, 8, 0.14); color: #a16207; border-color: rgba(234, 179, 8, 0.35); }
+.tc-prio-1 {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.tc-prio-2 {
+  background: rgba(249, 115, 22, 0.12);
+  color: #c2410c;
+  border-color: rgba(249, 115, 22, 0.3);
+}
+.tc-prio-3 {
+  background: rgba(234, 179, 8, 0.14);
+  color: #a16207;
+  border-color: rgba(234, 179, 8, 0.35);
+}
 
 .tc-blocked {
   background: rgba(251, 191, 36, 0.14);
@@ -853,7 +920,9 @@ html[data-theme='dark'] .task-card {
   flex-shrink: 0;
   color: var(--tc-muted);
 }
-.tc-icon-repeat { color: #8b5cf6; }
+.tc-icon-repeat {
+  color: #8b5cf6;
+}
 
 .tc-star {
   background: transparent;
@@ -863,9 +932,15 @@ html[data-theme='dark'] .task-card {
   color: var(--tc-muted);
   cursor: pointer;
   display: inline-flex;
-  transition: color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.12s ease;
 }
-.tc-star:hover { color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+.tc-star:hover {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
 .tc-star.active {
   color: #f59e0b;
   animation: tc-pop 260ms ease;
@@ -894,24 +969,40 @@ html[data-theme='dark'] .task-card {
   border: 1px solid transparent;
   white-space: nowrap;
 }
-.tc-chip b { font-weight: 600; color: var(--tc-text); font-size: 11.5px; }
-.tc-chip-sep { opacity: 0.5; font-style: normal; font-weight: 700; }
+.tc-chip b {
+  font-weight: 600;
+  color: var(--tc-text);
+  font-size: 11.5px;
+}
+.tc-chip-sep {
+  opacity: 0.5;
+  font-style: normal;
+  font-weight: 700;
+}
 
 .tc-chip-date.overdue {
   background: rgba(239, 68, 68, 0.12);
   color: var(--tc-overdue);
   border-color: rgba(239, 68, 68, 0.25);
 }
-.tc-chip-date.overdue b { color: var(--tc-overdue); }
+.tc-chip-date.overdue b {
+  color: var(--tc-overdue);
+}
 .tc-chip-date.today {
   background: rgba(59, 130, 246, 0.12);
   color: #1d4ed8;
   border-color: rgba(59, 130, 246, 0.25);
 }
-html[data-theme='dark'] .tc-chip-date.today { color: #93c5fd; }
-html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
+html[data-theme='dark'] .tc-chip-date.today {
+  color: #93c5fd;
+}
+html[data-theme='dark'] .tc-chip-date.today b {
+  color: #bfdbfe;
+}
 
-.tc-chip-mini { padding: 3px 6px; }
+.tc-chip-mini {
+  padding: 3px 6px;
+}
 
 .tc-chip-list .tc-chip-dot {
   width: 8px;
@@ -947,8 +1038,15 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
   align-items: center;
   gap: 3px;
 }
-.tc-counts-enter-active, .tc-counts-leave-active { transition: all 240ms ease; }
-.tc-counts-enter-from, .tc-counts-leave-to { opacity: 0; transform: translateY(-4px); }
+.tc-counts-enter-active,
+.tc-counts-leave-active {
+  transition: all 240ms ease;
+}
+.tc-counts-enter-from,
+.tc-counts-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
 
 /* ---------- 子任务进度条 ---------- */
 .tc-sub-progress {
@@ -981,11 +1079,19 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.15s ease,
+    color 0.15s ease;
   flex-shrink: 0;
 }
-.tc-sub-toggle:hover { color: var(--tc-accent); background: rgba(59, 130, 246, 0.12); }
-.tc-rot { transform: rotate(180deg); }
+.tc-sub-toggle:hover {
+  color: var(--tc-accent);
+  background: rgba(59, 130, 246, 0.12);
+}
+.tc-rot {
+  transform: rotate(180deg);
+}
 
 /* ---------- 子任务展开列表 ---------- */
 .tc-subs {
@@ -1006,7 +1112,9 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
   border-radius: 8px;
   background: rgba(127, 127, 127, 0.04);
 }
-.tc-sub-row:hover { background: rgba(127, 127, 127, 0.08); }
+.tc-sub-row:hover {
+  background: rgba(127, 127, 127, 0.08);
+}
 .tc-sub-row.done .tc-sub-title {
   color: var(--tc-muted);
   text-decoration: line-through;
@@ -1023,9 +1131,13 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
   justify-content: center;
   color: #16a34a;
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.15s ease;
+  transition:
+    background 0.18s ease,
+    border-color 0.15s ease;
 }
-.tc-sub-check:hover { border-color: var(--tc-accent); }
+.tc-sub-check:hover {
+  border-color: var(--tc-accent);
+}
 .tc-sub-check.checked {
   background: #22c55e;
   border-color: transparent;
@@ -1046,7 +1158,8 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
   overflow: hidden;
   background: rgba(127, 127, 127, 0.08);
 }
-.tc-sub-btn, .tc-sub-del {
+.tc-sub-btn,
+.tc-sub-del {
   border: none;
   background: transparent;
   color: var(--tc-muted);
@@ -1056,12 +1169,23 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
   padding: 0;
 }
-.tc-sub-btn:hover:not(:disabled) { color: var(--tc-accent); background: rgba(59, 130, 246, 0.12); }
-.tc-sub-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.tc-sub-del:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+.tc-sub-btn:hover:not(:disabled) {
+  color: var(--tc-accent);
+  background: rgba(59, 130, 246, 0.12);
+}
+.tc-sub-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.tc-sub-del:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
 
 .tc-expand-enter-active,
 .tc-expand-leave-active {
@@ -1109,22 +1233,34 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
   padding: 6px 10px;
   gap: 8px;
 }
-.task-card.tc-compact .tc-grip { display: none; }
-.task-card.tc-compact .tc-check { width: 18px; height: 18px; margin-top: 2px; }
+.task-card.tc-compact .tc-grip {
+  display: none;
+}
+.task-card.tc-compact .tc-check {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
 .task-card.tc-compact .tc-title {
   font-size: 13.5px;
   -webkit-line-clamp: 1;
 }
 .task-card.tc-compact .tc-sub-progress,
-.task-card.tc-compact .tc-tags { display: none; }
+.task-card.tc-compact .tc-tags {
+  display: none;
+}
 
 /* ---------- Board 视图 ---------- */
 .task-card.tc-board {
   grid-template-columns: 1fr;
   padding: 12px 12px 14px 12px;
 }
-.task-card.tc-board .tc-grip { display: none; }
-.task-card.tc-board .tc-body { order: 1; }
+.task-card.tc-board .tc-grip {
+  display: none;
+}
+.task-card.tc-board .tc-body {
+  order: 1;
+}
 .task-card.tc-board .tc-check {
   position: absolute;
   top: 12px;
@@ -1134,8 +1270,16 @@ html[data-theme='dark'] .tc-chip-date.today b { color: #bfdbfe; }
 
 /* ---------- 响应式 ---------- */
 @media (max-width: 560px) {
-  .task-card { padding: 9px 10px; gap: 8px; }
-  .tc-grip { display: none; }
-  .tc-chip { font-size: 10.5px; padding: 2px 6px; }
+  .task-card {
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .tc-grip {
+    display: none;
+  }
+  .tc-chip {
+    font-size: 10.5px;
+    padding: 2px 6px;
+  }
 }
 </style>

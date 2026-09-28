@@ -19,7 +19,13 @@ export default {
     selectColor: '选择颜色',
     currentlySelected: '当前选中',
     more: '更多',
-    clear: '清空'
+    clear: '清空',
+    actions: '操作',
+    collapse: '折叠',
+    expand: '展开',
+    completed: '已完成',
+    incomplete: '未完成',
+    menu: '菜单'
   },
   mini: {
     openMain: '打开主窗口',
@@ -57,7 +63,9 @@ export default {
     habitTracker: '习惯打卡',
     dailyReview: '每日回顾',
     achievement: '成就',
-    review: '回顾'
+    review: '回顾',
+    filters: '过滤器',
+    sidebarAriaLabel: '侧边栏'
   },
   task: {
     newTask: '新建任务',
@@ -219,7 +227,13 @@ export default {
     activityEmpty: '暂时没有操作记录',
     activityCreated: '创建了任务',
     activityEdited: '编辑了任务内容',
-    activityAttachmentPrefix: '上传了附件: '
+    activityAttachmentPrefix: '上传了附件: ',
+    empty: '未关联任务',
+    nextWeek: '下周',
+    setDate: '设置日期',
+    blockedByAria: '被 {count} 个前置任务阻塞',
+    blockedByTooltip: '被 {count} 个前置任务阻塞',
+    subProgressAria: '子任务完成 {done}/{total}'
   },
   date: {
     weekdays: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
@@ -273,11 +287,24 @@ export default {
     renamePrompt: '重命名分类"{name}"',
     deleteConfirm: '确定要删除分类"{name}"吗？'
   },
+  filters: {
+    addNew: '新建过滤器',
+    rename: '重命名过滤器',
+    duplicate: '复制过滤器',
+    pin: '置顶过滤器',
+    unpin: '取消置顶',
+    delete: '删除过滤器',
+    namePrompt: '请输入过滤器名称',
+    renamePrompt: '重命名过滤器"{name}"',
+    deleteConfirm: '确定要删除过滤器"{name}"吗？'
+  },
   sidebar: {
     expand: '展开',
     collapse: '折叠',
     expandSidebar: '展开侧边栏',
-    collapseSidebar: '折叠侧边栏'
+    collapseSidebar: '折叠侧边栏',
+    collapseSection: '折叠分区',
+    expandSection: '展开分区'
   },
   titlebar: {
     close: '关闭',
@@ -342,6 +369,7 @@ export default {
     restartAndUpdate: '重启并更新',
     upToDate: '已是最新版本',
     updateError: '更新失败',
+    updateNetworkError: '网络连接失败，请检查网络后重试',
     shortcuts: '快捷键',
     data: '数据',
     exportData: '导出数据',
@@ -455,7 +483,9 @@ export default {
     noise_pink: '粉噪音',
     noise_brown: '棕噪音',
     noise_rain: '雨声',
-    noise_cafe: '咖啡厅'
+    noise_cafe: '咖啡厅',
+    mode: '模式',
+    noiseVolume: '白噪音音量'
   },
   empty: {
     title: '还没有任务',
@@ -603,19 +633,40 @@ export default {
   },
   template: {
     title: '任务模板',
-    createTemplate: '创建模板',
-    editTemplate: '编辑模板',
     useTemplate: '使用模板',
-    templateName: '模板名称',
-    templateIcon: '模板图标',
-    templateColor: '模板颜色',
-    noTemplates: '暂无模板',
-    noTemplatesDesc: '创建模板以快速添加常用任务',
     deleteConfirm: '确定要删除模板"{name}"吗？',
-    templateCreated: '模板已创建',
-    templateUpdated: '模板已更新',
-    templateDeleted: '模板已删除',
-    templateApplied: '模板已应用'
+    myTemplates: '我的模板',
+    createTitle: '创建模板',
+    editTitle: '编辑模板',
+    useTitle: '使用模板',
+    name: '模板名称',
+    namePlaceholder: '输入模板名称...',
+    taskTitle: '任务标题',
+    taskTitlePlaceholder: '输入任务标题...',
+    notes: '备注',
+    notesPlaceholder: '添加备注...',
+    subtasks: '子任务',
+    addSubtask: '添加子任务',
+    subtaskPlaceholder: '输入子任务...',
+    date: '日期',
+    time: '时间',
+    reminder: '提醒',
+    priority: '优先级',
+    category: '分类',
+    tags: '标签',
+    important: '重要',
+    icon: '图标',
+    color: '颜色',
+    create: '创建',
+    edit: '编辑',
+    delete: '删除',
+    empty: '还没有模板',
+    createFirst: '创建第一个模板',
+    deleteConfirmText: '确定要删除模板"{name}"吗？此操作不可撤销。',
+    created: '模板已创建',
+    updated: '模板已更新',
+    deleted: '模板已删除',
+    applied: '模板已应用'
   },
   dailyReview: {
     title: '每日回顾',
@@ -649,6 +700,35 @@ export default {
     targetDays: '目标天数',
     deleteConfirm: '确定要删除这个习惯吗？',
     pleaseEnterName: '请输入习惯名称'
+  },
+  karma: {
+    title: 'Karma 值',
+    today: '今日',
+    badges: '徽章',
+    totalBadges: '累计徽章',
+    streak: '连续',
+    longest: '最长',
+    recentBadges: '最近获得的徽章',
+    noBadge: '还没有徽章，继续加油！',
+    latest: '最近',
+    nextLevel: '下一级',
+    max: '已满级',
+    karmaChange: 'Karma 变化',
+    karmaEnd: '当前'
+  },
+  report: {
+    weekly: '周报',
+    monthly: '月报',
+    weeklyTitle: '每周报告',
+    monthlyTitle: '每月报告',
+    bestDay: '最佳日',
+    peakHour: '高峰时段',
+    mom: '环比',
+    copy: '复制 MD',
+    copied: '已复制 ✓',
+    download: '下载 MD',
+    nextWeekSg: '下周建议',
+    nextMonthSg: '下月建议'
   },
   stats: {
     title: '统计',
@@ -695,7 +775,22 @@ export default {
     dailyAverageCreated: '日均 {count}',
     dayUnit: '天',
     countUnit: '个',
-    timesUnit: '次'
+    timesUnit: '次',
+    advancedStats: '高级统计',
+    githubHeatmap: '活跃热力图',
+    focusSummary: '专注概览',
+    todayFocus: '今日专注',
+    streakWeek: '本周连续',
+    deepFocus: '深度专注',
+    distractionRate: '分心率',
+    minutesUnit: '分钟',
+    daysWithActivity: '天活跃',
+    deepFocusMinutes: '深度专注',
+    noData: '暂无数据',
+    range30d: '近30天',
+    range90d: '近90天',
+    range180d: '近180天',
+    rangeYtd: '今年至今'
   },
   achievement: {
     title: '成就系统',
@@ -797,17 +892,21 @@ export default {
     sectionOther: '其他'
   },
   onboarding: {
+    title: '新手引导',
     skip: '跳过',
     next: '下一步',
     prev: '上一步',
     finish: '开始使用',
     step1Title: '欢迎使用 Choyeon Todo',
-    step1Desc: '一个清爽、高效、专注的任务管理工具。按 Ctrl+K 可以随时调出命令面板，快速执行任意操作。',
+    step1Desc:
+      '一个清爽、高效、专注的任务管理工具。按 Ctrl+K 可以随时调出命令面板，快速执行任意操作。',
     step2Title: '智能输入，一步到位',
-    step2Desc: '在「添加任务」输入框里直接输入「明天下午3点 开会 重要」，系统会自动识别日期、时间与优先级。',
+    step2Desc:
+      '在「添加任务」输入框里直接输入「明天下午3点 开会 重要」，系统会自动识别日期、时间与优先级。',
     step3Title: '番茄专注，劳逸结合',
     step3Desc: '按下 Ctrl+Shift+P 打开番茄钟，专注 25 分钟后系统会贴心提醒你休息，保持高效一整天。',
     step4Title: '掌握快捷键，效率翻倍',
-    step4Desc: 'Ctrl+N 新建任务，Ctrl+/ 查看所有快捷键，J/K 上下切换任务，空格切换完成——一切都能键盘搞定。'
+    step4Desc:
+      'Ctrl+N 新建任务，Ctrl+/ 查看所有快捷键，J/K 上下切换任务，空格切换完成——一切都能键盘搞定。'
   }
 }

@@ -16,7 +16,7 @@ export const hashData = (data, algo = 'fnv1a') => {
   if (algo !== 'fnv1a') {
     throw new Error(`[compress/hashData] unsupported algo: ${algo}`)
   }
-  let json = ''
+  let json
   try {
     // 使用 replacer：
     //  - 跳过写入元数据（如 generatedAt）：避免 push 时自动"刷新写入时间"导致 hash 漂移（与远端不一致），
@@ -91,9 +91,7 @@ export const utf8Decode = (bytes) => {
       out += String.fromCharCode(((b & 0x1f) << 6) | (u[i + 1] & 0x3f))
       i += 2
     } else if (b < 0xf0) {
-      out += String.fromCharCode(
-        ((b & 0x0f) << 12) | ((u[i + 1] & 0x3f) << 6) | (u[i + 2] & 0x3f)
-      )
+      out += String.fromCharCode(((b & 0x0f) << 12) | ((u[i + 1] & 0x3f) << 6) | (u[i + 2] & 0x3f))
       i += 3
     } else {
       const cp =
@@ -110,8 +108,7 @@ export const utf8Decode = (bytes) => {
 }
 
 // ========== Base64 <-> Uint8Array（浏览器 / Node 都可跑） ==========
-const b64Lookup =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+const b64Lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 export const bytesToBase64 = (bytes) => {
   // 浏览器优先 btoa；失败（如 bytes 过大/某些 edge 环境）回退纯 JS
@@ -147,11 +144,7 @@ export const bytesToBase64 = (bytes) => {
       out += b64Lookup[(n >> 18) & 63] + b64Lookup[(n >> 12) & 63] + '=='
     } else {
       const n = (u[i] << 16) | (u[i + 1] << 8)
-      out +=
-        b64Lookup[(n >> 18) & 63] +
-        b64Lookup[(n >> 12) & 63] +
-        b64Lookup[(n >> 6) & 63] +
-        '='
+      out += b64Lookup[(n >> 18) & 63] + b64Lookup[(n >> 12) & 63] + b64Lookup[(n >> 6) & 63] + '='
     }
   }
   return out
@@ -297,7 +290,7 @@ const encodeRFC1951Stored = (inputBytes) => {
     header[0] = isLast ? 0x01 : 0x00
     header[1] = len & 0xff
     header[2] = (len >> 8) & 0xff
-    header[3] = (~len) & 0xff
+    header[3] = ~len & 0xff
     header[4] = (~len >> 8) & 0xff
     blocks.push(header)
     if (len > 0) blocks.push(inputBytes.subarray(i, i + len))
@@ -319,18 +312,7 @@ const syncGzipBytes = (inputBytes) => {
   const deflated = encodeRFC1951Stored(inputBytes)
   const crc = crc32Bytes(inputBytes)
   const isize = inputBytes.length & 0xffffffff
-  const header = new Uint8Array([
-    0x1f,
-    0x8b,
-    0x08,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x03
-  ])
+  const header = new Uint8Array([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03])
   const trailer = new Uint8Array(8)
   trailer[0] = crc & 0xff
   trailer[1] = (crc >> 8) & 0xff
@@ -514,7 +496,8 @@ export const decompressFromBase64 = (base64, opts = {}) => {
           payloadBytes = syncGunzipBytes(bytes)
         } catch (e) {
           throw new Error(
-            `[compress] decompress failed (stored-only gzip; consider stream=true): ${e.message}`
+            `[compress] decompress failed (stored-only gzip; consider stream=true): ${e.message}`,
+            { cause: e }
           )
         }
       } else {
@@ -525,7 +508,7 @@ export const decompressFromBase64 = (base64, opts = {}) => {
     try {
       return JSON.parse(jsonStr)
     } catch (e) {
-      throw new Error(`[compress] JSON parse failed: ${e.message}`)
+      throw new Error(`[compress] JSON parse failed: ${e.message}`, { cause: e })
     }
   }
 

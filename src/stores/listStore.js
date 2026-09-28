@@ -154,8 +154,7 @@ export const useListStore = defineStore('list', () => {
     const fromIdx = listIndexMap.value.get(id) ?? -1
     if (fromIdx === -1) return false
     // scope: areaIdScope = undefined 表示全局重排；否则在该 area 内重排
-    let scopeArr = lists.value
-      .map((l, i) => ({ l, i }))
+    let scopeArr = lists.value.map((l, i) => ({ l, i }))
     if (areaIdScope) {
       scopeArr = scopeArr.filter((x) => x.l.areaId === areaIdScope)
     }

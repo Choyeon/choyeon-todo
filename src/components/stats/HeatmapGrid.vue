@@ -34,17 +34,13 @@
         </template>
       </div>
 
-      <div
-        class="grid-scroll"
-        ref="scrollRef"
-        :style="{ maxHeight: compact ? '180px' : '140px' }"
-      >
+      <div class="grid-scroll" ref="scrollRef" :style="{ maxHeight: compact ? '180px' : '140px' }">
         <div
           class="grid-table"
-          :style="{ gridTemplateColumns: `repeat(${weeks.length}, var(--cell-size))` }"
+          :style="{ gridTemplateColumns: `repeat(${weekColumns.length}, var(--cell-size))` }"
         >
           <div
-            v-for="(week, wi) in weeks"
+            v-for="(week, wi) in weekColumns"
             :key="'wk-' + wi"
             class="week-col"
             :data-week-start="week.weekStart"
@@ -130,13 +126,13 @@ const grid = computed(() =>
     startOfWeek: props.startOfWeek
   })
 )
-const weeks = computed(() => grid.value.weeks)
+const weekColumns = computed(() => grid.value.weeks)
 const totals = computed(() => grid.value.totals)
 const daysWithActivity = computed(() => grid.value.daysWithActivity)
 const currentStreakDays = computed(() => grid.value.currentStreakDays)
 
 const monthLabels = computed(() => {
-  const ws = weeks.value
+  const ws = weekColumns.value
   if (!ws.length) return []
   const labels = []
   let curMonth = ''

@@ -19,7 +19,13 @@ export default {
     selectColor: 'Select Color',
     currentlySelected: 'currently selected',
     more: 'More',
-    clear: 'Clear'
+    clear: 'Clear',
+    actions: 'Actions',
+    collapse: 'Collapse',
+    expand: 'Expand',
+    completed: 'Completed',
+    incomplete: 'Incomplete',
+    menu: 'Menu'
   },
   mini: {
     openMain: 'Open Main Window',
@@ -57,7 +63,9 @@ export default {
     habitTracker: 'Habits',
     dailyReview: 'Daily Review',
     achievement: 'Achievements',
-    review: 'Review'
+    review: 'Review',
+    filters: 'Filters',
+    sidebarAriaLabel: 'Sidebar'
   },
   task: {
     newTask: 'New Task',
@@ -220,7 +228,13 @@ export default {
     activityEmpty: 'No activity yet',
     activityCreated: 'Created the task',
     activityEdited: 'Edited the task',
-    activityAttachmentPrefix: 'Attached file: '
+    activityAttachmentPrefix: 'Attached file: ',
+    empty: 'No linked task',
+    nextWeek: 'Next week',
+    setDate: 'Set date',
+    blockedByAria: 'Blocked by {count} tasks',
+    blockedByTooltip: 'Blocked by {count} prerequisite tasks',
+    subProgressAria: 'Subtasks completed {done}/{total}'
   },
   date: {
     weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -274,10 +288,23 @@ export default {
     renamePrompt: 'Rename category "{name}"',
     deleteConfirm: 'Delete category "{name}"?'
   },
+  filters: {
+    addNew: 'New filter',
+    rename: 'Rename filter',
+    duplicate: 'Duplicate filter',
+    pin: 'Pin filter',
+    unpin: 'Unpin filter',
+    delete: 'Delete filter',
+    namePrompt: 'Enter filter name',
+    renamePrompt: 'Rename filter "{name}"',
+    deleteConfirm: 'Delete filter "{name}"?'
+  },
   sidebar: {
     expand: 'Expand',
     collapse: 'Collapse',
     expandSidebar: 'Expand sidebar',
+    collapseSection: 'Collapse section',
+    expandSection: 'Expand section',
     collapseSidebar: 'Collapse sidebar'
   },
   titlebar: {
@@ -343,6 +370,7 @@ export default {
     restartAndUpdate: 'Restart & Update',
     upToDate: 'You are up to date',
     updateError: 'Update failed',
+    updateNetworkError: 'Network connection failed — check your connection and try again',
     shortcuts: 'Keyboard Shortcuts',
     data: 'Data',
     exportData: 'Export Data',
@@ -447,7 +475,9 @@ export default {
     noise_pink: 'Pink Noise',
     noise_brown: 'Brown Noise',
     noise_rain: 'Rain',
-    noise_cafe: 'Cafe'
+    noise_cafe: 'Cafe',
+    mode: 'Mode',
+    noiseVolume: 'White noise volume'
   },
   inbox: {
     itemsToOrganize: 'items to organize',
@@ -463,19 +493,40 @@ export default {
   },
   template: {
     title: 'Task Templates',
-    createTemplate: 'Create Template',
-    editTemplate: 'Edit Template',
     useTemplate: 'Use Template',
-    templateName: 'Template Name',
-    templateIcon: 'Template Icon',
-    templateColor: 'Template Color',
-    noTemplates: 'No templates yet',
-    noTemplatesDesc: 'Create templates to quickly add common tasks',
     deleteConfirm: 'Are you sure you want to delete template "{name}"?',
-    templateCreated: 'Template created',
-    templateUpdated: 'Template updated',
-    templateDeleted: 'Template deleted',
-    templateApplied: 'Template applied'
+    myTemplates: 'My templates',
+    createTitle: 'Create Template',
+    editTitle: 'Edit Template',
+    useTitle: 'Use Template',
+    name: 'Template name',
+    namePlaceholder: 'Enter template name...',
+    taskTitle: 'Task title',
+    taskTitlePlaceholder: 'Enter task title...',
+    notes: 'Notes',
+    notesPlaceholder: 'Add notes...',
+    subtasks: 'Subtasks',
+    addSubtask: 'Add subtask',
+    subtaskPlaceholder: 'Enter subtask...',
+    date: 'Date',
+    time: 'Time',
+    reminder: 'Reminder',
+    priority: 'Priority',
+    category: 'Category',
+    tags: 'Tags',
+    important: 'Important',
+    icon: 'Icon',
+    color: 'Color',
+    create: 'Create',
+    edit: 'Edit',
+    delete: 'Delete',
+    empty: 'No templates yet',
+    createFirst: 'Create first template',
+    deleteConfirmText: 'Delete template "{name}"? This action cannot be undone.',
+    created: 'Template created',
+    updated: 'Template updated',
+    deleted: 'Template deleted',
+    applied: 'Template applied'
   },
   dailyReview: {
     title: 'Daily Review',
@@ -509,6 +560,35 @@ export default {
     targetDays: 'Target Days',
     deleteConfirm: 'Are you sure you want to delete this habit?',
     pleaseEnterName: 'Please enter habit name'
+  },
+  karma: {
+    title: 'Karma',
+    today: 'Today',
+    badges: 'Badges',
+    totalBadges: 'total badges',
+    streak: 'Streak',
+    longest: 'longest',
+    recentBadges: 'Recent badges',
+    noBadge: 'No badges yet — keep going!',
+    latest: 'Latest',
+    nextLevel: 'Next',
+    max: 'MAX',
+    karmaChange: 'Karma Δ',
+    karmaEnd: 'Now'
+  },
+  report: {
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+    weeklyTitle: 'Weekly Report',
+    monthlyTitle: 'Monthly Report',
+    bestDay: 'Best day',
+    peakHour: 'Peak',
+    mom: 'MoM',
+    copy: 'Copy MD',
+    copied: 'Copied ✓',
+    download: 'Download Markdown',
+    nextWeekSg: 'Next-week suggestions',
+    nextMonthSg: 'Next-month suggestions'
   },
   stats: {
     title: 'Statistics',
@@ -555,7 +635,22 @@ export default {
     dailyAverageCreated: 'Avg {count} per day',
     dayUnit: 'd',
     countUnit: '',
-    timesUnit: ''
+    timesUnit: '',
+    advancedStats: 'Advanced Stats',
+    githubHeatmap: 'Activity heatmap',
+    focusSummary: 'Focus summary',
+    todayFocus: 'Today',
+    streakWeek: 'Week streak',
+    deepFocus: 'Deep focus',
+    distractionRate: 'Distraction',
+    minutesUnit: 'min',
+    daysWithActivity: 'active days',
+    deepFocusMinutes: 'Deep',
+    noData: 'No data',
+    range30d: '30d',
+    range90d: '90d',
+    range180d: '180d',
+    rangeYtd: 'YTD'
   },
   empty: {
     title: 'No tasks yet',
@@ -800,17 +895,22 @@ export default {
     sectionOther: 'Other'
   },
   onboarding: {
+    title: 'Getting started',
     skip: 'Skip',
     next: 'Next',
     prev: 'Back',
     finish: 'Get Started',
     step1Title: 'Welcome to Choyeon Todo',
-    step1Desc: 'A clean, efficient and focused task manager. Press Ctrl+K anytime to open the command palette and perform actions quickly.',
+    step1Desc:
+      'A clean, efficient and focused task manager. Press Ctrl+K anytime to open the command palette and perform actions quickly.',
     step2Title: 'Smart Input, One-Shot Done',
-    step2Desc: 'Type "Meeting tomorrow 3pm important" in the add-task box. The app automatically recognises the date, time and priority.',
+    step2Desc:
+      'Type "Meeting tomorrow 3pm important" in the add-task box. The app automatically recognises the date, time and priority.',
     step3Title: 'Pomodoro Focus, Work & Rest',
-    step3Desc: 'Press Ctrl+Shift+P to start the pomodoro timer. After 25 minutes of focus, the app will remind you to take a break.',
+    step3Desc:
+      'Press Ctrl+Shift+P to start the pomodoro timer. After 25 minutes of focus, the app will remind you to take a break.',
     step4Title: 'Shortcuts Boost Your Speed',
-    step4Desc: 'Ctrl+N for a new task, Ctrl+/ to view all shortcuts, J/K to move between tasks, Space to toggle complete — all done from the keyboard.'
+    step4Desc:
+      'Ctrl+N for a new task, Ctrl+/ to view all shortcuts, J/K to move between tasks, Space to toggle complete — all done from the keyboard.'
   }
 }

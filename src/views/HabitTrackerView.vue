@@ -36,10 +36,7 @@
             <MoreVertical :size="18" />
           </button>
           <div v-if="openMenuId === habit.id" class="habit-menu">
-            <button
-              :aria-label="`${$t('common.edit')} ${habit.name}`"
-              @click="editHabit(habit)"
-            >
+            <button :aria-label="`${$t('common.edit')} ${habit.name}`" @click="editHabit(habit)">
               <Edit2 :size="14" />
               {{ $t('common.edit') }}
             </button>
@@ -135,11 +132,7 @@
               <h2>
                 {{ editingHabit ? $t('habitTracker.editHabit') : $t('habitTracker.newHabit') }}
               </h2>
-              <button
-                class="close-btn"
-                :aria-label="$t('common.close')"
-                @click="closeModal"
-              >
+              <button class="close-btn" :aria-label="$t('common.close')" @click="closeModal">
                 <X :size="20" />
               </button>
             </div>
@@ -179,7 +172,11 @@
 
               <div class="form-group">
                 <label>{{ $t('habitTracker.color') }}</label>
-                <div class="color-selector" role="radiogroup" :aria-label="$t('habitTracker.color')">
+                <div
+                  class="color-selector"
+                  role="radiogroup"
+                  :aria-label="$t('habitTracker.color')"
+                >
                   <button
                     v-for="color in availableColors"
                     :key="color"

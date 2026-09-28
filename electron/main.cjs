@@ -16,7 +16,6 @@ const fs = require('fs')
 const { autoUpdater } = require('electron-updater')
 
 let mainWindow = null
-let debugWindow = null
 let pomodoroWindow = null
 let pomodoroFabWindow = null
 let miniWindow = null
@@ -25,9 +24,13 @@ let tray = null
 let isQuitting = false
 let updateDownloaded = false
 let isCheckingUpdate = false
+let isDownloadingUpdate = false
 let updateCheckInterval = null
+let firstUpdateCheckTimer = null
 let crashReloadTimeout = null
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000
+// 启动后立即检查会与首屏初始化抢资源，且用户刚开机通常无网络，延迟一小段时间更稳
+const UPDATE_FIRST_CHECK_DELAY_MS = 20 * 1000
 
 const autoUpdaterListeners = []
 
@@ -443,9 +446,7 @@ const saveWindowState = () => {
   if (!mainWindow || mainWindow.isDestroyed()) return
   try {
     const bounds = mainWindow.getBounds()
-    const zoomFactor = mainWindow.webContents
-      ? mainWindow.webContents.getZoomFactor()
-      : 1
+    const zoomFactor = mainWindow.webContents ? mainWindow.webContents.getZoomFactor() : 1
     const state = {
       width: bounds.width,
       height: bounds.height,
@@ -732,60 +733,6 @@ function createWindow() {
 
   mainWindow.webContents.on('unresponsive', () => {
     console.warn('[Main] Window unresponsive')
-  })
-}
-
-function createDebugWindow() {
-  if (debugWindow && !debugWindow.isDestroyed()) {
-    debugWindow.focus()
-    return
-  }
-  if (!mainWindow || mainWindow.isDestroyed()) return
-
-  const iconPath = getIconPath()
-  const debugOptions = {
-    width: 420,
-    height: 560,
-    minWidth: 360,
-    minHeight: 400,
-    title: '调试工具',
-    backgroundColor: getBgColor(),
-    webPreferences: {
-      preload: path.join(__dirname, 'debug-preload.cjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true
-    },
-    frame: false,
-    resizable: true,
-    parent: mainWindow,
-    show: false
-  }
-  if (iconPath) debugOptions.icon = iconPath
-
-  debugWindow = new BrowserWindow(debugOptions)
-
-  const loadPromise = process.env.VITE_DEV_SERVER_URL
-    ? debugWindow.loadURL(process.env.VITE_DEV_SERVER_URL + '#/debug')
-    : debugWindow.loadFile(path.join(__dirname, '../dist-web/index.html'), { hash: 'debug' })
-
-  loadPromise.catch((err) => {
-    console.error('[Main] Failed to load debug window:', err)
-  })
-
-  debugWindow.once('ready-to-show', () => {
-    debugWindow.show()
-  })
-
-  debugWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      shell.openExternal(url)
-    }
-    return { action: 'deny' }
-  })
-
-  debugWindow.on('closed', () => {
-    debugWindow = null
   })
 }
 
@@ -1134,9 +1081,7 @@ function buildTrayMenu() {
   const modKey = isMac ? '⌘' : 'Ctrl'
 
   // 常用列表：取前 5 个 category
-  const topCategories = Array.isArray(taskCache.categories)
-    ? taskCache.categories.slice(0, 5)
-    : []
+  const topCategories = Array.isArray(taskCache.categories) ? taskCache.categories.slice(0, 5) : []
 
   const sendQuickAddPreset = (preset, extra) => {
     showAndFocusWindow()
@@ -1575,7 +1520,13 @@ function scheduleDailyReviewBalloon() {
   const schedule = () => {
     dailyReviewTimer = setTimeout(() => {
       try {
-        if (tray && !tray.isDestroyed() && Notification && Notification.isSupported() && !appSettings.doNotDisturb) {
+        if (
+          tray &&
+          !tray.isDestroyed() &&
+          Notification &&
+          Notification.isSupported() &&
+          !appSettings.doNotDisturb
+        ) {
           const s = getTodayStatsV2()
           const iconPath = getIconPath()
           tray.displayBalloon({
@@ -1601,7 +1552,13 @@ function scheduleStartupBalloon() {
   trayStartupNoticeShown = true
   setTimeout(() => {
     try {
-      if (tray && !tray.isDestroyed() && Notification && Notification.isSupported() && !appSettings.doNotDisturb) {
+      if (
+        tray &&
+        !tray.isDestroyed() &&
+        Notification &&
+        Notification.isSupported() &&
+        !appSettings.doNotDisturb
+      ) {
         const iconPath = getIconPath()
         tray.displayBalloon({
           icon: iconPath || undefined,
@@ -1720,11 +1677,6 @@ const isFromMain = (event) => {
   return mainWindow && !mainWindow.isDestroyed() && event.sender === mainWindow.webContents
 }
 
-// 发送方校验：确保 IPC 来自调试窗口
-const isFromDebug = (event) => {
-  return debugWindow && !debugWindow.isDestroyed() && event.sender === debugWindow.webContents
-}
-
 // 发送方校验：确保 IPC 来自迷你窗口
 const isFromMini = (event) => {
   return miniWindow && !miniWindow.isDestroyed() && event.sender === miniWindow.webContents
@@ -1749,9 +1701,7 @@ const isFromPomodoroFab = (event) => {
 // 发送方校验：确保 IPC 来自快速添加窗口
 const isFromQuickAdd = (event) => {
   return (
-    quickAddWindow &&
-    !quickAddWindow.isDestroyed() &&
-    event.sender === quickAddWindow.webContents
+    quickAddWindow && !quickAddWindow.isDestroyed() && event.sender === quickAddWindow.webContents
   )
 }
 
@@ -2125,7 +2075,14 @@ ipcMain.on('pomodoro:action', (event, action) => {
 })
 
 ipcMain.on('pomodoro:setDuration', (event, { mode, minutes }) => {
-  if (!isFromMain(event) && !isFromPomodoroFullscreen(event) && !isFromPomodoroFab(event) && !isFromMini(event) && !isFromQuickAdd(event)) return
+  if (
+    !isFromMain(event) &&
+    !isFromPomodoroFullscreen(event) &&
+    !isFromPomodoroFab(event) &&
+    !isFromMini(event) &&
+    !isFromQuickAdd(event)
+  )
+    return
   if (!mode || typeof minutes !== 'number') return
   if (!['work', 'shortBreak', 'longBreak'].includes(mode)) return
   const clamped = Math.max(1, Math.min(180, minutes))
@@ -2145,25 +2102,10 @@ ipcMain.on('pomodoro:setDuration', (event, { mode, minutes }) => {
 // 调试通道 — 仅在开发环境或非打包时注册
 if (!app.isPackaged) {
   ipcMain.on('debug:openDevTools', (event) => {
-    if (!isFromDebug(event) && !isFromMain(event)) return
+    if (!isFromMain(event)) return
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.openDevTools({ mode: 'detach' })
     }
-  })
-
-  ipcMain.on('debug:openWindow', (event) => {
-    if (!isFromMain(event)) return
-    createDebugWindow()
-  })
-
-  ipcMain.on('debug:closeWindow', (event) => {
-    if (!isFromDebug(event)) return
-    if (debugWindow) debugWindow.close()
-  })
-
-  ipcMain.on('debug:minimizeWindow', (event) => {
-    if (!isFromDebug(event)) return
-    if (debugWindow) debugWindow.minimize()
   })
 }
 
@@ -2176,7 +2118,7 @@ function broadcastAppFocus(eventName, payload = {}) {
     if (!win.webContents || win.webContents.isDestroyed()) return
     try {
       win.webContents.send(eventName, payload)
-    } catch (e) {
+    } catch {
       /* ignore */
     }
   })
@@ -2208,7 +2150,6 @@ const registeredHotkeys = new Set()
 function isFromRenderer(event) {
   // 允许所有已知渲染进程注册（主/番茄/悬浮球/迷你窗口）
   if (isFromMain(event)) return true
-  if (isFromDebug(event)) return true
   if (isFromMini(event)) return true
   if (isFromPomodoroFullscreen(event)) return true
   if (isFromPomodoroFab(event)) return true
@@ -2234,7 +2175,7 @@ ipcMain.handle('hotkey:register', (event, binds) => {
       if (registeredHotkeys.has(accelerator)) {
         try {
           globalShortcut.unregister(accelerator)
-        } catch (e) {
+        } catch {
           /* ignore */
         }
       }
@@ -2262,7 +2203,7 @@ ipcMain.handle('hotkey:unregisterAll', (event) => {
       for (const acc of Array.from(registeredHotkeys)) {
         try {
           globalShortcut.unregister(acc)
-        } catch (e) {
+        } catch {
           /* ignore */
         }
       }
@@ -2336,6 +2277,18 @@ ipcMain.handle('updater:downloadUpdate', async (event) => {
     return { success: false, error: 'dev_mode' }
   }
 
+  if (updateDownloaded) {
+    console.warn('[Updater] Already downloaded, skipping')
+    return { success: true, alreadyDownloaded: true }
+  }
+
+  // 防止重复下载（连点按钮会触发多次下载，electron-updater 会直接抛错）
+  if (isDownloadingUpdate) {
+    console.warn('[Updater] Already downloading, skipping...')
+    return { success: false, error: 'already_downloading' }
+  }
+
+  isDownloadingUpdate = true
   try {
     console.warn('[Updater] Starting download...')
     await autoUpdater.downloadUpdate()
@@ -2344,6 +2297,8 @@ ipcMain.handle('updater:downloadUpdate', async (event) => {
     console.error('[Updater] Download failed:', err)
     sendToMainWindow('updater:error', { message: err.message })
     return { success: false, error: err.message }
+  } finally {
+    isDownloadingUpdate = false
   }
 })
 
@@ -2368,9 +2323,24 @@ function removeAllAutoUpdaterListeners() {
   autoUpdaterListeners.length = 0
 }
 
+// GitHub provider 的 releaseNotes 可能是数组（多条目），统一归一成字符串，前端无需分支处理
+function normalizeReleaseNotes(releaseNotes) {
+  if (!releaseNotes) return ''
+  if (typeof releaseNotes === 'string') return releaseNotes
+  if (Array.isArray(releaseNotes)) {
+    return releaseNotes
+      .map((n) => (typeof n === 'string' ? n : n && n.note ? n.note : ''))
+      .filter(Boolean)
+      .join('\n\n')
+  }
+  return String(releaseNotes)
+}
+
 function setupAutoUpdater() {
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = true
+  // 防止误发旧版本导致用户被降级
+  autoUpdater.allowDowngrade = false
 
   console.warn('[Updater] Auto updater setup started, isPackaged:', app.isPackaged)
   console.warn('[Updater] App version:', app.getVersion())
@@ -2390,7 +2360,7 @@ function setupAutoUpdater() {
     console.warn('[Updater] Update available:', info)
     sendToMainWindow('updater:update-available', {
       version: info.version,
-      releaseNotes: info.releaseNotes,
+      releaseNotes: normalizeReleaseNotes(info.releaseNotes),
       releaseDate: info.releaseDate
     })
   })
@@ -2420,21 +2390,45 @@ function setupAutoUpdater() {
 
   addAutoUpdaterListener('error', (err) => {
     console.error('[Updater] Error:', err)
+    // 带上结构化信息，前端可据此区分「无网络」与「安装包损坏」等不同场景
     sendToMainWindow('updater:error', {
-      message: err.message
+      message: (err && err.message) || String(err),
+      code: err && err.code ? err.code : null,
+      statusCode: err && err.statusCode ? err.statusCode : null
     })
   })
 
+  // 统一的检查入口：串行化所有来源（IPC / 定时 / 启动首检）的调用，避免并发请求
+  const runUpdateCheck = () => {
+    if (isQuitting || isCheckingUpdate) return
+    isCheckingUpdate = true
+    autoUpdater
+      .checkForUpdates()
+      .catch((err) => {
+        console.error('[Updater] Update check failed:', err)
+      })
+      .finally(() => {
+        isCheckingUpdate = false
+      })
+  }
+
   if (!updateCheckInterval) {
     updateCheckInterval = setInterval(() => {
-      if (!isQuitting) {
-        console.warn('[Updater] Periodic update check...')
-        autoUpdater.checkForUpdates().catch((err) => {
-          console.error('[Updater] Periodic check failed:', err)
-        })
-      }
+      console.warn('[Updater] Periodic update check...')
+      runUpdateCheck()
     }, UPDATE_CHECK_INTERVAL_MS)
     console.warn('[Updater] Periodic update check enabled (every hour)')
+  }
+
+  // 启动后做一次延迟首检，用户不必等待下一个小时才知道有新版本
+  if (!firstUpdateCheckTimer) {
+    firstUpdateCheckTimer = setTimeout(() => {
+      firstUpdateCheckTimer = null
+      if (isQuitting) return
+      console.warn('[Updater] First delayed update check...')
+      runUpdateCheck()
+    }, UPDATE_FIRST_CHECK_DELAY_MS)
+    console.warn('[Updater] First update check scheduled in 20s')
   }
 
   console.warn('[Updater] Auto updater setup complete')
@@ -2447,8 +2441,8 @@ function sendToMainWindow(channel, data) {
 }
 
 ipcMain.on('notification:send', (event, { title, body, taskId }) => {
-  // 允许主窗口和调试窗口发送通知
-  if (!isFromMain(event) && !isFromDebug(event)) return
+  // 允许主窗口发送通知
+  if (!isFromMain(event)) return
 
   // 参数验证
   if (!validateString(title) || !validateString(body, 2048)) {
@@ -2509,7 +2503,12 @@ ipcMain.on('notification:send', (event, { title, body, taskId }) => {
 const sendReminderAction = (payload, preferredSender) => {
   const channel = 'reminder:action'
   // 首选 mainWindow：提醒调度、store mutations 与任务导航的真实载体
-  if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents && !mainWindow.webContents.isDestroyed()) {
+  if (
+    mainWindow &&
+    !mainWindow.isDestroyed() &&
+    mainWindow.webContents &&
+    !mainWindow.webContents.isDestroyed()
+  ) {
     try {
       mainWindow.webContents.send(channel, payload)
       return
@@ -2551,10 +2550,9 @@ const parseSnoozeActionToMinutes = (action) => {
 
 ipcMain.handle('notification:show', (event, payload) => {
   try {
-    // 允许所有本 app 窗口（主端/调试/番茄钟/迷你/快速添加窗口）发送通知
+    // 允许所有本 app 窗口（主端/番茄钟/迷你/快速添加窗口）发送通知
     const allowed =
       isFromMain(event) ||
-      isFromDebug(event) ||
       isFromMini(event) ||
       isFromPomodoroFullscreen(event) ||
       isFromPomodoroFab(event) ||
@@ -2655,14 +2653,7 @@ const PROTOCOL_SCHEME = 'choyeon-todo'
 // 在所有可用窗口中广播协议 URL（主/子窗口都可能需要 quickadd）
 function broadcastProtocolUrl(url) {
   if (!url) return
-  const allWindows = [
-    mainWindow,
-    miniWindow,
-    pomodoroFabWindow,
-    pomodoroWindow,
-    quickAddWindow,
-    debugWindow
-  ]
+  const allWindows = [mainWindow, miniWindow, pomodoroFabWindow, pomodoroWindow, quickAddWindow]
   for (const win of allWindows) {
     if (!win || win.isDestroyed()) continue
     if (!win.webContents || win.webContents.isDestroyed()) continue
@@ -2720,7 +2711,7 @@ function registerTask9IPC() {
         path: process.execPath,
         args: appSettings.autoStart ? ['--hidden'] : []
       }
-    } catch (e) {
+    } catch {
       // fallback 到内存设置
       return {
         ok: true,
@@ -2752,7 +2743,7 @@ function registerTask9IPC() {
   app.once('will-quit', cleanupTempDragFiles)
 
   ipcMain.handle('task:startDrag', (event, payload) => {
-    const allowed = isFromMain(event) || isFromMini(event) || isFromDebug(event)
+    const allowed = isFromMain(event) || isFromMini(event)
     if (!allowed) return { ok: false, err: 'forbidden' }
     if (!payload || typeof payload !== 'object') return { ok: false, err: 'invalid_payload' }
     try {
@@ -2761,7 +2752,8 @@ function registerTask9IPC() {
 
       const taskId = typeof payload.taskId === 'string' ? payload.taskId : `task_${Date.now()}`
       const html = typeof payload.html === 'string' ? payload.html : ''
-      const plainText = typeof payload.plainText === 'string' ? payload.plainText : String(payload.title || taskId)
+      const plainText =
+        typeof payload.plainText === 'string' ? payload.plainText : String(payload.title || taskId)
 
       const dragItem = {
         data: {
@@ -2965,6 +2957,11 @@ function cleanupAllResources() {
     updateCheckInterval = null
   }
 
+  if (firstUpdateCheckTimer) {
+    clearTimeout(firstUpdateCheckTimer)
+    firstUpdateCheckTimer = null
+  }
+
   if (crashReloadTimeout) {
     clearTimeout(crashReloadTimeout)
     crashReloadTimeout = null
@@ -2981,14 +2978,13 @@ function cleanupAllResources() {
 }
 
 function closeAllChildWindows() {
-  const windows = [debugWindow, pomodoroWindow, pomodoroFabWindow, miniWindow, quickAddWindow]
+  const windows = [pomodoroWindow, pomodoroFabWindow, miniWindow, quickAddWindow]
   for (const win of windows) {
     if (win && !win.isDestroyed()) {
       win.removeAllListeners()
       win.close()
     }
   }
-  debugWindow = null
   pomodoroWindow = null
   pomodoroFabWindow = null
   miniWindow = null

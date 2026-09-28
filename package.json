@@ -70,7 +70,6 @@
       "!dist-web/**/*.map",
       "electron/main.cjs",
       "electron/preload.cjs",
-      "electron/debug-preload.cjs",
       "package.json"
     ],
     "extraResources": [

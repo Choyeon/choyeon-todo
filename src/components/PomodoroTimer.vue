@@ -150,15 +150,28 @@
         />
       </div>
       <div class="custom-actions">
-        <button class="custom-btn cancel" :aria-label="$t('common.cancel')" @click="pomodoroStore.isCustomEditing = false">
+        <button
+          class="custom-btn cancel"
+          :aria-label="$t('common.cancel')"
+          @click="pomodoroStore.isCustomEditing = false"
+        >
           {{ $t('common.cancel') }}
         </button>
-        <button class="custom-btn confirm" :aria-label="$t('common.confirm')" @click="pomodoroStore.applyCustomDuration()">
+        <button
+          class="custom-btn confirm"
+          :aria-label="$t('common.confirm')"
+          @click="pomodoroStore.applyCustomDuration()"
+        >
           {{ $t('common.confirm') }}
         </button>
       </div>
     </div>
-    <button v-else class="custom-duration-toggle" :aria-label="$t('pomodoro.customDuration')" @click="pomodoroStore.isCustomEditing = true">
+    <button
+      v-else
+      class="custom-duration-toggle"
+      :aria-label="$t('pomodoro.customDuration')"
+      @click="pomodoroStore.isCustomEditing = true"
+    >
       <Edit3 :size="12" />
       <span>{{ $t('pomodoro.customDuration') }}</span>
     </button>
@@ -255,7 +268,12 @@
       </button>
     </div>
 
-    <button class="fullscreen-btn" :aria-label="$t('pomodoro.fullscreen')" @click="openFullscreen" :title="$t('pomodoro.fullscreen')">
+    <button
+      class="fullscreen-btn"
+      :aria-label="$t('pomodoro.fullscreen')"
+      @click="openFullscreen"
+      :title="$t('pomodoro.fullscreen')"
+    >
       <Maximize2 :size="16" />
       <span>{{ $t('pomodoro.fullscreen') }}</span>
     </button>
@@ -272,7 +290,11 @@
     </button>
 
     <div class="noise-section">
-      <button class="noise-toggle-btn" :aria-label="$t('pomodoro.whiteNoise')" @click="showNoisePanel = !showNoisePanel">
+      <button
+        class="noise-toggle-btn"
+        :aria-label="$t('pomodoro.whiteNoise')"
+        @click="showNoisePanel = !showNoisePanel"
+      >
         <Volume2 :size="16" />
         <span>{{ $t('pomodoro.whiteNoise') }}</span>
         <ChevronDown :size="14" class="chevron" :class="{ open: showNoisePanel }" />

@@ -1,23 +1,55 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getTodayStr, formatDateStr, parseDateStr } from '../utils/date'
+import { formatDateStr } from '../utils/date'
 
 const STORAGE_KEY = 'todo_filters_v3'
 
 const VALID_FIELDS = new Set([
-  'title', 'date', 'time', 'completed', 'important', 'priority',
-  'overdue', 'tags', 'categoryId', 'listId', 'areaId', 'assignee',
-  'parentId', 'headingId', 'createdBy', 'keywords'
+  'title',
+  'date',
+  'time',
+  'completed',
+  'important',
+  'priority',
+  'overdue',
+  'tags',
+  'categoryId',
+  'listId',
+  'areaId',
+  'assignee',
+  'parentId',
+  'headingId',
+  'createdBy',
+  'keywords'
 ])
 
 const VALID_OPS = new Set([
-  'eq', 'ne', 'in', 'notIn', 'gt', 'gte', 'lt', 'lte',
-  'between', 'contains', 'regex', 'isNull', 'exists'
+  'eq',
+  'ne',
+  'in',
+  'notIn',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'between',
+  'contains',
+  'regex',
+  'isNull',
+  'exists'
 ])
 
 const VALID_SORT_FIELDS = new Set([
-  'title', 'date', 'time', 'priority', 'important', 'completed',
-  'createdAt', 'completedAt', 'order', 'overdue'
+  'title',
+  'date',
+  'time',
+  'priority',
+  'important',
+  'completed',
+  'createdAt',
+  'completedAt',
+  'order',
+  'overdue'
 ])
 
 const VALID_DIRS = new Set(['asc', 'desc'])
@@ -53,9 +85,7 @@ const extractFieldValue = (task, field, ctx = {}) => {
       if (task.date < todayStr) return true
       if (task.date === todayStr && task.time) {
         const currentHM =
-          String(now.getHours()).padStart(2, '0') +
-          ':' +
-          String(now.getMinutes()).padStart(2, '0')
+          String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
         if (task.time < currentHM) return true
       }
       return false
@@ -131,7 +161,12 @@ const evaluateCondition = (fieldValue, op, condValue, unit) => {
         }
         return fieldValue.includes(condValue)
       }
-      if (typeof fieldValue === 'string' && fieldValue && condValue !== null && condValue !== undefined) {
+      if (
+        typeof fieldValue === 'string' &&
+        fieldValue &&
+        condValue !== null &&
+        condValue !== undefined
+      ) {
         return fieldValue.toString().toLowerCase().includes(String(condValue).toLowerCase())
       }
       return false
@@ -153,14 +188,6 @@ const evaluateCondition = (fieldValue, op, condValue, unit) => {
     default:
       return false
   }
-}
-
-// ========== Unit-based date offset (for value translation) ==========
-const applyUnitToValue = (fieldValue, baseValue, unit) => {
-  // If both sides are date strings and unit is provided, treat value as offset
-  // This is a helper used externally — we just compare strings directly.
-  // The `unit` is kept in the cond metadata for UI display.
-  return baseValue
 }
 
 // ========== Predicate compiler ==========
@@ -229,7 +256,7 @@ const applySort = (tasks, sort) => {
     }
     if (va === null || va === undefined) va = ''
     if (vb === null || vb === undefined) vb = ''
-    let cmp = 0
+    let cmp
     if (typeof va === 'number' && typeof vb === 'number') {
       cmp = va - vb
     } else if (typeof va === 'boolean' && typeof vb === 'boolean') {
@@ -253,8 +280,7 @@ export const getMyDayRecommendations = ({
   now = new Date()
 }) => {
   const enabled = settings.myDaySmartEnabled !== false
-  const maxCount =
-    typeof settings.myDaySmartCount === 'number' ? settings.myDaySmartCount : 15
+  const maxCount = typeof settings.myDaySmartCount === 'number' ? settings.myDaySmartCount : 15
   const finalCount = Math.max(1, Math.min(100, Math.round(maxCount)))
 
   if (!enabled) return []
@@ -262,9 +288,7 @@ export const getMyDayRecommendations = ({
 
   const todayStr = formatDateStr(now)
   const currentHM =
-    String(now.getHours()).padStart(2, '0') +
-    ':' +
-    String(now.getMinutes()).padStart(2, '0')
+    String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
 
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
@@ -476,12 +500,7 @@ export const useFilterStore = defineStore('filter', () => {
             .map((g) => ({
               logic: g.logic === 'OR' ? 'OR' : 'AND',
               conds: g.conds
-                .filter(
-                  (c) =>
-                    c &&
-                    VALID_FIELDS.has(c.field) &&
-                    VALID_OPS.has(c.op)
-                )
+                .filter((c) => c && VALID_FIELDS.has(c.field) && VALID_OPS.has(c.op))
                 .map((c) => ({
                   field: c.field,
                   op: c.op,
@@ -508,7 +527,9 @@ export const useFilterStore = defineStore('filter', () => {
     const merged = { ...existing, ...patch }
 
     if (patch.name !== undefined) {
-      const name = String(patch.name || '').trim().slice(0, 100)
+      const name = String(patch.name || '')
+        .trim()
+        .slice(0, 100)
       if (!name) return false
       merged.name = name
     }
@@ -517,10 +538,7 @@ export const useFilterStore = defineStore('filter', () => {
       merged.sectionId = typeof patch.sectionId === 'string' ? patch.sectionId : null
     }
     if (patch.sort !== undefined) {
-      if (
-        patch.sort &&
-        VALID_SORT_FIELDS.has(patch.sort.field)
-      ) {
+      if (patch.sort && VALID_SORT_FIELDS.has(patch.sort.field)) {
         merged.sort = {
           field: patch.sort.field,
           dir: VALID_DIRS.has(patch.sort.dir) ? patch.sort.dir : 'asc'
@@ -536,12 +554,7 @@ export const useFilterStore = defineStore('filter', () => {
           .map((g) => ({
             logic: g.logic === 'OR' ? 'OR' : 'AND',
             conds: g.conds
-              .filter(
-                (c) =>
-                  c &&
-                  VALID_FIELDS.has(c.field) &&
-                  VALID_OPS.has(c.op)
-              )
+              .filter((c) => c && VALID_FIELDS.has(c.field) && VALID_OPS.has(c.op))
               .map((c) => ({
                 field: c.field,
                 op: c.op,

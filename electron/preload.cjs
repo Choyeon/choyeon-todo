@@ -13,9 +13,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeWindow: () => ipcRenderer.send('window:close'),
   isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
   openDevTools: () => ipcRenderer.send('debug:openDevTools'),
-  openDebugWindow: () => ipcRenderer.send('debug:openWindow'),
-  closeDebugWindow: () => ipcRenderer.send('debug:closeWindow'),
-  minimizeDebugWindow: () => ipcRenderer.send('debug:minimizeWindow'),
   sendNotification: (title, body, taskId) =>
     ipcRenderer.send('notification:send', { title, body, taskId }),
   syncTasks: (tasks, categories) => ipcRenderer.send('tasks:sync', { tasks, categories }),
@@ -248,4 +245,3 @@ contextBridge.exposeInMainWorld('ct', {
     throw new Error(`unknown channel: ${channel}`)
   }
 })
-

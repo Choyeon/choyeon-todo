@@ -19,7 +19,13 @@ export default {
     selectColor: '色を選択',
     currentlySelected: '選択中',
     more: 'その他',
-    clear: 'クリア'
+    clear: 'クリア',
+    actions: '操作',
+    collapse: '折りたたむ',
+    expand: '展開',
+    completed: '完了済み',
+    incomplete: '未完了',
+    menu: 'メニュー'
   },
   mini: {
     openMain: 'メインウィンドウを開く',
@@ -57,7 +63,9 @@ export default {
     habitTracker: '習慣トラッカー',
     dailyReview: '毎日の振り返り',
     achievement: 'アチーブメント',
-    review: 'レビュー'
+    review: 'レビュー',
+    filters: 'フィルター',
+    sidebarAriaLabel: 'サイドバー'
   },
   task: {
     newTask: '新規タスク',
@@ -219,7 +227,13 @@ export default {
     activityEmpty: 'まだ操作履歴はありません',
     activityCreated: 'タスクを作成しました',
     activityEdited: 'タスク内容を編集しました',
-    activityAttachmentPrefix: 'ファイルを添付: '
+    activityAttachmentPrefix: 'ファイルを添付: ',
+    empty: '未連携のタスク',
+    nextWeek: '来週',
+    setDate: '日付を設定',
+    blockedByAria: '{count} 件の先行タスクにブロックされています',
+    blockedByTooltip: '{count} 件の先行タスクにブロックされています',
+    subProgressAria: 'サブタスク完了 {done}/{total}'
   },
   date: {
     weekdays: ['日', '月', '火', '水', '木', '金', '土'],
@@ -260,10 +274,23 @@ export default {
     renamePrompt: 'カテゴリ"{name}"の名前を変更',
     deleteConfirm: 'カテゴリ"{name}"を削除しますか？'
   },
+  filters: {
+    addNew: '新しいフィルター',
+    rename: '名前を変更',
+    duplicate: '複製',
+    pin: 'ピン留め',
+    unpin: 'ピン留めを解除',
+    delete: '削除',
+    namePrompt: 'フィルター名を入力してください',
+    renamePrompt: 'フィルター「{name}」の名前を変更',
+    deleteConfirm: 'フィルター「{name}」を削除しますか？'
+  },
   sidebar: {
     expand: '展開',
     collapse: '折りたたむ',
     expandSidebar: 'サイドバーを展開',
+    collapseSection: 'セクションを折りたたむ',
+    expandSection: 'セクションを展開',
     collapseSidebar: 'サイドバーを折りたたむ'
   },
   titlebar: {
@@ -329,6 +356,7 @@ export default {
     restartAndUpdate: '再起動して更新',
     upToDate: '最新バージョンです',
     updateError: '更新に失敗しました',
+    updateNetworkError: 'ネットワーク接続に失敗しました。接続を確認して再試行してください',
     shortcuts: 'キーボードショートカット',
     data: 'データ',
     exportData: 'データをエクスポート',
@@ -433,7 +461,9 @@ export default {
     noise_pink: 'ピンクノイズ',
     noise_brown: 'ブラウンノイズ',
     noise_rain: '雨音',
-    noise_cafe: 'カフェ'
+    noise_cafe: 'カフェ',
+    mode: 'モード',
+    noiseVolume: 'ホワイトノイズ音量'
   },
   inbox: {
     itemsToOrganize: '件の整理待ちアイテム',
@@ -449,19 +479,40 @@ export default {
   },
   template: {
     title: 'タスクテンプレート',
-    createTemplate: 'テンプレートを作成',
-    editTemplate: 'テンプレートを編集',
     useTemplate: 'テンプレートを使用',
-    templateName: 'テンプレート名',
-    templateIcon: 'テンプレートアイコン',
-    templateColor: 'テンプレートカラー',
-    noTemplates: 'テンプレートがありません',
-    noTemplatesDesc: 'テンプレートを作成して、よく使うタスクを素早く追加できます',
     deleteConfirm: 'テンプレート「{name}」を削除しますか？',
-    templateCreated: 'テンプレートが作成されました',
-    templateUpdated: 'テンプレートが更新されました',
-    templateDeleted: 'テンプレートが削除されました',
-    templateApplied: 'テンプレートが適用されました'
+    myTemplates: 'マイテンプレート',
+    createTitle: 'テンプレートを作成',
+    editTitle: 'テンプレートを編集',
+    useTitle: 'テンプレートを使用',
+    name: 'テンプレート名',
+    namePlaceholder: 'テンプレート名を入力...',
+    taskTitle: 'タスク名',
+    taskTitlePlaceholder: 'タスク名を入力...',
+    notes: 'メモ',
+    notesPlaceholder: 'メモを追加...',
+    subtasks: 'サブタスク',
+    addSubtask: 'サブタスクを追加',
+    subtaskPlaceholder: 'サブタスクを入力...',
+    date: '日付',
+    time: '時刻',
+    reminder: 'リマインダー',
+    priority: '優先度',
+    category: 'カテゴリ',
+    tags: 'タグ',
+    important: '重要',
+    icon: 'アイコン',
+    color: '色',
+    create: '作成',
+    edit: '編集',
+    delete: '削除',
+    empty: 'テンプレートがありません',
+    createFirst: '最初のテンプレートを作成',
+    deleteConfirmText: 'テンプレート「{name}」を削除しますか？この操作は取り消せません。',
+    created: 'テンプレートを作成しました',
+    updated: 'テンプレートを更新しました',
+    deleted: 'テンプレートを削除しました',
+    applied: 'テンプレートを適用しました'
   },
   dailyReview: {
     title: '毎日の振り返り',
@@ -495,6 +546,35 @@ export default {
     targetDays: '目標日数',
     deleteConfirm: 'この習慣を削除しますか？',
     pleaseEnterName: '習慣名を入力してください'
+  },
+  karma: {
+    title: 'Karma',
+    today: '今日',
+    badges: 'バッジ',
+    totalBadges: '累計バッジ',
+    streak: '連続',
+    longest: '最長',
+    recentBadges: '最近獲得したバッジ',
+    noBadge: 'まだバッジがありません。引き続き頑張りましょう！',
+    latest: '最新',
+    nextLevel: '次のレベル',
+    max: 'MAX',
+    karmaChange: 'Karma 変動',
+    karmaEnd: '現在'
+  },
+  report: {
+    weekly: '週次',
+    monthly: '月次',
+    weeklyTitle: '週次レポート',
+    monthlyTitle: '月次レポート',
+    bestDay: 'ベストデー',
+    peakHour: 'ピーク時間',
+    mom: '前月比',
+    copy: 'MDをコピー',
+    copied: 'コピー済み ✓',
+    download: 'MDをダウンロード',
+    nextWeekSg: '来週の提案',
+    nextMonthSg: '来月の提案'
   },
   stats: {
     title: '統計',
@@ -541,7 +621,22 @@ export default {
     dailyAverageCreated: '1日平均 {count}',
     dayUnit: '日',
     countUnit: '個',
-    timesUnit: '回'
+    timesUnit: '回',
+    advancedStats: '詳細統計',
+    githubHeatmap: 'アクティビティヒートマップ',
+    focusSummary: '集中サマリー',
+    todayFocus: '今日の集中',
+    streakWeek: '今週の連続',
+    deepFocus: 'ディープフォーカス',
+    distractionRate: '中断率',
+    minutesUnit: '分',
+    daysWithActivity: '日アクティブ',
+    deepFocusMinutes: 'ディープ',
+    noData: 'データなし',
+    range30d: '直近30日',
+    range90d: '直近90日',
+    range180d: '直近180日',
+    rangeYtd: '今年'
   },
   empty: {
     title: 'タスクがありません',
@@ -786,17 +881,21 @@ export default {
     sectionOther: 'その他'
   },
   onboarding: {
+    title: '導入ガイド',
     skip: 'スキップ',
     next: '次へ',
     prev: '戻る',
     finish: '使い始める',
     step1Title: 'Choyeon Todo へようこそ',
-    step1Desc: 'すっきりと効率的に集中できるタスク管理ツールです。Ctrl+K でいつでもコマンドパレットを呼び出し、操作をすばやく実行できます。',
+    step1Desc:
+      'すっきりと効率的に集中できるタスク管理ツールです。Ctrl+K でいつでもコマンドパレットを呼び出し、操作をすばやく実行できます。',
     step2Title: 'スマート入力でワンステップ',
-    step2Desc: '「明日の午後3時 会議 重要」のように入力すると、日付・時刻・優先度を自動で認識します。',
+    step2Desc:
+      '「明日の午後3時 会議 重要」のように入力すると、日付・時刻・優先度を自動で認識します。',
     step3Title: 'ポモドーロで集中＆休憩',
     step3Desc: 'Ctrl+Shift+P でポモドーロタイマーを開始。25分集中したら、心地よい休憩を促します。',
     step4Title: 'ショートカットで効率UP',
-    step4Desc: 'Ctrl+N で新規タスク、Ctrl+/ で全ショートカット表示、J/K でタスク移動、Space で完了切替——すべてキーボードで完結します。'
+    step4Desc:
+      'Ctrl+N で新規タスク、Ctrl+/ で全ショートカット表示、J/K でタスク移動、Space で完了切替——すべてキーボードで完結します。'
   }
 }

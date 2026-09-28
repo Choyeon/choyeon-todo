@@ -21,9 +21,11 @@
                 ref="inputRef"
                 type="text"
                 class="prompt-input"
+                name="prompt-input"
                 :value="inputValue"
                 :placeholder="placeholder"
                 :maxlength="maxLength > 0 ? maxLength : undefined"
+                :aria-label="title || message || placeholder"
                 @input="handleInput"
                 autocomplete="off"
                 spellcheck="false"
@@ -99,8 +101,12 @@ watch(visible, (val) => {
 }
 
 @keyframes promptFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .prompt-dialog {
@@ -149,7 +155,10 @@ watch(visible, (val) => {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   outline: none;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), background var(--transition-smooth);
+  transition:
+    border-color var(--transition-smooth),
+    box-shadow var(--transition-smooth),
+    background var(--transition-smooth);
   box-sizing: border-box;
 }
 
@@ -191,7 +200,10 @@ watch(visible, (val) => {
   font-family: var(--font-body);
   cursor: pointer;
   border: none;
-  transition: background var(--transition-smooth), color var(--transition-smooth), box-shadow var(--transition-smooth);
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth),
+    box-shadow var(--transition-smooth);
   min-width: 72px;
 }
 
@@ -226,11 +238,15 @@ watch(visible, (val) => {
 }
 
 .prompt-pop-enter-active {
-  transition: transform var(--duration-moderate) var(--ease-spring-soft), opacity var(--duration-normal) var(--ease-out-quart);
+  transition:
+    transform var(--duration-moderate) var(--ease-spring-soft),
+    opacity var(--duration-normal) var(--ease-out-quart);
 }
 
 .prompt-pop-leave-active {
-  transition: transform var(--duration-normal) var(--ease-out-quart), opacity var(--duration-fast) var(--ease-out-quart);
+  transition:
+    transform var(--duration-normal) var(--ease-out-quart),
+    opacity var(--duration-fast) var(--ease-out-quart);
 }
 
 .prompt-pop-enter-from {

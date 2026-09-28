@@ -27,7 +27,13 @@ const LANG_KEYWORDS = {
     nextBusinessDay: ['下个工作日', '下一个工作日', '下一工作日'],
     lastDayOfMonth: ['本月最后一天', '月末', '月底', '每月最后一天', '月尾'],
     nthPrefix: ['第'],
-    ordinal: { 1: ['一', '1', '1st'], 2: ['二', '2', '2nd'], 3: ['三', '3', '3rd'], 4: ['四', '4', '4th'], 5: ['五', '5', '5th'] },
+    ordinal: {
+      1: ['一', '1', '1st'],
+      2: ['二', '2', '2nd'],
+      3: ['三', '3', '3rd'],
+      4: ['四', '4', '4th'],
+      5: ['五', '5', '5th']
+    },
     morning: ['早上', '上午', '清晨', '凌晨'],
     afternoon: ['下午', '午后'],
     evening: ['晚上', '傍晚', '夜里', '夜间'],
@@ -88,7 +94,13 @@ const LANG_KEYWORDS = {
     aWeekToday: ['a week today', 'a week from today', 'one week today'],
     lastDayOfMonth: ['last day of the month', 'end of the month', 'eom', 'month end'],
     nthPrefix: [],
-    ordinal: { 1: ['1st', 'first', '1'], 2: ['2nd', 'second', '2'], 3: ['3rd', 'third', '3'], 4: ['4th', 'fourth', '4'], 5: ['5th', 'fifth', '5'] },
+    ordinal: {
+      1: ['1st', 'first', '1'],
+      2: ['2nd', 'second', '2'],
+      3: ['3rd', 'third', '3'],
+      4: ['4th', 'fourth', '4'],
+      5: ['5th', 'fifth', '5']
+    },
     morning: ['morning', 'am', 'a.m.', 'in the morning'],
     afternoon: ['afternoon', 'pm', 'p.m.', 'in the afternoon'],
     evening: ['evening', 'night', 'tonight', 'in the evening', 'at night'],
@@ -147,7 +159,13 @@ const LANG_KEYWORDS = {
     nextBusinessDay: ['翌営業日', '次の営業日'],
     lastDayOfMonth: ['月末', '今月末', '月の最終日', '最終日'],
     nthPrefix: ['第'],
-    ordinal: { 1: ['1', '一', '第1', '最初'], 2: ['2', '二', '第2'], 3: ['3', '三', '第3'], 4: ['4', '四', '第4'], 5: ['5', '五', '第5'] },
+    ordinal: {
+      1: ['1', '一', '第1', '最初'],
+      2: ['2', '二', '第2'],
+      3: ['3', '三', '第3'],
+      4: ['4', '四', '第4'],
+      5: ['5', '五', '第5']
+    },
     morning: ['朝', '午前', 'あさ', 'ごぜん'],
     afternoon: ['午後', 'ごご', '昼過ぎ'],
     evening: ['夜', '夕方', 'よる', 'ゆうがた', '夜間'],
@@ -225,19 +243,6 @@ const _nthWeekdayOfMonth = (year, month, nth, targetWeekday) => {
   cursor.setDate(cursor.getDate() + (nth - 1) * 7)
   if (cursor.getMonth() !== month) return null // went past the month
   return cursor
-}
-
-const _weekdayFromKeyword = (text, kw, allowLongest = '') => {
-  // returns {weekday:number, matched:string} or null
-  let best = null
-  for (const [idxStr, words] of Object.entries(kw.weekdays)) {
-    for (const w of words) {
-      if (text.includes(w) && w.length > (best ? best.length : -1) && w.length > allowLongest.length) {
-        best = { weekday: parseInt(idxStr), matched: w }
-      }
-    }
-  }
-  return best
 }
 
 const detectLanguage = (text) => {
@@ -441,14 +446,11 @@ export const parseDateKeyword = (text, now, lang = 'zh-CN') => {
     for (const p of prefixes) {
       for (const [idxStr, words] of Object.entries(kw.weekdays)) {
         for (const w of words) {
-          const comboEN = new RegExp(`(?:^|[\\s,，。])${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i')
           // Simpler: text contains p immediately followed by w
           const comboPattern = p + w
           if (text.includes(comboPattern) && comboPattern.length > matched.length) {
             const tw = parseInt(idxStr)
             const cw = now.getDay()
-            let diff = tw - cw + weekOffset * 7
-            if (weekOffset === 0 && diff < 0) diff += 0 // 本周，即使已过也算这周 (e.g. 本周三)
             // for "本", interpret as: if weekday passed, still use that weekday (same week)
             let startDiff = cw === 0 ? -6 : 1 - cw // Monday of this week
             const mondayOfThisWeek = _addDaysRaw(now, startDiff)
@@ -458,7 +460,13 @@ export const parseDateKeyword = (text, now, lang = 'zh-CN') => {
           } else {
             // Try loose for English: "next Monday" (space between)
             const pTrim = p.trim()
-            const re = new RegExp('(^|\\s)' + pTrim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+            const re = new RegExp(
+              '(^|\\s)' +
+                pTrim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+                '\\s*' +
+                w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+              'i'
+            )
             const mm = text.match(re)
             if (mm && mm[0].trim().length > matched.length) {
               const tw = parseInt(idxStr)
@@ -517,16 +525,21 @@ export const parseDateKeyword = (text, now, lang = 'zh-CN') => {
 
   // ========== v3: X月第N个周W ==========
   // 中文: 5月第二个星期一
-  const zhNthMatch = text.match(/(\d{1,2})\s*月\s*(?:第)?\s*([一二三四五12345])\s*个?\s*(周[一二三四五六日天]|星期[一二三四五六日天]|礼拜[一二三四五六日天])/)
+  const zhNthMatch = text.match(
+    /(\d{1,2})\s*月\s*(?:第)?\s*([一二三四五12345])\s*个?\s*(周[一二三四五六日天]|星期[一二三四五六日天]|礼拜[一二三四五六日天])/
+  )
   if (zhNthMatch && zhNthMatch[0].length > matched.length) {
     const month = parseInt(zhNthMatch[1]) - 1
-    const cnOrd = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 }
+    const cnOrd = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 }
     const nth = cnOrd[zhNthMatch[2]] || 1
     let wkStr = zhNthMatch[3]
-    const wkMap = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0, '天': 0 }
+    const wkMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
     let tw = null
     for (const ch of wkStr) {
-      if (wkMap[ch] !== undefined) { tw = wkMap[ch]; break }
+      if (wkMap[ch] !== undefined) {
+        tw = wkMap[ch]
+        break
+      }
     }
     if (month >= 0 && month <= 11 && nth >= 1 && nth <= 5 && tw !== null) {
       let year = now.getFullYear()
@@ -539,13 +552,54 @@ export const parseDateKeyword = (text, now, lang = 'zh-CN') => {
     }
   }
   // 英文: 2nd Monday of May
-  const enNthMatch = text.match(/(\d+(?:st|nd|rd|th)?)\s*(monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun)\s*of\s*(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+  const enNthMatch = text.match(
+    /(\d+(?:st|nd|rd|th)?)\s*(monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun)\s*of\s*(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i
+  )
   if (enNthMatch && enNthMatch[0].length > matched.length) {
     const nth = parseInt(enNthMatch[1].replace(/[^0-9]/g, ''))
     const wdLower = enNthMatch[2].toLowerCase()
     const moLower = enNthMatch[3].toLowerCase()
-    const wdMap = { sunday: 0, sun: 0, monday: 1, mon: 1, tuesday: 2, tue: 2, wednesday: 3, wed: 3, thursday: 4, thu: 4, friday: 5, fri: 5, saturday: 6, sat: 6 }
-    const moMap = { january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2, april: 3, apr: 3, may: 4, june: 5, jun: 5, july: 6, jul: 6, august: 7, aug: 7, september: 8, sep: 8, october: 9, oct: 9, november: 10, nov: 10, december: 11, dec: 11 }
+    const wdMap = {
+      sunday: 0,
+      sun: 0,
+      monday: 1,
+      mon: 1,
+      tuesday: 2,
+      tue: 2,
+      wednesday: 3,
+      wed: 3,
+      thursday: 4,
+      thu: 4,
+      friday: 5,
+      fri: 5,
+      saturday: 6,
+      sat: 6
+    }
+    const moMap = {
+      january: 0,
+      jan: 0,
+      february: 1,
+      feb: 1,
+      march: 2,
+      mar: 2,
+      april: 3,
+      apr: 3,
+      may: 4,
+      june: 5,
+      jun: 5,
+      july: 6,
+      jul: 6,
+      august: 7,
+      aug: 7,
+      september: 8,
+      sep: 8,
+      october: 9,
+      oct: 9,
+      november: 10,
+      nov: 10,
+      december: 11,
+      dec: 11
+    }
     const tw = wdMap[wdLower]
     const month = moMap[moLower]
     if (nth >= 1 && nth <= 5 && tw !== undefined && month !== undefined) {
@@ -559,12 +613,14 @@ export const parseDateKeyword = (text, now, lang = 'zh-CN') => {
     }
   }
   // 日文: 5月第2月曜日
-  const jaNthMatch = text.match(/(\d{1,2})\s*月\s*第?\s*([1-5一二三四五])\s*(月|火|水|木|金|土|日)\s*曜日?/)
+  const jaNthMatch = text.match(
+    /(\d{1,2})\s*月\s*第?\s*([1-5一二三四五])\s*(月|火|水|木|金|土|日)\s*曜日?/
+  )
   if (jaNthMatch && jaNthMatch[0].length > matched.length) {
     const month = parseInt(jaNthMatch[1]) - 1
-    const cnOrd = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5 }
+    const cnOrd = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 }
     const nth = cnOrd[jaNthMatch[2]] || 1
-    const jaWd = { '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6, '日': 0 }
+    const jaWd = { 月: 1, 火: 2, 水: 3, 木: 4, 金: 5, 土: 6, 日: 0 }
     const tw = jaWd[jaNthMatch[3]]
     if (month >= 0 && month <= 11 && nth >= 1 && nth <= 5 && tw !== undefined) {
       let year = now.getFullYear()
@@ -938,17 +994,40 @@ const _parseNum = (s) => {
   // Arabic digits
   if (/^\d+$/.test(str)) return parseInt(str, 10)
   // Chinese numerals (1-99)
-  const cnDigits = { '零': 0, '〇': 0, '一': 1, '二': 2, '两': 2, '兩': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '壹': 1, '貳': 2, '參': 3, '肆': 4, '伍': 5, '陸': 6, '柒': 7, '捌': 8, '玖': 9 }
+  const cnDigits = {
+    零: 0,
+    〇: 0,
+    一: 1,
+    二: 2,
+    两: 2,
+    兩: 2,
+    三: 3,
+    四: 4,
+    五: 5,
+    六: 6,
+    七: 7,
+    八: 8,
+    九: 9,
+    壹: 1,
+    貳: 2,
+    參: 3,
+    肆: 4,
+    伍: 5,
+    陸: 6,
+    柒: 7,
+    捌: 8,
+    玖: 9
+  }
   if (str === '十') return 10
   if (/^十[一二三四五六七八九]$/.test(str)) return 10 + cnDigits[str.charAt(1)]
   if (/^[二三四五六七八九]十$/.test(str)) return cnDigits[str.charAt(0)] * 10
-  if (/^[二三四五六七八九]十[一二三四五六七八九]$/.test(str)) return cnDigits[str.charAt(0)] * 10 + cnDigits[str.charAt(2)]
+  if (/^[二三四五六七八九]十[一二三四五六七八九]$/.test(str))
+    return cnDigits[str.charAt(0)] * 10 + cnDigits[str.charAt(2)]
   if (/^[零〇一二两兩三四五六七八九壹貳參肆伍陸柒捌玖]$/.test(str)) return cnDigits[str]
   return NaN
 }
 
 export const parseRepeatExtended = (text, lang = 'zh-CN') => {
-  const kw = getKeywords(lang)
   const lower = text.toLowerCase()
   /** @type {any} */
   const cfg = { matched: '', type: null }
@@ -972,12 +1051,14 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
 
   // --- 2. Weekly patterns with weekdays ---
   // 中文: 每周一三五 / 每两周周三 / 每两周一三五 / 每周周一周三
-  const zhWeeklyMulti = text.match(/每([一二三四五六七八九十两\d]+)?周(?:周)?([一二三四五六日天][一二三四五六日天]*(?:周[一二三四五六日天])*)/)
+  const zhWeeklyMulti = text.match(
+    /每([一二三四五六七八九十两\d]+)?周(?:周)?([一二三四五六日天][一二三四五六日天]*(?:周[一二三四五六日天])*)/
+  )
   if (zhWeeklyMulti) {
     cfg.type = 'weekly'
     const everyN = zhWeeklyMulti[1] ? _parseNum(zhWeeklyMulti[1]) : 1
     if (!isNaN(everyN) && everyN > 1) cfg.everyNWeeks = everyN
-    const wkMap = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 0, '天': 0 }
+    const wkMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
     const raw = zhWeeklyMulti[2] || ''
     const wds = []
     for (const ch of raw) {
@@ -987,10 +1068,30 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
     _updateMatchIfLonger(zhWeeklyMulti[0])
   }
   // 英文: every Mon Wed Fri / every 2 weeks on Thursday
-  const enWeekMulti = text.match(/every\s+((?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s*(?:,|\s)\s*(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday))*)/i)
+  const enWeekMulti = text.match(
+    /every\s+((?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s*(?:,|\s)\s*(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday))*)/i
+  )
   if (enWeekMulti) {
     cfg.type = 'weekly'
-    const wdMap = { sunday: 0, sun: 0, monday: 1, mon: 1, tuesday: 2, tue: 2, tues: 2, wednesday: 3, wed: 3, thursday: 4, thu: 4, thur: 4, thurs: 4, friday: 5, fri: 5, saturday: 6, sat: 6 }
+    const wdMap = {
+      sunday: 0,
+      sun: 0,
+      monday: 1,
+      mon: 1,
+      tuesday: 2,
+      tue: 2,
+      tues: 2,
+      wednesday: 3,
+      wed: 3,
+      thursday: 4,
+      thu: 4,
+      thur: 4,
+      thurs: 4,
+      friday: 5,
+      fri: 5,
+      saturday: 6,
+      sat: 6
+    }
     const tokens = enWeekMulti[1].split(/\s*(?:,|\s)\s*/).filter(Boolean)
     const wds = []
     for (const t of tokens) {
@@ -1001,11 +1102,31 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
     _updateMatchIfLonger(enWeekMulti[0])
   }
   // every 2 weeks on Thursday
-  const enEveryNWeekOnW = text.match(/every\s+(\d+)\s+weeks?\s+on\s+(mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i)
+  const enEveryNWeekOnW = text.match(
+    /every\s+(\d+)\s+weeks?\s+on\s+(mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i
+  )
   if (enEveryNWeekOnW) {
     cfg.type = 'weekly'
     cfg.everyNWeeks = parseInt(enEveryNWeekOnW[1])
-    const wdMap = { sunday: 0, sun: 0, monday: 1, mon: 1, tuesday: 2, tue: 2, tues: 2, wednesday: 3, wed: 3, thursday: 4, thu: 4, thur: 4, thurs: 4, friday: 5, fri: 5, saturday: 6, sat: 6 }
+    const wdMap = {
+      sunday: 0,
+      sun: 0,
+      monday: 1,
+      mon: 1,
+      tuesday: 2,
+      tue: 2,
+      tues: 2,
+      wednesday: 3,
+      wed: 3,
+      thursday: 4,
+      thu: 4,
+      thur: 4,
+      thurs: 4,
+      friday: 5,
+      fri: 5,
+      saturday: 6,
+      sat: 6
+    }
     cfg.weekdays = [wdMap[enEveryNWeekOnW[2].toLowerCase()] || 1]
     _updateMatchIfLonger(enEveryNWeekOnW[0])
   }
@@ -1013,7 +1134,7 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
   const jaWeekly = text.match(/毎週([月火水木金土日]+)/)
   if (jaWeekly) {
     cfg.type = 'weekly'
-    const jaWd = { '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6, '日': 0 }
+    const jaWd = { 月: 1, 火: 2, 水: 3, 木: 4, 金: 5, 土: 6, 日: 0 }
     const wds = []
     for (const ch of jaWeekly[1]) {
       if (jaWd[ch] !== undefined && !wds.includes(jaWd[ch])) wds.push(jaWd[ch])
@@ -1025,7 +1146,7 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
   const jaWeeklySingle = text.match(/毎週\s*([月火水木金土日])\s*曜日?/)
   if (jaWeeklySingle) {
     cfg.type = 'weekly'
-    const jaWd = { '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6, '日': 0 }
+    const jaWd = { 月: 1, 火: 2, 水: 3, 木: 4, 金: 5, 土: 6, 日: 0 }
     cfg.weekdays = [jaWd[jaWeeklySingle[1]]]
     _updateMatchIfLonger(jaWeeklySingle[0])
   }
@@ -1087,7 +1208,8 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
 
   // --- 4. Yearly patterns ---
   // every year / annually / 每年 / 毎年
-  const yearlyFallback = lower.includes('annually') || /(每年|每一年)/.test(text) || /(毎年|まいとし)/.test(text)
+  const yearlyFallback =
+    lower.includes('annually') || /(每年|每一年)/.test(text) || /(毎年|まいとし)/.test(text)
   if (yearlyFallback && !cfg.type) {
     cfg.type = 'yearly'
     if (!cfg.matched) _updateMatchIfLonger('yearly')
@@ -1101,7 +1223,9 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
     _updateMatchIfLonger(stopZH[0])
   }
   // 英文: after 7 times then stop / 7 occurrences then stop
-  const stopEN = text.match(/(?:after\s+)?(\d+)\s*(?:times|occurrences)\s*(?:\s*then\s*)?(?:stop|end)/i)
+  const stopEN = text.match(
+    /(?:after\s+)?(\d+)\s*(?:times|occurrences)\s*(?:\s*then\s*)?(?:stop|end)/i
+  )
   if (stopEN) {
     cfg.stopAfter = parseInt(stopEN[1])
     _updateMatchIfLonger(stopEN[0])
@@ -1115,7 +1239,9 @@ export const parseRepeatExtended = (text, lang = 'zh-CN') => {
 
   // --- 6. until: 日期前重复 ---
   // 从 "2026-12-31 前重复" / "until 2026-12-31"
-  const untilDateMatch = text.match(/(?:until\s+|before\s+)?(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s*(?:前重复|前停止|之前重复|前结束)?/i)
+  const untilDateMatch = text.match(
+    /(?:until\s+|before\s+)?(\d{4})[-/](\d{1,2})[-/](\d{1,2})\s*(?:前重复|前停止|之前重复|前结束)?/i
+  )
   if (untilDateMatch) {
     const y = parseInt(untilDateMatch[1])
     const mo = parseInt(untilDateMatch[2]) - 1
@@ -1179,7 +1305,10 @@ export const parseInlineSyntax = (text, ctx = {}, lang = 'zh-CN') => {
   // --- A. Inline Priority: !0..!4 or !紧急/!high  (longer match wins) ---
   for (const [lvlStr, words] of Object.entries(kw.inlinePriority || {})) {
     for (const w of words) {
-      const pattern = new RegExp('(^|\\s)' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?=\\s|$|[，,。.！!？?、；;:：])', 'i')
+      const pattern = new RegExp(
+        '(^|\\s)' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?=\\s|$|[，,。.！!？?、；;:：])',
+        'i'
+      )
       const m = text.match(pattern)
       if (m && w.length > result.priorityMatched.length) {
         result.priority = parseInt(lvlStr)
@@ -1254,7 +1383,10 @@ export const parseInlineSyntax = (text, ctx = {}, lang = 'zh-CN') => {
       for (const a of areas || []) {
         const n1 = (a.name || '').toLowerCase()
         const n2 = name.toLowerCase()
-        if (n1 === n2 || n1.includes(n2) || n2.includes(n1)) { best = a; break }
+        if (n1 === n2 || n1.includes(n2) || n2.includes(n1)) {
+          best = a
+          break
+        }
       }
       if (best) {
         result.areaId = best.id
@@ -1306,14 +1438,16 @@ export const parseInlineSyntax = (text, ctx = {}, lang = 'zh-CN') => {
       // full date
       const fd = after.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
       if (fd) {
-        const y = parseInt(fd[1]), mo = parseInt(fd[2]) - 1, d = parseInt(fd[3])
+        const y = parseInt(fd[1]),
+          mo = parseInt(fd[2]) - 1,
+          d = parseInt(fd[3])
         if (y >= 2000 && y <= 2100 && mo >= 0 && mo <= 11 && d >= 1 && d <= 31) {
           got = formatDateStr(new Date(y, mo, d))
         }
       }
       // mm/dd
       if (!got) {
-        const md = after.match(/(\d{1,2})[\/\-](\d{1,2})/)
+        const md = after.match(/(\d{1,2})[-/](\d{1,2})/)
         if (md) {
           let mo = parseInt(md[1]) - 1
           let d = parseInt(md[2])
@@ -1354,7 +1488,7 @@ export const parseInlineSyntax = (text, ctx = {}, lang = 'zh-CN') => {
   for (const pat of pomoPatterns) {
     const m = text.match(pat)
     if (m) {
-      let total = 0
+      let total
       if (m[0].toLowerCase().includes('h') && m[2]) {
         total = parseInt(m[1]) * 60 + parseInt(m[2])
       } else if (/h|hour/i.test(m[0])) {
@@ -1379,7 +1513,8 @@ export const parseInlineSyntax = (text, ctx = {}, lang = 'zh-CN') => {
   if (result.dueUntilMatched) result.toRemove.push(result.dueUntilMatched)
   if (result.pomodoroMatched) result.toRemove.push(result.pomodoroMatched)
 
-  if (result.pomodoroEstimateMinutes !== null && !result.hints.includes('pomodoroEstimate')) result.hints.push('pomodoroEstimate')
+  if (result.pomodoroEstimateMinutes !== null && !result.hints.includes('pomodoroEstimate'))
+    result.hints.push('pomodoroEstimate')
   if (result.dueUntil && !result.hints.includes('dueUntil')) result.hints.push('dueUntil')
 
   return result
@@ -1390,7 +1525,10 @@ const _isPureURL = (str) => {
   const s = str.trim()
   // if contains any whitespace besides trim parts, skip
   if (/\s/.test(s)) return false
-  return /^(https?:\/\/|mailto:|tel:|ftp:\/\/|file:\/\/)/i.test(s) || /^[\w-]+\.[\w.-]+(?:\/[^\s]*)?$/i.test(s) && !s.includes(' ')
+  return (
+    /^(https?:\/\/|mailto:|tel:|ftp:\/\/|file:\/\/)/i.test(s) ||
+    (/^[\w-]+\.[\w.-]+(?:\/[^\s]*)?$/i.test(s) && !s.includes(' '))
+  )
 }
 
 export const smartParseTask = (inputText, options = {}) => {
@@ -1573,11 +1711,14 @@ export const smartParseTask = (inputText, options = {}) => {
 
   // 纯链接：标题为占位；否则使用清洗后的标题
   // 如果 cleanTitle 只是 originalTrim 的去标点版本，说明用户只粘贴了 URL，使用占位标题
-  const isJustURLCleaned = pureURL && originalTrim && (() => {
-    const strippedClean = cleanTitle.replace(/[\s，,。.！!？?、；;:：\/]+/g, '')
-    const strippedOrig = originalTrim.replace(/[\s，,。.！!？?、；;:：\/]+/g, '')
-    return strippedClean === strippedOrig || strippedClean.length === strippedOrig.length
-  })()
+  const isJustURLCleaned =
+    pureURL &&
+    originalTrim &&
+    (() => {
+      const strippedClean = cleanTitle.replace(/[\s，,。.！!？?、；;:：/]+/g, '')
+      const strippedOrig = originalTrim.replace(/[\s，,。.！!？?、；;:：/]+/g, '')
+      return strippedClean === strippedOrig || strippedClean.length === strippedOrig.length
+    })()
   if (pureURL) {
     if (!isJustURLCleaned && cleanTitle && cleanTitle !== originalTrim) {
       parsed.title = cleanTitle

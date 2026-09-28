@@ -247,7 +247,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const appVersion = ref(__APP_VERSION__)
 
@@ -277,11 +277,19 @@ const handleVersionClick = () => {
       clearTimeout(versionClickTimer)
       versionClickTimer = null
     }
-    if (window.electronAPI?.openDebugWindow) {
-      window.electronAPI.openDebugWindow()
+    // 开发者彩蛋：连点 5 次唤起 DevTools（仅非打包环境生效）
+    if (window.electronAPI?.openDevTools) {
+      window.electronAPI.openDevTools()
     }
   }
 }
+
+onUnmounted(() => {
+  if (versionClickTimer) {
+    clearTimeout(versionClickTimer)
+    versionClickTimer = null
+  }
+})
 </script>
 
 <style scoped>

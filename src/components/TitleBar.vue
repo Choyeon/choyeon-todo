@@ -54,7 +54,13 @@
               alt="Choyeon To Do"
               width="16"
               height="16"
-              style="display:block;width:100%;height:100%;object-fit:contain;border-radius:2px"
+              style="
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                border-radius: 2px;
+              "
             />
           </div>
           <span class="title-bar-text">Choyeon To Do</span>
@@ -181,7 +187,6 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
 const isMaximized = ref(false)
-const debugPlatform = ref(null)
 let cleanupMaximize = null
 
 const nativePlatform = computed(() => {
@@ -193,9 +198,7 @@ const nativePlatform = computed(() => {
   return 'linux'
 })
 
-const currentPlatform = computed(() => {
-  return debugPlatform.value || nativePlatform.value
-})
+const currentPlatform = computed(() => nativePlatform.value)
 
 const handleMinimize = () => {
   if (window.electronAPI?.minimizeWindow) {
@@ -219,31 +222,7 @@ const handleMenu = () => {
   // Linux 菜单按钮，暂未实现功能
 }
 
-const onStyleChange = (e) => {
-  const style = e.detail
-  debugPlatform.value = style && style !== 'auto' ? style : null
-}
-
-const onStorageChange = (e) => {
-  if (e.key === 'choyeon_debug_titlebar') {
-    const style = e.newValue
-    debugPlatform.value = style && style !== 'auto' ? style : null
-  }
-}
-
 onMounted(() => {
-  const isDebugRoute =
-    window.location.hash === '#/debug' || window.location.pathname.includes('/debug')
-  if (isDebugRoute) {
-    const savedStyle = localStorage.getItem('choyeon_debug_titlebar')
-    if (savedStyle && savedStyle !== 'auto') {
-      debugPlatform.value = savedStyle
-    }
-
-    window.addEventListener('titlebar-style-change', onStyleChange)
-    window.addEventListener('storage', onStorageChange)
-  }
-
   let cancelled = false
   if (window.electronAPI?.isMaximized) {
     window.electronAPI
@@ -264,8 +243,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('titlebar-style-change', onStyleChange)
-  window.removeEventListener('storage', onStorageChange)
   if (cleanupMaximize) {
     cleanupMaximize()
     cleanupMaximize = null

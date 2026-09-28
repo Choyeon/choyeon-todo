@@ -45,15 +45,7 @@
 import { useSnackbar } from '../composables/useSnackbar'
 import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from '@lucide/vue'
 
-const {
-  visible,
-  message,
-  actionLabel,
-  hide,
-  handleAction,
-  typeIcon,
-  typeClass
-} = useSnackbar()
+const { visible, message, actionLabel, hide, handleAction, typeIcon, typeClass } = useSnackbar()
 </script>
 
 <style scoped>
@@ -160,7 +152,9 @@ html[data-theme='dark'] .snackbar.type-info {
   border-radius: var(--radius-sm);
   font-family: var(--font-body);
   white-space: nowrap;
-  transition: background 0.15s ease, transform 0.1s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease;
 }
 .snackbar-action:hover {
   background: rgba(255, 255, 255, 0.08);
@@ -182,7 +176,9 @@ html[data-theme='dark'] .snackbar.type-info {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.15s ease, background 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
   flex-shrink: 0;
 }
 .snackbar-close:hover {

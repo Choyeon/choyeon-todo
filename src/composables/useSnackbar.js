@@ -50,7 +50,8 @@ export const useSnackbar = () => {
     type.value = normalizeType(opts.type || 'info')
     actionLabel.value = opts.actionLabel || opts.action?.label || ''
     actionCallback =
-      opts.onAction || (opts.action && typeof opts.action.onClick === 'function' ? opts.action.onClick : null)
+      opts.onAction ||
+      (opts.action && typeof opts.action.onClick === 'function' ? opts.action.onClick : null)
 
     visible.value = true
 

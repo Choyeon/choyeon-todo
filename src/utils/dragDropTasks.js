@@ -48,15 +48,11 @@ const isDeleted = (entity) => {
  * @returns {{ dropIndex:number, afterId:string|null, beforeId:string|null, parentId:string|null }}
  */
 export const buildDropIndex = (insertions, currentList, viewOpts = {}) => {
-  const viewportHeight = Math.max(0, Number(viewOpts.viewportHeight) || 0)
   const rowHeight = Math.max(8, Number(viewOpts.rowHeight) || 48)
   const vscrollOffset = Math.max(0, Number(viewOpts.vscrollOffset) || 0)
-  const nestThreshold =
-    typeof viewOpts.nestThreshold === 'number' ? viewOpts.nestThreshold : Math.max(20, rowHeight * 0.4)
 
   // Normalize insertions to single y
   let dropY = 0
-  let dropX = null
   if (Array.isArray(insertions)) {
     if (insertions.length === 0) {
       // Default: append to end
@@ -65,13 +61,11 @@ export const buildDropIndex = (insertions, currentList, viewOpts = {}) => {
       dropY = insertions[0]
     } else if (insertions[0] && typeof insertions[0].y === 'number') {
       dropY = insertions[0].y
-      if (typeof insertions[0].x === 'number') dropX = insertions[0].x
     }
   } else if (typeof insertions === 'number') {
     dropY = insertions
   } else if (insertions && typeof insertions.y === 'number') {
     dropY = insertions.y
-    if (typeof insertions.x === 'number') dropX = insertions.x
   }
 
   const listLen = currentList.length
@@ -86,7 +80,6 @@ export const buildDropIndex = (insertions, currentList, viewOpts = {}) => {
 
   // Compute which row index we are above / within (before clamping)
   const rawEstimatedRow = Math.floor(contentY / rowHeight)
-  const rowFloat = contentY / rowHeight
   let estimatedRow = rawEstimatedRow
   let offsetInRow = contentY - rawEstimatedRow * rowHeight
 
@@ -135,8 +128,8 @@ export const buildDropIndex = (insertions, currentList, viewOpts = {}) => {
   if (dropIndex > listLen) dropIndex = listLen
 
   // Compute anchors
-  let afterId = null
-  let beforeId = null
+  let afterId
+  let beforeId
 
   if (insertMode === 'nest') {
     // Nested drops: anchors are at the list level (handled by parentId in reorder)
@@ -192,10 +185,10 @@ export const validateDrop = (payload) => {
 
   // Normalize target
   const normalizedTarget = {
-    listId: target.listId !== undefined ? (target.listId || null) : null,
-    headingId: target.headingId !== undefined ? (target.headingId || null) : null,
-    parentId: target.parentId !== undefined ? (target.parentId || null) : null,
-    areaId: target.areaId !== undefined ? (target.areaId || null) : null
+    listId: target.listId !== undefined ? target.listId || null : null,
+    headingId: target.headingId !== undefined ? target.headingId || null : null,
+    parentId: target.parentId !== undefined ? target.parentId || null : null,
+    areaId: target.areaId !== undefined ? target.areaId || null : null
   }
 
   // DAG validation: target parent must not be a descendant of any dragged task
@@ -286,10 +279,10 @@ export const applyDrop = (payload) => {
 
   // Validate and use normalized target if provided
   let normalizedTarget = {
-    listId: target.listId !== undefined ? (target.listId || null) : null,
-    headingId: target.headingId !== undefined ? (target.headingId || null) : null,
-    parentId: target.parentId !== undefined ? (target.parentId || null) : null,
-    areaId: target.areaId !== undefined ? (target.areaId || null) : null
+    listId: target.listId !== undefined ? target.listId || null : null,
+    headingId: target.headingId !== undefined ? target.headingId || null : null,
+    parentId: target.parentId !== undefined ? target.parentId || null : null,
+    areaId: target.areaId !== undefined ? target.areaId || null : null
   }
   const validation = validateDrop(payload)
   if (!validation.ok) {
@@ -307,8 +300,8 @@ export const applyDrop = (payload) => {
   // The first task gets the primary anchors; subsequent tasks get chained afterId links.
   for (let i = 0; i < validIds.length; i++) {
     const taskId = validIds[i]
-    let moveAfterId = null
-    let moveBeforeId = null
+    let moveAfterId
+    let moveBeforeId
 
     if (i === 0) {
       moveAfterId = afterId

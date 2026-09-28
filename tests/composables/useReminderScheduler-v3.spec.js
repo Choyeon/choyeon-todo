@@ -132,11 +132,16 @@ describe('resolveSnoozePreset', () => {
     expect(r.offsetMs).toBeLessThanOrEqual(33 * 3600 * 1000 + 60 * 1000)
   })
 
-  test('next_week 返回 kind === nextWeek 且偏移 >= 6.5 天', () => {
+  test('next_week 返回 kind === nextWeek 且偏移落在 6.3~7.2 天（覆盖当前 00:xx～23:xx 所有时刻）', () => {
     const r = resolveSnoozePreset({ preset: 'next_week' })
     expect(r.kind).toBe('nextWeek')
-    expect(r.offsetMs).toBeGreaterThanOrEqual(6.5 * 24 * 3600 * 1000)
-    expect(r.offsetMs).toBeLessThanOrEqual(8 * 24 * 3600 * 1000)
+    expect(typeof r.customDateTs).toBe('number')
+    // 目标时刻恒为「今天 +7 天 的 09:00」，因此偏移量随当前时刻浮动：
+    //   - now 为今日 00:00 → 约 7 天 9 小时（上界）
+    //   - now 为今日 23:59 → 约 6 天 9 小时（下界）
+    // 取 6.3~7.2 天，既容纳夏令时 ±1h，也能拦住「少算一天 / 多算一周」的回归
+    expect(r.offsetMs).toBeGreaterThanOrEqual(6.3 * 24 * 3600 * 1000)
+    expect(r.offsetMs).toBeLessThanOrEqual(7.2 * 24 * 3600 * 1000)
   })
 
   test('customDate 为 Date 实例时按相对时间计算', () => {

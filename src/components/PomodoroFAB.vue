@@ -21,10 +21,16 @@
     >
       <svg class="pfab-svg" viewBox="0 0 100 100" aria-hidden="true">
         <!-- 进度弧背景 -->
-        <circle cx="50" cy="50" r="44" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.18)" stroke-width="4" />
+        <circle
+          cx="50"
+          cy="50"
+          r="44"
+          fill="rgba(255,255,255,0.08)"
+          stroke="rgba(255,255,255,0.18)"
+          stroke-width="4"
+        />
         <!-- 进度弧 -->
         <path
-          d=""
           :d="progressPath"
           fill="none"
           :stroke="currentColor"
@@ -66,20 +72,37 @@
     >
       <div class="pfab-panel-header">
         <strong>{{ currentModeLabel }} · {{ formattedTime }}</strong>
-        <button class="pfab-close" type="button" aria-label="关闭" @click="showPanel = null">×</button>
+        <button class="pfab-close" type="button" aria-label="关闭" @click="showPanel = null">
+          ×
+        </button>
       </div>
       <div class="pfab-panel-actions">
-        <button type="button" class="pfab-action" :aria-label="isRunning ? '暂停番茄钟' : '开始番茄钟'" @click="onToggleTimer">
+        <button
+          type="button"
+          class="pfab-action"
+          :aria-label="isRunning ? '暂停番茄钟' : '开始番茄钟'"
+          @click="onToggleTimer"
+        >
           {{ isRunning ? '暂停' : '开始' }}
         </button>
-        <button type="button" class="pfab-action" aria-label="跳过当前阶段" :disabled="!canSkip" @click="onSkipStage">
+        <button
+          type="button"
+          class="pfab-action"
+          aria-label="跳过当前阶段"
+          :disabled="!canSkip"
+          @click="onSkipStage"
+        >
           跳过
         </button>
-        <button type="button" class="pfab-action" aria-label="前往专注页面" @click="gotoPomodoro">专注页面</button>
+        <button type="button" class="pfab-action" aria-label="前往专注页面" @click="gotoPomodoro">
+          专注页面
+        </button>
       </div>
       <div v-if="currentTaskId" class="pfab-task-line">
         <span>绑定：{{ currentTask ? currentTask.title.slice(0, 16) : currentTaskId }}</span>
-        <button type="button" class="pfab-link" aria-label="解绑当前任务" @click="onUnbindTask">解绑</button>
+        <button type="button" class="pfab-link" aria-label="解绑当前任务" @click="onUnbindTask">
+          解绑
+        </button>
       </div>
       <button
         v-if="!currentTaskId"
@@ -105,7 +128,9 @@
     >
       <div class="pfab-panel-header">
         <strong>模式与时长</strong>
-        <button class="pfab-close" type="button" aria-label="关闭" @click="showPanel = null">×</button>
+        <button class="pfab-close" type="button" aria-label="关闭" @click="showPanel = null">
+          ×
+        </button>
       </div>
 
       <div class="pfab-modes">
@@ -384,7 +409,7 @@ const onFabClick = (e) => {
         window.electronAPI.togglePomodoroFab()
         return
       }
-    } catch (e) {
+    } catch {
       /* ignore */
     }
   }
@@ -532,7 +557,9 @@ onBeforeUnmount(() => {
   user-select: none;
   touch-action: none;
   padding: 0;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
   color: #fff;
   transition:
     transform 0.15s ease,
@@ -541,7 +568,9 @@ onBeforeUnmount(() => {
 
 .pfab-btn:hover {
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  box-shadow:
+    0 14px 38px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
 
 .pfab-btn:active {
@@ -630,7 +659,9 @@ onBeforeUnmount(() => {
   color: #fff;
   border-radius: 14px;
   padding: 12px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 10000;

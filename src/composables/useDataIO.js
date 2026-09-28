@@ -4,7 +4,7 @@
 import { rollbackSaveAndPersist, saveConflict } from '../utils/migrate-v3'
 import { normalizeDataPackage, validateDataPackageV3, SCHEMA_REVISION } from '../utils/schema-v3'
 import { compressToBase64, decompressFromBase64, hashData } from '../utils/compress'
-import { useTaskStore, generateId } from '../stores/taskStore'
+import { useTaskStore } from '../stores/taskStore'
 
 // 项目内未通过 import package.json 读取版本，硬编码兜底 3.0.0
 // （不修改 package.json / vite 配置；避免跨层 import 构建失败）
@@ -77,9 +77,10 @@ const getDefaultFilename = (ext) => {
   const d = new Date()
   const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(
     d.getDate()
-  ).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}${String(
-    d.getMinutes()
-  ).padStart(2, '0')}`
+  ).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(
+    2,
+    '0'
+  )}`
   return `choyeon-todo-${stamp}.${ext}`
 }
 
@@ -304,7 +305,9 @@ const parseNum = (v, fallback = null) => {
 }
 const parseBool = (v) => {
   if (typeof v === 'boolean') return v
-  const s = String(v || '').trim().toLowerCase()
+  const s = String(v || '')
+    .trim()
+    .toLowerCase()
   return s === '1' || s === 'true' || s === 'yes' || s === 'y' || s === '是' || s === '完成'
 }
 const parseDate = (v) => {
@@ -359,7 +362,8 @@ export const useDataIO = (injectedStores = {}) => {
       categories: Array.isArray(base.categories) ? base.categories : [],
       tags: Array.isArray(base.tags) ? base.tags : [],
       templates: Array.isArray(base.templates) ? base.templates : [],
-      settings: base.settings && typeof base.settings === 'object' ? base.settings : { tasksVersion: 3 },
+      settings:
+        base.settings && typeof base.settings === 'object' ? base.settings : { tasksVersion: 3 },
       meta: {
         app: FALLBACK_APP,
         appVersion: getAppVersion(),
@@ -470,7 +474,7 @@ export const useDataIO = (injectedStores = {}) => {
     }
 
     // 4) rollback 存档当前本地数据
-    let currentSnapshot = {}
+    let currentSnapshot
     try {
       const base = typeof taskStore.exportData === 'function' ? taskStore.exportData() : {}
       currentSnapshot = {
@@ -479,9 +483,7 @@ export const useDataIO = (injectedStores = {}) => {
           ? JSON.parse(JSON.stringify(base.categories))
           : [],
         tags: Array.isArray(base.tags) ? JSON.parse(JSON.stringify(base.tags)) : [],
-        templates: Array.isArray(base.templates)
-          ? JSON.parse(JSON.stringify(base.templates))
-          : [],
+        templates: Array.isArray(base.templates) ? JSON.parse(JSON.stringify(base.templates)) : [],
         areas: Array.isArray(base.areas) ? JSON.parse(JSON.stringify(base.areas)) : [],
         lists: Array.isArray(base.lists) ? JSON.parse(JSON.stringify(base.lists)) : [],
         settings: base.settings || { tasksVersion: 3 },
@@ -678,7 +680,7 @@ export const useDataIO = (injectedStores = {}) => {
     }
 
     return {
-      ok: stats.errors.length === 0 || (stats.added + stats.updated) > 0,
+      ok: stats.errors.length === 0 || stats.added + stats.updated > 0,
       stats,
       headers
     }

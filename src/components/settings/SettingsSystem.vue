@@ -235,7 +235,18 @@ onMounted(async () => {
           isChecking.value = false
           isDownloading.value = false
           downloadPercent.value = -1
-          showSnackbar(t('settings.updateError') + ': ' + err.message)
+          // electron-updater 的原始错误是冗长英文堆栈，网络类单独给出可读提示
+          const raw = `${(err && err.code) || ''} ${(err && err.message) || ''}`
+          const isNetworkError =
+            /ENOTFOUND|ENETUNREACH|ETIMEDOUT|ECONNREFUSED|ECONNRESET|EAI_AGAIN|ERR_INTERNET_DISCONNECTED|ERR_NETWORK_CHANGED/.test(
+              raw
+            )
+          if (isNetworkError) {
+            showSnackbar(t('settings.updateNetworkError'))
+          } else {
+            const msg = (err && err.message) || ''
+            showSnackbar(t('settings.updateError') + (msg ? ': ' + msg : ''))
+          }
         })
       )
     }

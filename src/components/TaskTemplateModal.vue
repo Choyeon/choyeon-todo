@@ -78,7 +78,11 @@
                     @keydown.enter="selectTemplate(template)"
                     @keydown.space.prevent="selectTemplate(template)"
                   >
-                    <div class="template-icon" :style="{ background: template.color }" aria-hidden="true">
+                    <div
+                      class="template-icon"
+                      :style="{ background: template.color }"
+                      aria-hidden="true"
+                    >
                       <component :is="getIcon(template.icon)" :size="20" />
                     </div>
                     <div class="template-info">
@@ -152,7 +156,11 @@
 
                   <div class="form-group">
                     <label class="form-label">{{ $t('template.color') }}</label>
-                    <div class="color-selector" role="radiogroup" :aria-label="$t('template.color')">
+                    <div
+                      class="color-selector"
+                      role="radiogroup"
+                      :aria-label="$t('template.color')"
+                    >
                       <button
                         v-for="color in availableColors"
                         :key="color"
@@ -186,7 +194,11 @@
 
                 <div class="form-group">
                   <label class="form-label">{{ $t('template.priority') }}</label>
-                  <div class="priority-selector" role="radiogroup" :aria-label="$t('template.priority')">
+                  <div
+                    class="priority-selector"
+                    role="radiogroup"
+                    :aria-label="$t('template.priority')"
+                  >
                     <button
                       v-for="p in [1, 2, 3, 4]"
                       :key="p"
@@ -343,7 +355,9 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label" for="tpl-use-title">{{ $t('template.taskTitle') }}</label>
+                  <label class="form-label" for="tpl-use-title">{{
+                    $t('template.taskTitle')
+                  }}</label>
                   <input
                     id="tpl-use-title"
                     v-model="useForm.title"
@@ -410,11 +424,7 @@
 
     <!-- 删除确认对话框 -->
     <Transition name="modal-fade">
-      <div
-        v-if="showDeleteConfirm"
-        class="modal-overlay delete-confirm"
-        @click.self="cancelDelete"
-      >
+      <div v-if="showDeleteConfirm" class="modal-overlay delete-confirm" @click.self="cancelDelete">
         <div
           class="confirm-dialog glass-panel"
           :class="{ 'dark-mode': isDark }"

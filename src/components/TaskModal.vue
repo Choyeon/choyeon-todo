@@ -468,25 +468,35 @@
                 />
                 <ul v-if="candidateTasks.length" class="dep-list" role="listbox">
                   <li
-                    v-for="t in candidateTasks"
-                    :key="t.id"
+                    v-for="candidate in candidateTasks"
+                    :key="candidate.id"
                     class="dep-item"
                     role="option"
                     tabindex="0"
-                    @click="addDependency(t.id)"
-                    @keydown.enter.prevent="addDependency(t.id)"
+                    @click="addDependency(candidate.id)"
+                    @keydown.enter.prevent="addDependency(candidate.id)"
                   >
-                    <span class="dep-item-title" :class="{ imp: t.important }">{{ t.title }}</span>
-                    <span v-if="t.date" class="dep-item-date">{{ t.date }}</span>
+                    <span class="dep-item-title" :class="{ imp: candidate.important }">{{
+                      candidate.title
+                    }}</span>
+                    <span v-if="candidate.date" class="dep-item-date">{{ candidate.date }}</span>
                   </li>
                 </ul>
                 <p v-else class="empty-subnote">{{ $t('task.depNoMatches') }}</p>
               </div>
 
-              <TransitionGroup v-if="form.blockedBy.length" name="tl-fade" tag="ul" class="dep-chips" aria-live="polite">
+              <TransitionGroup
+                v-if="form.blockedBy.length"
+                name="tl-fade"
+                tag="ul"
+                class="dep-chips"
+                aria-live="polite"
+              >
                 <li v-for="bid in form.blockedBy" :key="bid" class="dep-chip">
                   <Lock :size="11" aria-hidden="true" class="dep-lock" />
-                  <span class="dep-chip-title" :title="dependencyLabel(bid)">{{ dependencyLabel(bid) }}</span>
+                  <span class="dep-chip-title" :title="dependencyLabel(bid)">{{
+                    dependencyLabel(bid)
+                  }}</span>
                   <button
                     type="button"
                     class="dep-chip-remove"
@@ -549,7 +559,12 @@
                 </div>
               </div>
 
-              <TransitionGroup v-if="form.attachments.length" name="tl-fade" tag="div" class="att-grid">
+              <TransitionGroup
+                v-if="form.attachments.length"
+                name="tl-fade"
+                tag="div"
+                class="att-grid"
+              >
                 <div
                   v-for="att in form.attachments"
                   :key="att.id"
@@ -682,9 +697,13 @@
                     <p class="activity-text">
                       <component
                         :is="
-                          a.type === 'comment' ? MessageSquare :
-                          a.type === 'attachment' ? Paperclip :
-                          a.type === 'create' || a.type === 'edit' ? FileText : History
+                          a.type === 'comment'
+                            ? MessageSquare
+                            : a.type === 'attachment'
+                              ? Paperclip
+                              : a.type === 'create' || a.type === 'edit'
+                                ? FileText
+                                : History
                         "
                         :size="12"
                         class="activity-icon"
@@ -699,8 +718,12 @@
             </div>
 
             <div class="modal-footer">
-              <button class="save-btn" :aria-label="$t('common.save')" @click="handleSave">{{ $t('common.save') }}</button>
-              <button class="cancel-btn" :aria-label="$t('common.cancel')" @click="handleClose">{{ $t('common.cancel') }}</button>
+              <button class="save-btn" :aria-label="$t('common.save')" @click="handleSave">
+                {{ $t('common.save') }}
+              </button>
+              <button class="cancel-btn" :aria-label="$t('common.cancel')" @click="handleClose">
+                {{ $t('common.cancel') }}
+              </button>
             </div>
 
             <!-- 预览图片大图 -->
@@ -750,8 +773,28 @@ import { useTaskStore, generateId } from '../stores/taskStore'
 import { useFocusTrap } from '../composables/useFocusTrap'
 import { useSnackbar } from '../composables/useSnackbar'
 import { getTodayStr, formatDateStr } from '../utils/date'
-import { X, Calendar, Clock, Bell, Star, Plus, Trash2, Check, RotateCcw, Mic,
-  ArrowUp, ArrowDown, Unlink, Link2, MessageSquare, Paperclip, Image as ImageIcon, History, FileText, Lock } from '@lucide/vue'
+import {
+  X,
+  Calendar,
+  Clock,
+  Bell,
+  Star,
+  Plus,
+  Trash2,
+  Check,
+  RotateCcw,
+  Mic,
+  ArrowUp,
+  ArrowDown,
+  Unlink,
+  Link2,
+  MessageSquare,
+  Paperclip,
+  Image as ImageIcon,
+  History,
+  FileText,
+  Lock
+} from '@lucide/vue'
 
 const props = defineProps({
   visible: {
@@ -807,7 +850,6 @@ const attachmentInputRef = ref(null)
 const isDraggingFiles = ref(false)
 const previewAttachment = ref(null) // for image modal preview
 const activityTab = ref('all') // 'all' | 'comments' | 'changes'
-const dueUntilOpen = ref(false)
 
 /**
  * 智能日期解析 - 从任务标题中提取日期
@@ -1147,8 +1189,11 @@ const moveSub = (subId, dir) => {
   if (idx < 0) return
   const swap = idx + dir
   if (swap < 0 || swap >= form.subTasks.length) return
-  const a = form.subTasks[idx]; const b = form.subTasks[swap]
-  const tmp = a.order; a.order = b.order; b.order = tmp
+  const a = form.subTasks[idx]
+  const b = form.subTasks[swap]
+  const tmp = a.order
+  a.order = b.order
+  b.order = tmp
   sortSubTasksByOrder()
 }
 
@@ -1199,16 +1244,21 @@ const openAttachmentPicker = () => attachmentInputRef.value?.click?.()
 const fileSizeFmt = (bytes) => {
   if (!bytes) return '0B'
   const u = ['B', 'KB', 'MB', 'GB']
-  let i = 0; let n = bytes
-  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++ }
+  let i = 0
+  let n = bytes
+  while (n >= 1024 && i < u.length - 1) {
+    n /= 1024
+    i++
+  }
   return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)}${u[i]}`
 }
-const readFileAsDataUrl = (file) => new Promise((resolve) => {
-  const r = new FileReader()
-  r.onload = () => resolve(r.result)
-  r.onerror = () => resolve('')
-  r.readAsDataURL(file)
-})
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve) => {
+    const r = new FileReader()
+    r.onload = () => resolve(r.result)
+    r.onerror = () => resolve('')
+    r.readAsDataURL(file)
+  })
 const addAttachments = async (files) => {
   if (!files || !files.length) return
   for (const f of files) {
@@ -1217,7 +1267,7 @@ const addAttachments = async (files) => {
       showSnackbar(t('task.attachmentTooLarge', { name: f.name, max: '10MB' }), { type: 'warning' })
       continue
     }
-    const preview = isImage(f.name) ? (await readFileAsDataUrl(f)) : ''
+    const preview = isImage(f.name) ? await readFileAsDataUrl(f) : ''
     form.attachments.push({
       id: generateId('att_'),
       name: f.name,
@@ -1248,7 +1298,9 @@ const onAttachmentDragOver = (evt) => {
   evt.preventDefault()
   isDraggingFiles.value = true
 }
-const onAttachmentDragLeave = () => { isDraggingFiles.value = false }
+const onAttachmentDragLeave = () => {
+  isDraggingFiles.value = false
+}
 const onAttachmentDrop = (evt) => {
   if (!evt.dataTransfer) return
   evt.preventDefault()
@@ -1298,9 +1350,15 @@ watch(
           form.repeat.weekdays = [...form.repeat.weekdays]
         }
         form.blockedBy = Array.isArray(props.task.blockedBy) ? [...props.task.blockedBy] : []
-        form.comments = Array.isArray(props.task.comments) ? props.task.comments.map((c) => ({ ...c })) : []
-        form.attachments = Array.isArray(props.task.attachments) ? props.task.attachments.map((a) => ({ ...a })) : []
-        form.activity = Array.isArray(props.task.activity) ? props.task.activity.map((a) => ({ ...a })) : []
+        form.comments = Array.isArray(props.task.comments)
+          ? props.task.comments.map((c) => ({ ...c }))
+          : []
+        form.attachments = Array.isArray(props.task.attachments)
+          ? props.task.attachments.map((a) => ({ ...a }))
+          : []
+        form.activity = Array.isArray(props.task.activity)
+          ? props.task.activity.map((a) => ({ ...a }))
+          : []
       } else {
         form.title = ''
         form.category =
@@ -2738,7 +2796,7 @@ const handleSave = () => {
   margin: 6px 0 2px 0;
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  background: var(--color-surface-muted, rgba(127,127,127,0.06));
+  background: var(--color-surface-muted, rgba(127, 127, 127, 0.06));
   color: var(--color-text-secondary);
   font-size: 12.5px;
 }
@@ -2781,14 +2839,17 @@ const handleSave = () => {
   padding: 10px;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface-muted, rgba(127,127,127,0.04));
+  background: var(--color-surface-muted, rgba(127, 127, 127, 0.04));
   display: flex;
   flex-direction: column;
   gap: 8px;
   max-height: 240px;
   overflow: auto;
 }
-.dep-search { padding: 8px 10px; font-size: 13px; }
+.dep-search {
+  padding: 8px 10px;
+  font-size: 13px;
+}
 .dep-list {
   list-style: none;
   margin: 0;
@@ -2811,8 +2872,8 @@ const handleSave = () => {
 }
 .dep-item:hover,
 .dep-item:focus-visible {
-  background: var(--color-primary-lighter, rgba(59,130,246,0.08));
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+  background: var(--color-primary-lighter, rgba(59, 130, 246, 0.08));
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 .dep-item-title {
   flex: 1;
@@ -2821,7 +2882,10 @@ const handleSave = () => {
   white-space: nowrap;
   font-weight: 500;
 }
-.dep-item-title.imp { color: #f59e0b; font-weight: 700; }
+.dep-item-title.imp {
+  color: #f59e0b;
+  font-weight: 700;
+}
 .dep-item-date {
   font-size: 11px;
   color: var(--color-text-secondary);
@@ -2847,7 +2911,10 @@ const handleSave = () => {
   font-size: 12px;
   color: var(--color-text);
 }
-.dep-lock { color: var(--color-primary); flex-shrink: 0; }
+.dep-lock {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
 .dep-chip-title {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2892,19 +2959,26 @@ const handleSave = () => {
 .att-dropzone:focus-visible,
 .att-dropzone.drag {
   border-color: var(--color-primary);
-  background: var(--color-primary-lighter, rgba(59,130,246,0.06));
+  background: var(--color-primary-lighter, rgba(59, 130, 246, 0.06));
   color: var(--color-primary);
   outline: none;
 }
-.att-drop-icon { flex-shrink: 0; }
+.att-drop-icon {
+  flex-shrink: 0;
+}
 .att-drop-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
-.att-drop-text strong { color: var(--color-text); font-size: 13px; }
-.att-drop-text span { font-size: 12px; }
+.att-drop-text strong {
+  color: var(--color-text);
+  font-size: 13px;
+}
+.att-drop-text span {
+  font-size: 12px;
+}
 
 .att-grid {
   display: grid;
@@ -2920,7 +2994,9 @@ const handleSave = () => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.16s ease, transform 0.16s ease;
+  transition:
+    border-color 0.16s ease,
+    transform 0.16s ease;
 }
 .att-card:hover {
   border-color: var(--color-primary-light);
@@ -2944,7 +3020,9 @@ const handleSave = () => {
   display: block;
   transition: transform 0.25s ease;
 }
-.att-preview-btn:hover img { transform: scale(1.04); }
+.att-preview-btn:hover img {
+  transform: scale(1.04);
+}
 .att-zoom {
   position: absolute;
   right: 6px;
@@ -2952,7 +3030,7 @@ const handleSave = () => {
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -2960,7 +3038,9 @@ const handleSave = () => {
   opacity: 0;
   transition: opacity 0.2s ease;
 }
-.att-preview-btn:hover .att-zoom { opacity: 1; }
+.att-preview-btn:hover .att-zoom {
+  opacity: 1;
+}
 
 .att-fallback {
   aspect-ratio: 1/1;
@@ -2973,7 +3053,9 @@ const handleSave = () => {
   background: var(--color-surface-muted);
   color: var(--color-text-secondary);
 }
-.att-fallback svg { color: var(--color-primary); }
+.att-fallback svg {
+  color: var(--color-primary);
+}
 .att-name {
   font-size: 11.5px;
   color: var(--color-text);
@@ -2996,7 +3078,10 @@ const handleSave = () => {
   font-size: 11px;
   color: var(--color-text-secondary);
 }
-.att-size { flex: 1; font-variant-numeric: tabular-nums; }
+.att-size {
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+}
 .att-remove {
   display: inline-flex;
   align-items: center;
@@ -3011,7 +3096,10 @@ const handleSave = () => {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.att-remove:hover { color: #dc2626; background: rgba(239, 68, 68, 0.12); }
+.att-remove:hover {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.12);
+}
 
 .att-preview-overlay {
   position: fixed;
@@ -3031,7 +3119,7 @@ const handleSave = () => {
   height: 38px;
   border-radius: 999px;
   border: none;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
   cursor: pointer;
   display: inline-flex;
@@ -3039,13 +3127,15 @@ const handleSave = () => {
   justify-content: center;
   transition: background 0.15s ease;
 }
-.att-preview-close:hover { background: rgba(255,255,255,0.3); }
+.att-preview-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
 .att-preview-img {
   max-width: 92vw;
   max-height: 88vh;
   object-fit: contain;
   border-radius: var(--radius-lg);
-  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
 }
 .att-preview-meta {
   display: flex;
@@ -3055,9 +3145,19 @@ const handleSave = () => {
   color: #fff;
   padding: 32px;
 }
-.att-preview-meta svg { opacity: 0.9; }
-.att-preview-name { margin: 0; font-size: 15px; font-weight: 600; }
-.att-preview-size { margin: 0; opacity: 0.75; font-size: 12.5px; }
+.att-preview-meta svg {
+  opacity: 0.9;
+}
+.att-preview-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.att-preview-size {
+  margin: 0;
+  opacity: 0.75;
+  font-size: 12.5px;
+}
 
 /* Comments */
 .comment-list {
@@ -3075,7 +3175,9 @@ const handleSave = () => {
   border-radius: var(--radius-md);
   transition: background 0.13s ease;
 }
-.comment-item:hover { background: var(--color-surface-muted, rgba(127,127,127,0.05)); }
+.comment-item:hover {
+  background: var(--color-surface-muted, rgba(127, 127, 127, 0.05));
+}
 .comment-avatar {
   width: 32px;
   height: 32px;
@@ -3102,7 +3204,9 @@ const handleSave = () => {
   gap: 8px;
   font-size: 12.5px;
 }
-.comment-head strong { color: var(--color-text); }
+.comment-head strong {
+  color: var(--color-text);
+}
 .comment-at {
   color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
@@ -3122,7 +3226,10 @@ const handleSave = () => {
   justify-content: center;
   transition: all 0.15s ease;
 }
-.comment-delete:hover { color: #dc2626; background: rgba(239,68,68,0.12); }
+.comment-delete:hover {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.12);
+}
 .comment-text {
   margin: 0;
   font-size: 13.5px;
@@ -3155,7 +3262,7 @@ const handleSave = () => {
   gap: 4px;
   padding: 2px;
   border-radius: 999px;
-  background: var(--color-surface-muted, rgba(127,127,127,0.08));
+  background: var(--color-surface-muted, rgba(127, 127, 127, 0.08));
 }
 .activity-tab {
   border: none;
@@ -3169,7 +3276,10 @@ const handleSave = () => {
   transition: all 0.13s ease;
   font-family: inherit;
 }
-.activity-tab:hover { color: var(--color-text); background: rgba(127,127,127,0.1); }
+.activity-tab:hover {
+  color: var(--color-text);
+  background: rgba(127, 127, 127, 0.1);
+}
 .activity-tab.active {
   color: #fff;
   background: var(--color-primary);
@@ -3213,10 +3323,22 @@ const handleSave = () => {
   box-shadow: 0 0 0 1px var(--color-primary-light);
   z-index: 1;
 }
-.activity-dot.type-comment { background: #8b5cf6; box-shadow: 0 0 0 1px rgba(139,92,246,0.4); }
-.activity-dot.type-attachment { background: #10b981; box-shadow: 0 0 0 1px rgba(16,185,129,0.4); }
-.activity-dot.type-edit { background: #f59e0b; box-shadow: 0 0 0 1px rgba(245,158,11,0.4); }
-.activity-dot.type-create { background: #3b82f6; box-shadow: 0 0 0 1px rgba(59,130,246,0.4); }
+.activity-dot.type-comment {
+  background: #8b5cf6;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.4);
+}
+.activity-dot.type-attachment {
+  background: #10b981;
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4);
+}
+.activity-dot.type-edit {
+  background: #f59e0b;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
+}
+.activity-dot.type-create {
+  background: #3b82f6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+}
 
 .activity-body {
   display: flex;
@@ -3250,8 +3372,15 @@ const handleSave = () => {
   .att-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
-  .label-with-icon { font-size: 13px; }
-  .activity-tabs { padding: 1px; }
-  .activity-tab { padding: 4px 8px; font-size: 11px; }
+  .label-with-icon {
+    font-size: 13px;
+  }
+  .activity-tabs {
+    padding: 1px;
+  }
+  .activity-tab {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
 }
 </style>

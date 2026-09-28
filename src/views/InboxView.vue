@@ -77,11 +77,7 @@
       >
         <div class="dialog-header">
           <h3>{{ $t('inbox.organizeTask') }}</h3>
-          <button
-            class="close-btn"
-            :aria-label="$t('common.close')"
-            @click="closeOrganizeDialog"
-          >
+          <button class="close-btn" :aria-label="$t('common.close')" @click="closeOrganizeDialog">
             <X :size="20" />
           </button>
         </div>

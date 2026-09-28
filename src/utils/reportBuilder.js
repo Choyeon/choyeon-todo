@@ -39,7 +39,8 @@ const I18N = {
     created: '创建',
     important: '重要逾期',
     pomodoro: '番茄钟',
-    suggestion_highOverdue: '高优先级逾期率超过 30%：建议拆分复杂任务、前置提醒、降低 myDay 加入阈值',
+    suggestion_highOverdue:
+      '高优先级逾期率超过 30%：建议拆分复杂任务、前置提醒、降低 myDay 加入阈值',
     suggestion_distraction: '番茄干扰率超过 20%：建议使用 AI 自适应时长 + 减少通知打扰',
     suggestion_mondayFocus: '周一下午专注效率偏低：可安排轻量会议/整理工作，把深度工作移到上午',
     suggestion_lowFocus: '平均专注时长不足 60 分钟/天：建议每天固定 2 个番茄时段',
@@ -97,8 +98,7 @@ const I18N = {
       'Pomodoro distraction rate >20%: try AI-adaptive duration + mute notifications',
     suggestion_mondayFocus:
       'Monday PM focus is weak: move deep work to AM, schedule light meetings/reviews in the afternoon',
-    suggestion_lowFocus:
-      'Avg focus < 60 min/day: block 2 fixed pomodoro windows per day',
+    suggestion_lowFocus: 'Avg focus < 60 min/day: block 2 fixed pomodoro windows per day',
     suggestion_balance:
       'Unbalanced task distribution: some categories 0 completed, reserve fixed slots for study/health',
     suggestion_repeatMiss:
@@ -151,16 +151,11 @@ const I18N = {
     pomodoro: 'ポモドーロ',
     suggestion_highOverdue:
       '高優先度期限超過率 >30%：複雑タスクを分割、リマインダー前倒し、myDay 加入閾値を下げる',
-    suggestion_distraction:
-      'ポモドーロ妨害率 >20%：AI 適応時間 + 通知抑制を試してください',
-    suggestion_mondayFocus:
-      '月曜午後の集中が低め：軽めの会議/整理に当て、深い作業は午前へ移動',
-    suggestion_lowFocus:
-      '平均集中時間 < 60 分/日：1 日 2 回の固定ポモドーロ枠を確保',
-    suggestion_balance:
-      '分布がアンバランス：一部カテゴリが 0 件、学習/健康系も固定枠を設定',
-    suggestion_repeatMiss:
-      '繰り返しタスクのスキップ率高め：難易度低下 or リマインダー時刻を調整',
+    suggestion_distraction: 'ポモドーロ妨害率 >20%：AI 適応時間 + 通知抑制を試してください',
+    suggestion_mondayFocus: '月曜午後の集中が低め：軽めの会議/整理に当て、深い作業は午前へ移動',
+    suggestion_lowFocus: '平均集中時間 < 60 分/日：1 日 2 回の固定ポモドーロ枠を確保',
+    suggestion_balance: '分布がアンバランス：一部カテゴリが 0 件、学習/健康系も固定枠を設定',
+    suggestion_repeatMiss: '繰り返しタスクのスキップ率高め：難易度低下 or リマインダー時刻を調整',
     month_completed_up: '完了タスク数 前月比増',
     month_completed_down: '完了タスク数 前月比減',
     month_focus_up: '集中時間 前月比増',
@@ -231,9 +226,7 @@ const getPrevMonthRange = (year, month) => {
 // ===== 内部：通用范围统计 =====
 const statsInRange = (start, end, taskStore, pomodoroStore) => {
   const tasks = Array.isArray(taskStore?.tasks) ? taskStore.tasks : []
-  const sessions = Array.isArray(pomodoroStore?.sessionHistory)
-    ? pomodoroStore.sessionHistory
-    : []
+  const sessions = Array.isArray(pomodoroStore?.sessionHistory) ? pomodoroStore.sessionHistory : []
 
   // 完成 / 创建分桶
   let completedCount = 0
@@ -267,7 +260,8 @@ const statsInRange = (start, end, taskStore, pomodoroStore) => {
   }
 
   const incrementMap = (map, id, name, color, field) => {
-    if (!map.has(id)) map.set(id, { id, name: name || id, color: color || '#999', completed: 0, created: 0 })
+    if (!map.has(id))
+      map.set(id, { id, name: name || id, color: color || '#999', completed: 0, created: 0 })
     const rec = map.get(id)
     rec[field] = (rec[field] || 0) + 1
   }
@@ -301,7 +295,14 @@ const statsInRange = (start, end, taskStore, pomodoroStore) => {
           'P' +
           Math.max(
             0,
-            Math.min(4, Math.floor(Number.isFinite(prNum) && task.priority !== undefined && task.priority !== null ? prNum : 4))
+            Math.min(
+              4,
+              Math.floor(
+                Number.isFinite(prNum) && task.priority !== undefined && task.priority !== null
+                  ? prNum
+                  : 4
+              )
+            )
           )
         byPriority[prKey] = (byPriority[prKey] || 0) + 1
         if (task.areaId) {
@@ -341,17 +342,11 @@ const statsInRange = (start, end, taskStore, pomodoroStore) => {
   }
   const distractionRate = focusMinutes > 0 ? Math.min(1, distractions / focusMinutes) : 0
   const onTimeRate =
-    completedCount > 0
-      ? Math.round((onTimeCompletedCount / completedCount) * 10000) / 100
-      : 0
+    completedCount > 0 ? Math.round((onTimeCompletedCount / completedCount) * 10000) / 100 : 0
   const overdueRate =
-    completedCount > 0
-      ? Math.round((overdueCompletedCount / completedCount) * 10000) / 100
-      : 0
+    completedCount > 0 ? Math.round((overdueCompletedCount / completedCount) * 10000) / 100 : 0
   const highOverdueRate =
-    completedCount > 0
-      ? Math.round((highPriorityOverdueCount / completedCount) * 10000) / 100
-      : 0
+    completedCount > 0 ? Math.round((highPriorityOverdueCount / completedCount) * 10000) / 100 : 0
 
   return {
     completedCount,
@@ -456,10 +451,7 @@ export const buildWeeklyReport = ({
 
   // markdown
   let md = mdHeader(t(lang, 'weeklyTitle'), 1)
-  md += mdKv(
-    t(lang, 'dateRange'),
-    `${t(lang, 'from')} ${start} ${t(lang, 'to')} ${end}`
-  )
+  md += mdKv(t(lang, 'dateRange'), `${t(lang, 'from')} ${start} ${t(lang, 'to')} ${end}`)
   md += '\n'
   md += mdHeader(t(lang, 'total'), 2)
   md += mdKv(t(lang, 'completedCount'), `${stats.completedCount} ${t(lang, 'tasks')}`)
@@ -472,10 +464,7 @@ export const buildWeeklyReport = ({
   md += mdKv(t(lang, 'focusMinutes'), `${stats.focusMinutes} ${t(lang, 'minutes')}`)
   md += mdKv(t(lang, 'focusSessions'), `${stats.focusSessions} ${t(lang, 'times')}`)
   md += mdKv(t(lang, 'deepFocusMinutes'), `${stats.deepFocusMinutes} ${t(lang, 'minutes')}`)
-  md += mdKv(
-    t(lang, 'distractionRate'),
-    `${Math.round(stats.distractionRate * 10000) / 100}%`
-  )
+  md += mdKv(t(lang, 'distractionRate'), `${Math.round(stats.distractionRate * 10000) / 100}%`)
   md += '\n'
   md += mdHeader(t(lang, 'karmaChange'), 2)
   md += mdKv(t(lang, 'karmaStart'), `${karma.karmaStart} ${t(lang, 'points')}`)
@@ -487,10 +476,7 @@ export const buildWeeklyReport = ({
   md += '\n'
   md += mdHeader(`${t(lang, 'bestDay')} & ${t(lang, 'bestHour')}`, 2)
   md += mdKv(t(lang, 'bestDay'), bestDay.date || t(lang, 'noData'))
-  md += mdKv(
-    t(lang, 'bestHour'),
-    `${hour.peakHour}:00 (${t(lang, 'peak')} ${hour.peakCount})`
-  )
+  md += mdKv(t(lang, 'bestHour'), `${hour.peakHour}:00 (${t(lang, 'peak')} ${hour.peakCount})`)
   md += '\n'
   if (stats.byCategory.length > 0) {
     md += mdHeader(t(lang, 'byCategory'), 2)
@@ -578,10 +564,7 @@ export const buildMonthlyReport = ({
   }
 
   let md = mdHeader(t(lang, 'monthlyTitle'), 1)
-  md += mdKv(
-    t(lang, 'dateRange'),
-    `${t(lang, 'from')} ${cur.start} ${t(lang, 'to')} ${cur.end}`
-  )
+  md += mdKv(t(lang, 'dateRange'), `${t(lang, 'from')} ${cur.start} ${t(lang, 'to')} ${cur.end}`)
   md += '\n'
   md += mdHeader(t(lang, 'q4'), 2)
   md += mdTable(
@@ -601,10 +584,7 @@ export const buildMonthlyReport = ({
   md += mdHeader(t(lang, 'focusMinutes'), 2)
   md += mdKv(t(lang, 'focusMinutes'), `${curStats.focusMinutes} ${t(lang, 'minutes')}`)
   md += mdKv(t(lang, 'focusSessions'), `${curStats.focusSessions} ${t(lang, 'times')}`)
-  md += mdKv(
-    t(lang, 'distractionRate'),
-    `${Math.round(curStats.distractionRate * 10000) / 100}%`
-  )
+  md += mdKv(t(lang, 'distractionRate'), `${Math.round(curStats.distractionRate * 10000) / 100}%`)
   md += '\n'
   md += mdHeader(t(lang, 'karmaChange'), 2)
   md += mdKv(

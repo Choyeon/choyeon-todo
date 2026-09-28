@@ -32,7 +32,9 @@ if (typeof window !== 'undefined' && !window.electronAPI) {
       platform: (typeof navigator !== 'undefined' && navigator.platform) || 'web',
       versions: {
         electron: null,
-        chrome: (typeof navigator !== 'undefined' && navigator.userAgent.match(/Chrome\/(\d+)/)?.[1]) || null,
+        chrome:
+          (typeof navigator !== 'undefined' && navigator.userAgent.match(/Chrome\/(\d+)/)?.[1]) ||
+          null,
         node: null
       },
       // 常用窗口控制
@@ -41,9 +43,6 @@ if (typeof window !== 'undefined' && !window.electronAPI) {
       closeWindow: noop,
       isMaximized: pFalse,
       openDevTools: noop,
-      openDebugWindow: noop,
-      closeDebugWindow: noop,
-      minimizeDebugWindow: noop,
       sendNotification: noop,
       syncTasks: noop,
       onNotificationResponse: noopCleanup,

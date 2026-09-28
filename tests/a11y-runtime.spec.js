@@ -565,7 +565,7 @@ describe('A11y Runtime — Toast', () => {
     }
     if (root) {
       const role = getComputedRole(root.element)
-      const live = root.attributes ? root.attributes('aria-live') : null
+      let live = root.attributes ? root.attributes('aria-live') : null
       if (!live) {
         const el = root.element
         live = el && el.getAttribute ? el.getAttribute('aria-live') : null

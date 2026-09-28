@@ -10,11 +10,7 @@ import {
   getTomorrowStr
 } from '../utils/date'
 // Task 1: 引入 v3 迁移工具
-import {
-  migrateV2ToV3,
-  rollbackSaveAndPersist,
-  saveConflict
-} from '../utils/migrate-v3'
+import { migrateV2ToV3, rollbackSaveAndPersist, saveConflict } from '../utils/migrate-v3'
 import { useSnackbar } from '../composables/useSnackbar'
 import { useSettingsStore } from './settingsStore'
 import { useAreaStore, DEFAULT_AREA_ID } from './areaStore'
@@ -580,11 +576,15 @@ export const useTaskStore = defineStore('task', () => {
           const parsed = JSON.parse(savedUiView)
           if (parsed && typeof parsed === 'object') {
             if (typeof parsed.currentView === 'string') currentView.value = parsed.currentView
-            if (parsed.currentCategory !== undefined) currentCategory.value = parsed.currentCategory ?? null
+            if (parsed.currentCategory !== undefined)
+              currentCategory.value = parsed.currentCategory ?? null
             if (parsed.currentTag !== undefined) currentTag.value = parsed.currentTag ?? null
-            if (parsed.currentFilterId !== undefined) currentFilterId.value = parsed.currentFilterId ?? null
-            if (parsed.currentListId !== undefined) currentListId.value = parsed.currentListId ?? null
-            if (parsed.currentAreaId !== undefined) currentAreaId.value = parsed.currentAreaId ?? null
+            if (parsed.currentFilterId !== undefined)
+              currentFilterId.value = parsed.currentFilterId ?? null
+            if (parsed.currentListId !== undefined)
+              currentListId.value = parsed.currentListId ?? null
+            if (parsed.currentAreaId !== undefined)
+              currentAreaId.value = parsed.currentAreaId ?? null
           }
         } catch (e) {
           console.warn('[TaskStore] Failed to parse uiView:', e)
@@ -878,29 +878,31 @@ export const useTaskStore = defineStore('task', () => {
     const now = Date.now()
     return {
       ...base,
-      parentId: base.parentId !== undefined ? base.parentId : overrides.parentId ?? null,
+      parentId: base.parentId !== undefined ? base.parentId : (overrides.parentId ?? null),
       headingId: base.headingId ?? overrides.headingId ?? null,
       listId:
         base.listId ?? overrides.listId ?? base.categoryId ?? base.category ?? DEFAULT_LIST_ID,
       areaId: base.areaId ?? overrides.areaId ?? DEFAULT_AREA_ID,
-      blockedBy: Array.isArray(base.blockedBy) ? base.blockedBy.slice() : overrides.blockedBy ?? [],
-      comments: Array.isArray(base.comments) ? base.comments.slice() : overrides.comments ?? [],
+      blockedBy: Array.isArray(base.blockedBy)
+        ? base.blockedBy.slice()
+        : (overrides.blockedBy ?? []),
+      comments: Array.isArray(base.comments) ? base.comments.slice() : (overrides.comments ?? []),
       attachments: Array.isArray(base.attachments)
         ? base.attachments.slice()
-        : overrides.attachments ?? [],
-      assignee: typeof base.assignee === 'string' ? base.assignee : overrides.assignee ?? '',
-      createdBy: typeof base.createdBy === 'string' ? base.createdBy : overrides.createdBy ?? '',
+        : (overrides.attachments ?? []),
+      assignee: typeof base.assignee === 'string' ? base.assignee : (overrides.assignee ?? ''),
+      createdBy: typeof base.createdBy === 'string' ? base.createdBy : (overrides.createdBy ?? ''),
       nextReminderAt:
         typeof base.nextReminderAt === 'number' && base.nextReminderAt > 0
           ? base.nextReminderAt
-          : overrides.nextReminderAt ?? null,
+          : (overrides.nextReminderAt ?? null),
       snoozeCount:
         typeof base.snoozeCount === 'number'
           ? Math.max(0, base.snoozeCount)
-          : overrides.snoozeCount ?? 0,
-      activity: Array.isArray(base.activity) ? base.activity.slice() : overrides.activity ?? [],
-      createdAt: typeof base.createdAt === 'number' ? base.createdAt : overrides.createdAt ?? now,
-      updatedAt: typeof base.updatedAt === 'number' ? base.updatedAt : overrides.updatedAt ?? now
+          : (overrides.snoozeCount ?? 0),
+      activity: Array.isArray(base.activity) ? base.activity.slice() : (overrides.activity ?? []),
+      createdAt: typeof base.createdAt === 'number' ? base.createdAt : (overrides.createdAt ?? now),
+      updatedAt: typeof base.updatedAt === 'number' ? base.updatedAt : (overrides.updatedAt ?? now)
     }
   }
 
@@ -959,8 +961,10 @@ export const useTaskStore = defineStore('task', () => {
     }
     // Task 1: 叠加 v3 新字段默认值；若调用方显式传了 listId / areaId，保留优先
     const explicitOverrides = {}
-    if (task && typeof task.listId === 'string' && task.listId) explicitOverrides.listId = task.listId
-    if (task && typeof task.areaId === 'string' && task.areaId) explicitOverrides.areaId = task.areaId
+    if (task && typeof task.listId === 'string' && task.listId)
+      explicitOverrides.listId = task.listId
+    if (task && typeof task.areaId === 'string' && task.areaId)
+      explicitOverrides.areaId = task.areaId
     const newTask = ensureV3DefaultsOnTask(base, {
       listId: explicitOverrides.listId ?? base.category,
       activity: [{ type: 'add', at: now }]
@@ -1103,7 +1107,8 @@ export const useTaskStore = defineStore('task', () => {
       safeUpdates.blockedBy = clean
     }
     if (safeUpdates.comments !== undefined && !Array.isArray(safeUpdates.comments)) return false
-    if (safeUpdates.attachments !== undefined && !Array.isArray(safeUpdates.attachments)) return false
+    if (safeUpdates.attachments !== undefined && !Array.isArray(safeUpdates.attachments))
+      return false
     if (safeUpdates.parentId !== undefined) {
       if (safeUpdates.parentId !== null) {
         if (typeof safeUpdates.parentId !== 'string' || safeUpdates.parentId === id) return false
@@ -1147,7 +1152,11 @@ export const useTaskStore = defineStore('task', () => {
         if (prevTask.completedOrder === undefined || prevTask.completedOrder < 0) {
           let maxCompletedOrder = -1
           for (const t of tasks.value) {
-            if (t.id !== id && typeof t.completedOrder === 'number' && t.completedOrder > maxCompletedOrder) {
+            if (
+              t.id !== id &&
+              typeof t.completedOrder === 'number' &&
+              t.completedOrder > maxCompletedOrder
+            ) {
               maxCompletedOrder = t.completedOrder
             }
           }
@@ -1334,7 +1343,7 @@ export const useTaskStore = defineStore('task', () => {
           if (seen.has(cur)) return false
           seen.add(cur)
           const inSnap = snapshot.get(cur)
-          const nextParent = inSnap ? inSnap.parentId : getTaskById(cur)?.parentId ?? null
+          const nextParent = inSnap ? inSnap.parentId : (getTaskById(cur)?.parentId ?? null)
           if (!nextParent) break
           depth++
           if (depth > MAX_PARENT_DEPTH) return false
@@ -1418,7 +1427,7 @@ export const useTaskStore = defineStore('task', () => {
       time: base.time || null,
       reminder: !!base.reminder,
       important: !!base.important,
-      priority: base.priority !== undefined ? base.priority : parent.priority ?? 4,
+      priority: base.priority !== undefined ? base.priority : (parent.priority ?? 4),
       notes: base.notes || '',
       tags: Array.isArray(base.tags) ? base.tags : [],
       subTasks: Array.isArray(base.subTasks) ? base.subTasks : [],
@@ -2104,8 +2113,7 @@ export const useTaskStore = defineStore('task', () => {
         // 与 counts 计算保持一致，避免侧边栏与仪表盘显示互斥
         if (
           task.date &&
-          (task.date < todayStr ||
-            (task.date === todayStr && task.time && task.time < currentHM))
+          (task.date < todayStr || (task.date === todayStr && task.time && task.time < currentHM))
         ) {
           overdueActive++
         }
@@ -2451,8 +2459,12 @@ export const useTaskStore = defineStore('task', () => {
     let data
     try {
       data = JSON.parse(jsonStr)
-    } catch (_parseErr) {
-      return { success: false, error: '非法的 JSON 数据', errors: [{ path: 'root', msg: 'JSON parse error' }] }
+    } catch {
+      return {
+        success: false,
+        error: '非法的 JSON 数据',
+        errors: [{ path: 'root', msg: 'JSON parse error' }]
+      }
     }
     try {
       if (!data || typeof data !== 'object') {
@@ -2577,7 +2589,11 @@ export const useTaskStore = defineStore('task', () => {
 
       const importedCount = tasks.value.length
 
-      if (normalizedCategories && Array.isArray(normalizedCategories) && normalizedCategories.length > 0) {
+      if (
+        normalizedCategories &&
+        Array.isArray(normalizedCategories) &&
+        normalizedCategories.length > 0
+      ) {
         const validCats = normalizedCategories.filter((c) => c && c.id && c.name)
         if (validCats.length > 0) {
           const hasOther = validCats.some((c) => c.id === UNDELETABLE_CATEGORY)
@@ -2724,7 +2740,8 @@ export const useTaskStore = defineStore('task', () => {
           offsetOrDate.customDate instanceof Date
             ? offsetOrDate.customDate.getTime()
             : Number(offsetOrDate.customDate)
-        if (Number.isFinite(d) && d > 0) return { offsetMs: Math.max(0, d - Date.now()), customTs: d }
+        if (Number.isFinite(d) && d > 0)
+          return { offsetMs: Math.max(0, d - Date.now()), customTs: d }
       }
       if (typeof offsetOrDate.preset === 'string') {
         const alias = offsetOrDate.preset
@@ -2786,7 +2803,6 @@ export const useTaskStore = defineStore('task', () => {
     debouncedSave()
     return ok
   }
-
 
   return {
     tasks,

@@ -155,7 +155,7 @@ const showNotificationViaChannel = async (payload) => {
 
 // ---------- Windows Toast 增强（emoji 前缀 + 重复完成信息） ----------
 const buildToastBody = (task, kind, baseMsg) => {
-  let prefix = ''
+  let prefix
   switch (kind) {
     case 'overdue':
       prefix = '⚠️'
@@ -195,9 +195,7 @@ const resolveSnoozePreset = (presets) => {
   }
   if (presets.customDate !== undefined) {
     const d =
-      presets.customDate instanceof Date
-        ? presets.customDate.getTime()
-        : Number(presets.customDate)
+      presets.customDate instanceof Date ? presets.customDate.getTime() : Number(presets.customDate)
     if (Number.isFinite(d) && d > 0) {
       return { offsetMs: Math.max(0, d - Date.now()), kind: 'custom', customDateTs: d }
     }
@@ -239,7 +237,6 @@ const resolveSnoozePreset = (presets) => {
 const computeSmartTriggers = (task, nowMs, profile) => {
   const result = []
   const today = getTodayStr()
-  const todayTs = makeTs(today, '00:00')
   const taskDate = task.date
   if (!taskDate || !isValidDateStr(taskDate)) return result
 
@@ -378,7 +375,7 @@ const triggerReminderForTask = (task, kind, tag, dueTsOrNull) => {
   const payload = {
     title,
     body,
-    silent: !!settingsStore.soundsEnabled ? false : true,
+    silent: !settingsStore.soundsEnabled,
     taskId,
     actions: defaultActions
   }

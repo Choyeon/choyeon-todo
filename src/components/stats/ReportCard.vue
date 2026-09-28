@@ -36,16 +36,17 @@
         </div>
         <div class="metric">
           <div class="metric-label">{{ t('stats.focusDuration') || 'Focus' }}</div>
-          <div class="metric-value">{{ hours }}<span class="unit">h</span>{{ mins }}<span
-              class="unit"
-              v-if="mins > 0"
-              >m</span
-            ></div>
+          <div class="metric-value">
+            {{ hours }}<span class="unit">h</span>{{ mins }}<span class="unit" v-if="mins > 0">m</span>
+          </div>
           <div class="metric-sub">{{ deepFocusText }}</div>
         </div>
         <div class="metric">
           <div class="metric-label">{{ t('karma.karmaChange') || 'Karma Δ' }}</div>
-          <div class="metric-value" :class="{ pos: data.karma.delta >= 0, neg: data.karma.delta < 0 }">
+          <div
+            class="metric-value"
+            :class="{ pos: data.karma.delta >= 0, neg: data.karma.delta < 0 }"
+          >
             {{ data.karma.delta >= 0 ? '+' : '' }}{{ data.karma.delta }}
           </div>
           <div class="metric-sub">
@@ -55,10 +56,12 @@
         <div class="metric" v-if="mode === 'monthly'">
           <div class="metric-label">{{ t('report.mom') || 'MoM' }}</div>
           <div class="metric-value">
-            <span v-for="c in data.momCompare" :key="c.key" class="mom-pill" :class="{
-                pos: c.delta >= 0,
-                neg: c.delta < 0
-              }">
+            <span
+              v-for="c in data.momCompare"
+              :key="c.key"
+              class="mom-pill"
+              :class="{ pos: c.delta >= 0, neg: c.delta < 0 }"
+            >
               {{ c.delta >= 0 ? '↑' : '↓' }} {{ Math.abs(c.delta) }}
             </span>
           </div>
@@ -80,7 +83,11 @@
     </div>
 
     <div class="report-footer">
-      <button class="download-btn" :aria-label="t('report.download') || 'Download Markdown'" @click="downloadMarkdown">
+      <button
+        class="download-btn"
+        :aria-label="t('report.download') || 'Download Markdown'"
+        @click="downloadMarkdown"
+      >
         <Download :size="16" aria-hidden="true" />
         <span>{{ t('report.download') || 'Download Markdown' }}</span>
       </button>
@@ -93,7 +100,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Download, Copy } from '@lucide/vue'
 import { buildWeeklyReport, buildMonthlyReport } from '../../utils/reportBuilder'
@@ -141,8 +148,8 @@ const rangeText = computed(() => {
 const hours = computed(() => Math.floor(data.value.stats.focusMinutes / 60))
 const mins = computed(() => data.value.stats.focusMinutes % 60)
 
-const deepFocusText = computed(() =>
-  `${t('stats.deepFocusMinutes') || 'Deep'}: ${data.value.stats.deepFocusMinutes}m`
+const deepFocusText = computed(
+  () => `${t('stats.deepFocusMinutes') || 'Deep'}: ${data.value.stats.deepFocusMinutes}m`
 )
 
 const onTimeRateText = computed(() => {
@@ -151,8 +158,8 @@ const onTimeRateText = computed(() => {
 })
 
 const bestDayText = computed(() => data.value.bestDay || t('stats.noData') || '-')
-const peakHourText = computed(() =>
-  `${t('report.peakHour') || 'Peak'} ${data.value.peakHour}:00 × ${data.value.peakHourCount}`
+const peakHourText = computed(
+  () => `${t('report.peakHour') || 'Peak'} ${data.value.peakHour}:00 × ${data.value.peakHourCount}`
 )
 
 const firstCompareText = computed(() => {
@@ -180,7 +187,10 @@ const triggerDownload = (filename, content) => {
 
 const downloadMarkdown = () => {
   const r = data.value.dateRange
-  const prefix = mode.value === 'monthly' ? `monthly-${r.year}-${String(r.month).padStart(2, '0')}` : `weekly-${r.start}`
+  const prefix =
+    mode.value === 'monthly'
+      ? `monthly-${r.year}-${String(r.month).padStart(2, '0')}`
+      : `weekly-${r.start}`
   triggerDownload(`${prefix}-report.md`, markdown.value)
 }
 

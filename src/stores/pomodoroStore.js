@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useSettingsStore } from './settingsStore'
 import { useTaskStore } from './taskStore'
 import { getTodayStr, formatDateStr, addDays } from '../utils/date'
@@ -682,7 +682,6 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     let days = 1
     if (range === 'last7') days = 7
     else if (range === 'last30') days = 30
-    const cutoff = now - (days - 1) * 86400000
     const today = parseDateLocal(getTodayStr())
     const cutoffDate = new Date(today.valueOf() - (days - 1) * 86400000)
     const cutoffStr = formatDateStr(cutoffDate)
@@ -718,10 +717,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     const avgSessionMin = sessions > 0 ? Math.round((totalMinutes / sessions) * 10) / 10 : 0
     const distractions = workSessions.reduce((s, h) => s + (h.distractions || 0), 0)
     const distractionRate = totalMinutes > 0 ? Math.min(1, distractions / totalMinutes) : 0
-    const deepFocusMinutes = workSessions.reduce(
-      (s, h) => s + (h.deep ? h.durationMin || 0 : 0),
-      0
-    )
+    const deepFocusMinutes = workSessions.reduce((s, h) => s + (h.deep ? h.durationMin || 0 : 0), 0)
     const tasksCompleted = countTasksCompletedInRange(r)
 
     // Streak 基于全量 history，不因 range 而变

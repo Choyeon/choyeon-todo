@@ -291,7 +291,11 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof data.myDaySmartEnabled === 'boolean') {
           myDaySmartEnabled.value = data.myDaySmartEnabled
         }
-        if (typeof data.myDaySmartCount === 'number' && data.myDaySmartCount >= 1 && data.myDaySmartCount <= 100) {
+        if (
+          typeof data.myDaySmartCount === 'number' &&
+          data.myDaySmartCount >= 1 &&
+          data.myDaySmartCount <= 100
+        ) {
           myDaySmartCount.value = data.myDaySmartCount
         }
         if (typeof data.sidebarShowFilters === 'boolean') {

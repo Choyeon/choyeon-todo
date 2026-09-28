@@ -41,7 +41,11 @@ export const useAreaStore = defineStore('area', () => {
 
   const ensureDefaultArea = () => {
     if (!areas.value.length) {
-      areas.value = DEFAULT_AREAS.map((a) => ({ ...a, createdAt: Date.now(), updatedAt: Date.now() }))
+      areas.value = DEFAULT_AREAS.map((a) => ({
+        ...a,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      }))
       return
     }
     if (!areas.value.some((a) => a.id === DEFAULT_AREA_ID)) {
@@ -109,7 +113,8 @@ export const useAreaStore = defineStore('area', () => {
     if (!name || !String(name).trim()) return null
     const now = Date.now()
     let maxOrder = -1
-    for (const a of areas.value) if (typeof a.order === 'number' && a.order > maxOrder) maxOrder = a.order
+    for (const a of areas.value)
+      if (typeof a.order === 'number' && a.order > maxOrder) maxOrder = a.order
     const newArea = {
       id: generateAreaId(),
       name: String(name).trim().slice(0, 60),

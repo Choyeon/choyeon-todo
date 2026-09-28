@@ -1,4 +1,4 @@
-import { ref, onBeforeUnmount } from 'vue'
+import { ref } from 'vue'
 import { getDefaultCommandRegistry } from './useCommandRegistry'
 import { useSnackbar } from './useSnackbar'
 
@@ -25,9 +25,8 @@ export const getCommandRegistry = (bridges = {}) => {
   return _registry
 }
 
-// 全局 Ctrl+K / ESC 快捷键：仅注册一次
+// 全局 Ctrl+K / ESC 快捷键：仅注册一次，随应用生命周期常驻（无需反注册）
 let _keyHandlerInstalled = false
-let _keyHandlerCleanup = null
 const _installGlobalKeyHandler = () => {
   if (_keyHandlerInstalled || typeof window === 'undefined') return
   _keyHandlerInstalled = true
@@ -48,11 +47,6 @@ const _installGlobalKeyHandler = () => {
     }
   }
   window.addEventListener('keydown', handler)
-  _keyHandlerCleanup = () => {
-    window.removeEventListener('keydown', handler)
-    _keyHandlerInstalled = false
-    _keyHandlerCleanup = null
-  }
 }
 
 export const useCommandPalette = (options = {}) => {
@@ -63,13 +57,21 @@ export const useCommandPalette = (options = {}) => {
   const open = () => {
     visible.value = true
     _openHandlers.forEach((fn) => {
-      try { fn() } catch (_e) { /* ignore */ }
+      try {
+        fn()
+      } catch {
+        /* ignore */
+      }
     })
   }
   const close = () => {
     visible.value = false
     _closeHandlers.forEach((fn) => {
-      try { fn() } catch (_e) { /* ignore */ }
+      try {
+        fn()
+      } catch {
+        /* ignore */
+      }
     })
   }
   const toggle = () => (visible.value ? close() : open())
@@ -78,8 +80,14 @@ export const useCommandPalette = (options = {}) => {
   _globalToggle = _globalToggle || toggle
   _globalClose = _globalClose || close
 
-  const onOpen = (fn) => { _openHandlers.add(fn); return () => _openHandlers.delete(fn) }
-  const onClose = (fn) => { _closeHandlers.add(fn); return () => _closeHandlers.delete(fn) }
+  const onOpen = (fn) => {
+    _openHandlers.add(fn)
+    return () => _openHandlers.delete(fn)
+  }
+  const onClose = (fn) => {
+    _closeHandlers.add(fn)
+    return () => _closeHandlers.delete(fn)
+  }
 
   /**
    * 执行命令并统一错误处理

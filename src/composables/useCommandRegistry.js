@@ -52,12 +52,7 @@ const _score = (query, cmd) => {
   if (!query) return 1000 // neutral score for MRU ordering
   const q = query.trim().toLowerCase()
   if (!q) return 0
-  const hayfields = [
-    cmd.id,
-    cmd.title,
-    cmd.description || '',
-    ...(cmd.keywords || [])
-  ]
+  const hayfields = [cmd.id, cmd.title, cmd.description || '', ...(cmd.keywords || [])]
   let best = 0
   for (const field of hayfields) {
     if (!field) continue
@@ -101,7 +96,11 @@ const buildDefaultCommands = (bridges = {}) => {
 
   const _go = (routeName) => {
     if (router && typeof router.push === 'function') {
-      try { router.push({ name: routeName }).catch(_noop) } catch (_e) { /* ignore */ }
+      try {
+        router.push({ name: routeName }).catch(_noop)
+      } catch {
+        /* ignore */
+      }
     }
   }
 
@@ -142,7 +141,8 @@ const buildDefaultCommands = (bridges = {}) => {
         const title = (ctx && ctx.title) || (ctx && ctx !== undefined ? String(ctx) : '')
         if (quickAdd && typeof quickAdd.add === 'function') return quickAdd.add(title)
         if (taskStore && typeof taskStore.addQuick === 'function') return taskStore.addQuick(title)
-        if (taskStore && typeof taskStore.addTask === 'function' && title) return taskStore.addTask({ title })
+        if (taskStore && typeof taskStore.addTask === 'function' && title)
+          return taskStore.addTask({ title })
         return undefined
       }
     },
@@ -167,7 +167,8 @@ const buildDefaultCommands = (bridges = {}) => {
       keywords: ['mark all', '全部完成', '完成所有', 'complete all'],
       section: 'action',
       action: () => {
-        if (taskStore && typeof taskStore.markAllComplete === 'function') return taskStore.markAllComplete()
+        if (taskStore && typeof taskStore.markAllComplete === 'function')
+          return taskStore.markAllComplete()
       }
     },
     {
@@ -199,11 +200,19 @@ const buildDefaultCommands = (bridges = {}) => {
     id: `view.switchTheme.${t}`,
     title: `切换主题为${t === 'auto' ? '自动' : t === 'light' ? '浅色' : '深色'}`,
     description: `设置 UI 主题：${t}`,
-    keywords: [`theme ${t}`, `主题${t === 'auto' ? '自动' : t === 'light' ? '浅色' : '深色'}`, t, '外观', 'appearance'],
+    keywords: [
+      `theme ${t}`,
+      `主题${t === 'auto' ? '自动' : t === 'light' ? '浅色' : '深色'}`,
+      t,
+      '外观',
+      'appearance'
+    ],
     section: 'settings',
     action: () => {
-      if (settingsStore && typeof settingsStore.setTheme === 'function') return settingsStore.setTheme(t)
-      if (settingsStore && typeof settingsStore.switchTheme === 'function') return settingsStore.switchTheme(t)
+      if (settingsStore && typeof settingsStore.setTheme === 'function')
+        return settingsStore.setTheme(t)
+      if (settingsStore && typeof settingsStore.switchTheme === 'function')
+        return settingsStore.switchTheme(t)
     }
   }))
   // generic switchTheme shortcut (accepts ctx param)
@@ -214,10 +223,12 @@ const buildDefaultCommands = (bridges = {}) => {
     keywords: ['theme', '主题', '切换主题', 'appearance'],
     section: 'settings',
     action: (ctx) => {
-      const t = (typeof ctx === 'string' ? ctx : (ctx && ctx.theme)) || 'auto'
+      const t = (typeof ctx === 'string' ? ctx : ctx && ctx.theme) || 'auto'
       const valid = themes.includes(t) ? t : 'auto'
-      if (settingsStore && typeof settingsStore.setTheme === 'function') return settingsStore.setTheme(valid)
-      if (settingsStore && typeof settingsStore.switchTheme === 'function') return settingsStore.switchTheme(valid)
+      if (settingsStore && typeof settingsStore.setTheme === 'function')
+        return settingsStore.setTheme(valid)
+      if (settingsStore && typeof settingsStore.switchTheme === 'function')
+        return settingsStore.switchTheme(valid)
     }
   })
 
@@ -229,8 +240,10 @@ const buildDefaultCommands = (bridges = {}) => {
       keywords: ['start', 'pause', '开始', '暂停', '番茄'],
       section: 'pomodoro',
       action: () => {
-        if (pomodoroStore && typeof pomodoroStore.toggle === 'function') return pomodoroStore.toggle()
-        if (pomodoroStore && typeof pomodoroStore.startPause === 'function') return pomodoroStore.startPause()
+        if (pomodoroStore && typeof pomodoroStore.toggle === 'function')
+          return pomodoroStore.toggle()
+        if (pomodoroStore && typeof pomodoroStore.startPause === 'function')
+          return pomodoroStore.startPause()
         if (pomodoroStore && typeof pomodoroStore.isRunning === 'boolean') {
           if (pomodoroStore.isRunning) {
             if (typeof pomodoroStore.pause === 'function') return pomodoroStore.pause()
@@ -257,8 +270,10 @@ const buildDefaultCommands = (bridges = {}) => {
       keywords: ['work', '工作', 'focus', '专注'],
       section: 'pomodoro',
       action: () => {
-        if (pomodoroStore && typeof pomodoroStore.switchWork === 'function') return pomodoroStore.switchWork()
-        if (pomodoroStore && typeof pomodoroStore.setMode === 'function') return pomodoroStore.setMode('work')
+        if (pomodoroStore && typeof pomodoroStore.switchWork === 'function')
+          return pomodoroStore.switchWork()
+        if (pomodoroStore && typeof pomodoroStore.setMode === 'function')
+          return pomodoroStore.setMode('work')
       }
     },
     {
@@ -268,8 +283,10 @@ const buildDefaultCommands = (bridges = {}) => {
       keywords: ['short break', 'short', '短休', '休息'],
       section: 'pomodoro',
       action: () => {
-        if (pomodoroStore && typeof pomodoroStore.switchShortBreak === 'function') return pomodoroStore.switchShortBreak()
-        if (pomodoroStore && typeof pomodoroStore.setMode === 'function') return pomodoroStore.setMode('shortBreak')
+        if (pomodoroStore && typeof pomodoroStore.switchShortBreak === 'function')
+          return pomodoroStore.switchShortBreak()
+        if (pomodoroStore && typeof pomodoroStore.setMode === 'function')
+          return pomodoroStore.setMode('shortBreak')
       }
     }
   ]
@@ -283,10 +300,19 @@ const buildDefaultCommands = (bridges = {}) => {
       section: 'settings',
       action: () => {
         if (router && typeof router.push === 'function') {
-          try { router.push({ name: 'SettingsView', params: { tab: 'shortcuts' } }).catch(_noop) } catch (_e) { _noop() }
-          try { router.push({ path: '/settings/shortcuts' }).catch(_noop) } catch (_e) { _noop() }
+          try {
+            router.push({ name: 'SettingsView', params: { tab: 'shortcuts' } }).catch(_noop)
+          } catch {
+            _noop()
+          }
+          try {
+            router.push({ path: '/settings/shortcuts' }).catch(_noop)
+          } catch {
+            _noop()
+          }
         }
-        if (settingsStore && typeof settingsStore.openTab === 'function') return settingsStore.openTab('shortcuts')
+        if (settingsStore && typeof settingsStore.openTab === 'function')
+          return settingsStore.openTab('shortcuts')
       }
     }
   ]
@@ -300,8 +326,10 @@ const buildDefaultCommands = (bridges = {}) => {
       section: 'data',
       action: async () => {
         if (dataBridge && typeof dataBridge.exportAll === 'function') return dataBridge.exportAll()
-        if (settingsStore && typeof settingsStore.exportAll === 'function') return settingsStore.exportAll()
-        if (snackbar && typeof snackbar.show === 'function') snackbar.show({ text: '数据导出桥不可用', type: 'warning' })
+        if (settingsStore && typeof settingsStore.exportAll === 'function')
+          return settingsStore.exportAll()
+        if (snackbar && typeof snackbar.show === 'function')
+          snackbar.show({ text: '数据导出桥不可用', type: 'warning' })
       }
     },
     {
@@ -312,8 +340,10 @@ const buildDefaultCommands = (bridges = {}) => {
       section: 'data',
       action: async () => {
         if (dataBridge && typeof dataBridge.importAll === 'function') return dataBridge.importAll()
-        if (settingsStore && typeof settingsStore.importAll === 'function') return settingsStore.importAll()
-        if (snackbar && typeof snackbar.show === 'function') snackbar.show({ text: '数据导入桥不可用', type: 'warning' })
+        if (settingsStore && typeof settingsStore.importAll === 'function')
+          return settingsStore.importAll()
+        if (snackbar && typeof snackbar.show === 'function')
+          snackbar.show({ text: '数据导入桥不可用', type: 'warning' })
       }
     }
   ]
@@ -326,9 +356,14 @@ const buildDefaultCommands = (bridges = {}) => {
       keywords: ['help', 'welcome', 'guide', 'tour', '帮助', '欢迎', '引导', '新手'],
       section: 'help',
       action: () => {
-        if (helpBridge && typeof helpBridge.showWelcome === 'function') return helpBridge.showWelcome()
+        if (helpBridge && typeof helpBridge.showWelcome === 'function')
+          return helpBridge.showWelcome()
         if (router && typeof router.push === 'function') {
-          try { router.push({ name: 'WelcomeView' }).catch(_noop) } catch (_e) { /* ignore */ }
+          try {
+            router.push({ name: 'WelcomeView' }).catch(_noop)
+          } catch {
+            /* ignore */
+          }
         }
       }
     }
@@ -354,9 +389,12 @@ export const createCommandRegistry = (opts = {}) => {
   const mru = new Map()
 
   const _registerOne = (cmd) => {
-    if (!cmd || typeof cmd !== 'object') throw new TypeError('[commandRegistry] register expects an object')
-    if (typeof cmd.id !== 'string' || !cmd.id) throw new TypeError('[commandRegistry] register requires string id')
-    if (typeof cmd.action !== 'function') throw new TypeError(`[commandRegistry] command ${cmd.id} requires function action`)
+    if (!cmd || typeof cmd !== 'object')
+      throw new TypeError('[commandRegistry] register expects an object')
+    if (typeof cmd.id !== 'string' || !cmd.id)
+      throw new TypeError('[commandRegistry] register requires string id')
+    if (typeof cmd.action !== 'function')
+      throw new TypeError(`[commandRegistry] command ${cmd.id} requires function action`)
     const title = cmd.title || cmd.id
     const normalized = Object.assign(
       { description: '', keywords: [], shortcut: '', section: 'action' },
@@ -471,7 +509,9 @@ export const createCommandRegistry = (opts = {}) => {
 
   // helper: get/clear MRU counts (useful for testing/persistence)
   const _getMruCounts = () => Object.fromEntries(mru.entries())
-  const _clearMru = () => { mru.clear() }
+  const _clearMru = () => {
+    mru.clear()
+  }
 
   return {
     register,

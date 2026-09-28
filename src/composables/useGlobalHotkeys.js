@@ -8,14 +8,6 @@ import { useRouter } from 'vue-router'
 
 const SNOOZE_MINUTES = 10
 
-const isEditable = (el) => {
-  if (!el) return false
-  const tag = el.tagName
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
-  if (el.isContentEditable) return true
-  return false
-}
-
 // 所有绑定的统一描述，供 Electron 映射 accelerator 与 Web 映射键盘
 export const DEFAULT_HOTKEY_BINDS = [
   {
@@ -104,7 +96,7 @@ export function useGlobalHotkeys(options = {}) {
     if (!router) {
       try {
         router = useRouter()
-      } catch (e) {
+      } catch {
         router = null
       }
     }
@@ -114,10 +106,7 @@ export function useGlobalHotkeys(options = {}) {
   const focusHome = options.focusHome || (() => {})
   const onDistractionMarked = options.onDistractionMarked || (() => {})
 
-  const isElectron =
-    typeof window !== 'undefined' &&
-    (!!window.electronAPI || !!(process && process.versions && process.versions.electron))
-
+  //  Electron 增强通道判定：仅当渲染层具备 hotkey IPC 能力时才走原生快捷键注册
   const isElectronEnhanced =
     typeof window !== 'undefined' &&
     (!!(window.ct && typeof window.ct.invoke === 'function') ||
@@ -134,7 +123,7 @@ export function useGlobalHotkeys(options = {}) {
     if (typeof h === 'function') {
       try {
         h()
-      } catch (e) {
+      } catch {
         // ignore handler errors
       }
       return true
@@ -197,7 +186,7 @@ export function useGlobalHotkeys(options = {}) {
         } else {
           r.push('/pomodoro')
         }
-      } catch (e) {
+      } catch {
         // ignore routing errors
       }
     })
@@ -221,7 +210,7 @@ export function useGlobalHotkeys(options = {}) {
           // 手动写回 timeLeft（无 action 接口时直接操作）
           pomodoroStore.timeLeft = Math.max(0, remaining + SNOOZE_MINUTES * 60)
         }
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       onDistractionMarked({ snoozeMinutes: SNOOZE_MINUTES })
@@ -245,7 +234,7 @@ export function useGlobalHotkeys(options = {}) {
       if (!w) continue
       if (w.ctrl !== modifier) continue
       if (w.shift !== shift) continue
-      let match = false
+      let match
       if (w.key === 'ArrowRight') {
         match = key === 'ArrowRight' || key === 'Right'
       } else if (w.key === 'Enter') {
@@ -283,14 +272,14 @@ export function useGlobalHotkeys(options = {}) {
     if (window.ct && typeof window.ct.invoke === 'function') {
       try {
         result = await window.ct.invoke('hotkey:register', binds)
-      } catch (e) {
+      } catch {
         // 回落到 electronAPI
       }
     }
     if ((!result || result.ok === false) && window.electronAPI?.registerHotkeys) {
       try {
         result = await window.electronAPI.registerHotkeys(binds)
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -310,11 +299,11 @@ export function useGlobalHotkeys(options = {}) {
         electronHotkeyUnsubscribe = () => {
           try {
             if (typeof unsub === 'function') unsub()
-          } catch (e) {
+          } catch {
             /* ignore */
           }
         }
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -324,11 +313,11 @@ export function useGlobalHotkeys(options = {}) {
         electronHotkeyUnsubscribe = () => {
           try {
             if (typeof unsub === 'function') unsub()
-          } catch (e) {
+          } catch {
             /* ignore */
           }
         }
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -341,7 +330,7 @@ export function useGlobalHotkeys(options = {}) {
     if (electronHotkeyUnsubscribe) {
       try {
         electronHotkeyUnsubscribe()
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       electronHotkeyUnsubscribe = null
@@ -351,7 +340,7 @@ export function useGlobalHotkeys(options = {}) {
       if (window.ct && typeof window.ct.invoke === 'function') {
         try {
           await window.ct.invoke('hotkey:unregisterAll')
-        } catch (e) {
+        } catch {
           // 回落到 electronAPI
           if (window.electronAPI?.unregisterAllHotkeys) {
             await window.electronAPI.unregisterAllHotkeys()
@@ -360,7 +349,7 @@ export function useGlobalHotkeys(options = {}) {
       } else if (window.electronAPI?.unregisterAllHotkeys) {
         await window.electronAPI.unregisterAllHotkeys()
       }
-    } catch (e) {
+    } catch {
       /* ignore */
     }
   }
@@ -369,7 +358,7 @@ export function useGlobalHotkeys(options = {}) {
     uninstallWebListener()
     try {
       await uninstallElectronHotkeys()
-    } catch (e) {
+    } catch {
       /* ignore */
     }
   }
@@ -379,7 +368,7 @@ export function useGlobalHotkeys(options = {}) {
     if (isElectronEnhanced) {
       try {
         await installElectronHotkeys()
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -395,7 +384,7 @@ export function useGlobalHotkeys(options = {}) {
       onUnmounted(() => {
         destroyGlobalHotkeys()
       })
-    } catch (e) {
+    } catch {
       // 非 setup 环境则跳过自动挂载
     }
   }

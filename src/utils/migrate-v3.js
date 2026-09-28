@@ -94,8 +94,8 @@ const encodeRFC1951Stored = (inputBytes) => {
     const lenHi = (len >> 8) & 0xff
     header[1] = lenLo
     header[2] = lenHi
-    header[3] = (~lenLo) & 0xff
-    header[4] = (~lenHi) & 0xff
+    header[3] = ~lenLo & 0xff
+    header[4] = ~lenHi & 0xff
     blocks.push(header)
     if (len > 0) blocks.push(inputBytes.subarray(i, i + len))
     if (isLast) break
@@ -284,7 +284,7 @@ export const migrateV2ToV3 = (stateSnapshot) => {
       return { ok: false, error: 'stateSnapshot must be an object' }
     }
     const snap = stateSnapshot
-    const settings = (snap.settings && typeof snap.settings === 'object') ? { ...snap.settings } : {}
+    const settings = snap.settings && typeof snap.settings === 'object' ? { ...snap.settings } : {}
     const tasksVersion = typeof settings.tasksVersion === 'number' ? settings.tasksVersion : 0
 
     // tasks 必须是数组（无论什么版本，若传入且非数组 -> 报错）
@@ -334,9 +334,7 @@ export const migrateV2ToV3 = (stateSnapshot) => {
     }
 
     // ====== 构建 Categories（原样保留 2.x） ======
-    let categories = Array.isArray(snap.categories)
-      ? snap.categories.map((c) => ({ ...c }))
-      : []
+    let categories = Array.isArray(snap.categories) ? snap.categories.map((c) => ({ ...c })) : []
     // 保证兜底分类存在（保持 taskStore UNDELETABLE_CATEGORY='other' 语义）
     if (!categories.some((c) => c.id === 'other')) {
       categories.push({ id: 'other', name: '其他', color: '#9B8EBB', icon: 'more-horizontal' })
@@ -401,7 +399,8 @@ export const migrateV2ToV3 = (stateSnapshot) => {
       // categoryId -> list 映射：老数据存 category（字符串 id）
       const categoryValue = t.categoryId ?? t.category ?? null
       // 优先使用显式 listId（若传入且在有效列表中）
-      const explicitListId = typeof t.listId === 'string' && validListIds.has(t.listId) ? t.listId : null
+      const explicitListId =
+        typeof t.listId === 'string' && validListIds.has(t.listId) ? t.listId : null
       const listId =
         explicitListId ||
         (categoryValue != null && validListIds.has(categoryValue)
@@ -425,8 +424,7 @@ export const migrateV2ToV3 = (stateSnapshot) => {
             Math.max(1, createdAtFallback - Math.max(0, 1000000 - orderNum * 10))
 
       // 保证 2.x 兼容字段 category 存在
-      const categoryBackport =
-        validCategoryIds.has(categoryValue) ? categoryValue : 'other'
+      const categoryBackport = validCategoryIds.has(categoryValue) ? categoryValue : 'other'
 
       // blockedBy：仅保留合法引用
       const blockedBy = Array.isArray(t.blockedBy)
@@ -460,7 +458,9 @@ export const migrateV2ToV3 = (stateSnapshot) => {
 
     // 净化：若 headings 不存在或 headingId 引用无效，置 null
     const hasHeadings = Array.isArray(snap.headings) && snap.headings.length > 0
-    const headingIds = hasHeadings ? new Set(snap.headings.map((h) => h && h.id).filter(Boolean)) : null
+    const headingIds = hasHeadings
+      ? new Set(snap.headings.map((h) => h && h.id).filter(Boolean))
+      : null
     for (const t of tasks) {
       if (t.headingId != null) {
         if (!headingIds || !headingIds.has(t.headingId)) t.headingId = null

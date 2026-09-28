@@ -1,58 +1,10 @@
 // SyncEngine.js
-// Task 8-C: SyncEngine。基于 SyncProvider 完成一次“pull → diff → 应用 patches → push”的同步。
-import { genDiff, validateDataPackageV3 } from '../utils/schema-v3'
+// Task 8-C: SyncEngine。基于 SyncProvider 完成一次“pull → 合并 → 写回 → push”的同步。
+import { validateDataPackageV3 } from '../utils/schema-v3'
 import { hashData } from '../utils/compress'
 import { rollbackSaveAndPersist, saveConflict } from '../utils/migrate-v3'
 
 const clone = (x) => JSON.parse(JSON.stringify(x))
-
-/**
- * 把一组 patches 应用到 pkg（返回新对象，不修改入参）。
- * 冲突项（conflictFields 非空）不会被强制覆盖，而是收集到 returned.conflicts。
- */
-const applyPatches = (pkg, patches, { strategy = 'union' } = {}) => {
-  const result = clone(pkg || emptyPkg())
-  const conflicts = []
-  for (const patch of patches) {
-    if (!patch || !patch.type || !patch.op) continue
-    if (patch.type === 'settings') {
-      if (patch.conflictFields && patch.conflictFields.length) {
-        conflicts.push(patch)
-        if (strategy !== 'union') result.settings = { ...(patch.after || result.settings) }
-        continue
-      }
-      if (patch.op === 'update' && patch.after) result.settings = { ...patch.after }
-      continue
-    }
-    const coll = patch.type // tasks/areas/lists
-    if (!Array.isArray(result[coll])) result[coll] = []
-    const byId = new Map(result[coll].map((x) => [x.id, x]))
-    if (patch.op === 'delete') {
-      result[coll] = result[coll].filter((x) => x.id !== patch.id)
-      continue
-    }
-    const record = clone(patch.after || patch.before)
-    if (!record || !record.id) continue
-    if (patch.op === 'add') {
-      if (!byId.has(record.id)) result[coll].push(record)
-      continue
-    }
-    // update
-    if (patch.conflictFields && patch.conflictFields.length) {
-      conflicts.push(patch)
-      if (strategy === 'union') {
-        // 保留本地：nothing to do
-      } else {
-        byId.set(record.id, record)
-        result[coll] = [...byId.values()]
-      }
-    } else {
-      byId.set(record.id, record)
-      result[coll] = [...byId.values()]
-    }
-  }
-  return { pkg: result, conflicts }
-}
 
 const emptyPkg = () => ({
   version: 3,
@@ -131,9 +83,7 @@ export class SyncEngine {
         lists: Array.isArray(s.lists) ? clone(s.lists) : [],
         categories: Array.isArray(s.categories) ? clone(s.categories) : [],
         settings:
-          s.settings && typeof s.settings === 'object'
-            ? clone(s.settings)
-            : { tasksVersion: 3 },
+          s.settings && typeof s.settings === 'object' ? clone(s.settings) : { tasksVersion: 3 },
         meta: {
           app: 'choyeon-todo',
           appVersion: '1.0.0',
@@ -141,8 +91,10 @@ export class SyncEngine {
         }
       }
     }
-    const areas = this.areaStore && Array.isArray(this.areaStore.areas) ? clone(this.areaStore.areas) : []
-    const lists = this.listStore && Array.isArray(this.listStore.lists) ? clone(this.listStore.lists) : []
+    const areas =
+      this.areaStore && Array.isArray(this.areaStore.areas) ? clone(this.areaStore.areas) : []
+    const lists =
+      this.listStore && Array.isArray(this.listStore.lists) ? clone(this.listStore.lists) : []
     const tasks = ts && Array.isArray(ts.tasks) ? clone(ts.tasks) : []
     const categories = ts && Array.isArray(ts.categories) ? clone(ts.categories) : []
     const settings =
@@ -223,12 +175,16 @@ export class SyncEngine {
 
       // 远端 snapshot 自身 schema 校验失败 → 立刻记 schema conflict（即便后续合并能兜底）
       const remoteV = validateDataPackageV3(remoteSnapshot)
-      const schemaConflicts = remoteV.ok ? [] : [{
-        type: 'schema',
-        errors: remoteV.errors,
-        warnings: remoteV.warnings,
-        phase: 'remote-pull'
-      }]
+      const schemaConflicts = remoteV.ok
+        ? []
+        : [
+            {
+              type: 'schema',
+              errors: remoteV.errors,
+              warnings: remoteV.warnings,
+              phase: 'remote-pull'
+            }
+          ]
 
       // 2) 构造本地 pkg
       const localPkg = this._buildLocalPkg()
@@ -265,22 +221,21 @@ export class SyncEngine {
             }
             const existingUpdated = typeof existing.updatedAt === 'number' ? existing.updatedAt : 0
             const itemUpdated = typeof item.updatedAt === 'number' ? item.updatedAt : 0
-            let winner = side
-            let winnerRecord = item
-            let loserRecord = existing
+            let winner, winnerRecord, loserRecord
             if (side === 'remote') {
-              winner = existingUpdated >= itemUpdated ? 'remote' : 'local'
-              if (existingUpdated >= itemUpdated) { winnerRecord = existing; loserRecord = item } else { winnerRecord = item; loserRecord = existing }
+              const existingWins = existingUpdated >= itemUpdated
+              winner = existingWins ? 'remote' : 'local'
+              winnerRecord = existingWins ? existing : item
+              loserRecord = existingWins ? item : existing
             } else {
               // local pass
-              winner = itemUpdated >= existingUpdated ? 'local' : 'remote'
-              if (itemUpdated >= existingUpdated) { winnerRecord = item; loserRecord = existing } else { winnerRecord = existing; loserRecord = item }
+              const localWins = itemUpdated >= existingUpdated
+              winner = localWins ? 'local' : 'remote'
+              winnerRecord = localWins ? item : existing
+              loserRecord = localWins ? existing : item
             }
             const cFields = []
-            const mergedKeys = new Set([
-              ...Object.keys(existing || {}),
-              ...Object.keys(item || {})
-            ])
+            const mergedKeys = new Set([...Object.keys(existing || {}), ...Object.keys(item || {})])
             for (const k of mergedKeys) {
               if (JSON.stringify(existing[k]) !== JSON.stringify(item[k])) cFields.push(k)
             }
@@ -331,9 +286,10 @@ export class SyncEngine {
         tags: pickArr(remoteSnapshot.tags, localPkg.tags),
         templates: pickArr(remoteSnapshot.templates, localPkg.templates),
         settings: mergedSettings,
-        meta: (localPkg.meta && Object.keys(localPkg.meta).length && localPkg.meta)
-          || (remoteSnapshot.meta && Object.keys(remoteSnapshot.meta).length && remoteSnapshot.meta)
-          || { app: 'choyeon-todo', appVersion: '1.0.0', schemaRevision: 1 }
+        meta: (localPkg.meta && Object.keys(localPkg.meta).length && localPkg.meta) ||
+          (remoteSnapshot.meta &&
+            Object.keys(remoteSnapshot.meta).length &&
+            remoteSnapshot.meta) || { app: 'choyeon-todo', appVersion: '1.0.0', schemaRevision: 1 }
       }
 
       // 合并后 schema 校验（失败则并入 conflicts，不中断同步流程本身）

@@ -66,12 +66,20 @@ const normalizeTaskForSnapshot = (raw) => {
   //   blockedBy / comments / attachments / activity / tags
   if (typeof out.completed !== 'boolean') out.completed = false
   if (typeof out.important !== 'boolean') out.important = false
-  if (out.date !== null && out.date !== undefined && (typeof out.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(out.date))) {
+  if (
+    out.date !== null &&
+    out.date !== undefined &&
+    (typeof out.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(out.date))
+  ) {
     out.date = null
   } else if (!('date' in out)) {
     out.date = null
   }
-  if (out.time !== null && out.time !== undefined && (typeof out.time !== 'string' || !/^\d{2}:\d{2}(?::\d{2})?$/.test(out.time))) {
+  if (
+    out.time !== null &&
+    out.time !== undefined &&
+    (typeof out.time !== 'string' || !/^\d{2}:\d{2}(?::\d{2})?$/.test(out.time))
+  ) {
     out.time = null
   } else if (!('time' in out)) {
     out.time = null
@@ -204,9 +212,10 @@ export const createSnapshot = ({ label = 'manual', stores = {} } = {}) => {
     const pkg = collectSnapshot(stores)
     const pkgHash = hashData(pkg)
     const dateLabel = getIsoDateLabel(new Date())
-    const safeLabel = String(label || 'manual')
-      .replace(/[:/\\\s]+/g, '_')
-      .slice(0, 64) || 'manual'
+    const safeLabel =
+      String(label || 'manual')
+        .replace(/[:/\\\s]+/g, '_')
+        .slice(0, 64) || 'manual'
     const key = `${SNAP_KEY_PREFIX}${dateLabel}_${safeLabel}_${pkgHash}`
     const compressed = compressToBase64(pkg)
     localStorage.setItem(key, compressed)
@@ -244,7 +253,7 @@ export const listSnapshots = () => {
     const size = (localStorage.getItem(k) || '').length
     // 把 isoDate 近似解析为时间戳（用于排序）
     const [datePart, timePart] = parsed.isoDate.split('-')
-    let createdAt = 0
+    let createdAt
     try {
       const y = Number(datePart.substring(0, 4))
       const m = Number(datePart.substring(4, 6))

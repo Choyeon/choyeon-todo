@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getTodayStr, parseDateStr, formatDateStr } from '../utils/date'
+import { getTodayStr, formatDateStr } from '../utils/date'
 import { KARMA_LEVELS, levelFromKarma, BADGE_DEFINITIONS } from '../utils/karmaLevels'
 
 const STORAGE_KEY = 'todo_karma_v3'
@@ -14,9 +14,7 @@ const dayStrOfTs = (ts) => formatDateStr(new Date(ts))
 const priorityBaseScore = (priority) => {
   // priority 越小分越高：0=10, 1=7, 2=3, 3=2, 4=1
   const n = Number(priority)
-  const p = Number.isFinite(n)
-    ? Math.max(0, Math.min(4, Math.floor(n)))
-    : 4
+  const p = Number.isFinite(n) ? Math.max(0, Math.min(4, Math.floor(n))) : 4
   switch (p) {
     case 0:
       return 10
@@ -430,11 +428,7 @@ export const useKarmaStore = defineStore('karma', () => {
         const lastDelete = task.activity
           .filter((a) => a.type === 'delete')
           .sort((a, b) => b.at - a.at)[0]
-        if (
-          lastDelete &&
-          lastDelete.at > lastDeleteSeenAt &&
-          !task.completed
-        ) {
+        if (lastDelete && lastDelete.at > lastDeleteSeenAt && !task.completed) {
           lastDeleteSeenAt = lastDelete.at
           // 注意：任务还没被真正 splice，这里按约定触发扣分
           award('manualPenalty', { taskId: task.id, reason: 'deleteIncompleteTask' })

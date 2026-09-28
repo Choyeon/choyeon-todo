@@ -23,13 +23,7 @@ const REQ_TOPLEVEL = [
   'meta'
 ]
 
-const REQ_TASK_KEYS = [
-  'id',
-  'title',
-  'listId',
-  'areaId',
-  'parentId'
-]
+const REQ_TASK_KEYS = ['id', 'title', 'listId', 'areaId', 'parentId']
 
 const META_REQUIRED = ['app', 'appVersion', 'schemaRevision']
 
@@ -258,18 +252,13 @@ export const validateDataPackageV3 = (pkg) => {
       if (!isStr(c.name)) pushErr(`${p}.name`, 'category.name must be string')
     })
     if (!seen.has(UNDELETABLE_CATEGORY_ID)) {
-      warnings.push(
-        `categories missing UNDELETABLE category.id='${UNDELETABLE_CATEGORY_ID}'`
-      )
+      warnings.push(`categories missing UNDELETABLE category.id='${UNDELETABLE_CATEGORY_ID}'`)
     }
   }
 
   // ========== settings.tasksVersion 校验 ==========
   if (isObj(pkg.settings)) {
-    if (
-      pkg.settings.tasksVersion !== undefined &&
-      !isNum(pkg.settings.tasksVersion)
-    ) {
+    if (pkg.settings.tasksVersion !== undefined && !isNum(pkg.settings.tasksVersion)) {
       pushErr('$.settings.tasksVersion', 'settings.tasksVersion must be number')
     }
   }
@@ -359,11 +348,11 @@ export const normalizeDataPackage = (raw) => {
 
   // 已是 v3：严格按 raw 结构做 normalize，**不**自动补齐缺失的顶层必填数组/对象（否则会掩盖导入时包非法的问题）。
   // 仅做：meta 补齐 / settings.tasksVersion 规整 / generatedAt 缺省。
-  const topLevelArrays = ['tasks', 'areas', 'lists', 'categories']
   const baseTasks = 'tasks' in raw ? (isArr(raw.tasks) ? raw.tasks : raw.tasks) : undefined
   const baseAreas = 'areas' in raw ? (isArr(raw.areas) ? raw.areas : raw.areas) : undefined
   const baseLists = 'lists' in raw ? (isArr(raw.lists) ? raw.lists : raw.lists) : undefined
-  const baseCats = 'categories' in raw ? (isArr(raw.categories) ? raw.categories : raw.categories) : undefined
+  const baseCats =
+    'categories' in raw ? (isArr(raw.categories) ? raw.categories : raw.categories) : undefined
   const baseSettings = isObj(raw.settings)
     ? { ...raw.settings, tasksVersion: raw.settings.tasksVersion || MIN_TASKS_VERSION }
     : undefined
@@ -371,9 +360,7 @@ export const normalizeDataPackage = (raw) => {
     ? {
         app: raw.meta.app || 'choyeon-todo',
         appVersion: raw.meta.appVersion || '1.0.0',
-        schemaRevision: isNum(raw.meta.schemaRevision)
-          ? raw.meta.schemaRevision
-          : SCHEMA_REVISION,
+        schemaRevision: isNum(raw.meta.schemaRevision) ? raw.meta.schemaRevision : SCHEMA_REVISION,
         ...(raw.meta.userId != null ? { userId: raw.meta.userId } : {})
       }
     : {

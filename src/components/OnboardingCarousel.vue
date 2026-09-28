@@ -10,19 +10,9 @@
         @mousedown.self="skip"
       >
         <Transition appear name="ob-panel" @after-enter="afterEnter">
-          <div
-            v-if="visible"
-            class="ob-panel"
-            ref="panelRef"
-            role="document"
-          >
+          <div v-if="visible" class="ob-panel" ref="panelRef" role="document">
             <!-- 关闭按钮 -->
-            <button
-              class="ob-close"
-              @click="skip"
-              :aria-label="t('onboarding.skip')"
-              type="button"
-            >
+            <button class="ob-close" @click="skip" :aria-label="t('onboarding.skip')" type="button">
               <X :size="18" />
             </button>
 
@@ -30,129 +20,328 @@
             <div class="ob-stage">
               <div class="ob-stage-inner" :class="`stage-${step}`">
                 <!-- 欢迎：五彩图形 -->
-                <svg
-                  v-if="step === 0"
-                  viewBox="0 0 420 220"
-                  class="ob-svg"
-                  aria-hidden="true"
-                >
-                  <rect x="40" y="50" width="140" height="110" rx="18" fill="#60a5fa" opacity="0.9"/>
-                  <rect x="200" y="30" width="170" height="70" rx="14" fill="#34d399" opacity="0.85"/>
-                  <rect x="200" y="110" width="170" height="56" rx="14" fill="#fbbf24" opacity="0.78"/>
-                  <circle cx="90" cy="180" r="12" fill="#f87171"/>
-                  <circle cx="130" cy="190" r="8" fill="#22c55e"/>
-                  <circle cx="170" cy="182" r="10" fill="#38bdf8"/>
+                <svg v-if="step === 0" viewBox="0 0 420 220" class="ob-svg" aria-hidden="true">
+                  <rect
+                    x="40"
+                    y="50"
+                    width="140"
+                    height="110"
+                    rx="18"
+                    fill="#60a5fa"
+                    opacity="0.9"
+                  />
+                  <rect
+                    x="200"
+                    y="30"
+                    width="170"
+                    height="70"
+                    rx="14"
+                    fill="#34d399"
+                    opacity="0.85"
+                  />
+                  <rect
+                    x="200"
+                    y="110"
+                    width="170"
+                    height="56"
+                    rx="14"
+                    fill="#fbbf24"
+                    opacity="0.78"
+                  />
+                  <circle cx="90" cy="180" r="12" fill="#f87171" />
+                  <circle cx="130" cy="190" r="8" fill="#22c55e" />
+                  <circle cx="170" cy="182" r="10" fill="#38bdf8" />
                 </svg>
 
                 <!-- 智能输入 -->
-                <svg
-                  v-if="step === 1"
-                  viewBox="0 0 420 220"
-                  class="ob-svg"
-                  aria-hidden="true"
-                >
-                  <rect x="40" y="60" width="340" height="48" rx="14" fill="white" stroke="#3b82f6" stroke-width="2"/>
-                  <text x="60" y="92" font-family="ui-sans-serif" font-size="15" fill="#334155">明天下午3点 开会 重要</text>
+                <svg v-if="step === 1" viewBox="0 0 420 220" class="ob-svg" aria-hidden="true">
+                  <rect
+                    x="40"
+                    y="60"
+                    width="340"
+                    height="48"
+                    rx="14"
+                    fill="white"
+                    stroke="#3b82f6"
+                    stroke-width="2"
+                  />
+                  <text x="60" y="92" font-family="ui-sans-serif" font-size="15" fill="#334155">
+                    明天下午3点 开会 重要
+                  </text>
                   <g transform="translate(40,130)">
-                    <rect width="110" height="38" rx="10" fill="#bae6fd"/>
-                    <text x="12" y="24" font-family="ui-sans-serif" font-size="12" fill="#0369a1">📅 明天</text>
+                    <rect width="110" height="38" rx="10" fill="#bae6fd" />
+                    <text x="12" y="24" font-family="ui-sans-serif" font-size="12" fill="#0369a1">
+                      📅 明天
+                    </text>
                   </g>
                   <g transform="translate(160,130)">
-                    <rect width="110" height="38" rx="10" fill="#ddd6fe"/>
-                    <text x="12" y="24" font-family="ui-sans-serif" font-size="12" fill="#5b21b6">⏰ 15:00</text>
+                    <rect width="110" height="38" rx="10" fill="#ddd6fe" />
+                    <text x="12" y="24" font-family="ui-sans-serif" font-size="12" fill="#5b21b6">
+                      ⏰ 15:00
+                    </text>
                   </g>
                   <g transform="translate(280,130)">
-                    <rect width="100" height="38" rx="10" fill="#fecaca"/>
-                    <text x="12" y="24" font-family="ui-sans-serif" font-size="12" fill="#991b1b">⭐ 重要</text>
+                    <rect width="100" height="38" rx="10" fill="#fecaca" />
+                    <text x="12" y="24" font-family="ui-sans-serif" font-size="12" fill="#991b1b">
+                      ⭐ 重要
+                    </text>
                   </g>
                 </svg>
 
                 <!-- 番茄钟 -->
-                <svg
-                  v-if="step === 2"
-                  viewBox="0 0 420 220"
-                  class="ob-svg"
-                  aria-hidden="true"
-                >
-                  <circle cx="210" cy="115" r="86" fill="#ef4444"/>
-                  <circle cx="210" cy="115" r="72" fill="#fff7ed" stroke="#fecaca" stroke-width="3"/>
-                  <text x="210" y="130" text-anchor="middle" font-family="ui-monospace" font-size="40" font-weight="700" fill="#991b1b">25:00</text>
+                <svg v-if="step === 2" viewBox="0 0 420 220" class="ob-svg" aria-hidden="true">
+                  <circle cx="210" cy="115" r="86" fill="#ef4444" />
+                  <circle
+                    cx="210"
+                    cy="115"
+                    r="72"
+                    fill="#fff7ed"
+                    stroke="#fecaca"
+                    stroke-width="3"
+                  />
+                  <text
+                    x="210"
+                    y="130"
+                    text-anchor="middle"
+                    font-family="ui-monospace"
+                    font-size="40"
+                    font-weight="700"
+                    fill="#991b1b"
+                  >
+                    25:00
+                  </text>
                   <g transform="translate(60, 60)">
-                    <rect width="32" height="8" rx="3" fill="#fca5a5"/>
-                    <rect y="14" width="40" height="8" rx="3" fill="#fca5a5" opacity="0.7"/>
-                    <rect y="28" width="26" height="8" rx="3" fill="#fca5a5" opacity="0.5"/>
+                    <rect width="32" height="8" rx="3" fill="#fca5a5" />
+                    <rect y="14" width="40" height="8" rx="3" fill="#fca5a5" opacity="0.7" />
+                    <rect y="28" width="26" height="8" rx="3" fill="#fca5a5" opacity="0.5" />
                   </g>
                   <g transform="translate(340, 60)">
-                    <rect width="32" height="8" rx="3" fill="#86efac"/>
-                    <rect y="14" width="40" height="8" rx="3" fill="#86efac" opacity="0.7"/>
-                    <rect y="28" width="26" height="8" rx="3" fill="#86efac" opacity="0.5"/>
+                    <rect width="32" height="8" rx="3" fill="#86efac" />
+                    <rect y="14" width="40" height="8" rx="3" fill="#86efac" opacity="0.7" />
+                    <rect y="28" width="26" height="8" rx="3" fill="#86efac" opacity="0.5" />
                   </g>
                   <!-- 番茄叶 -->
-                  <path d="M210 28 q-8 -10 8 -14 q2 14 -8 14 z" fill="#16a34a"/>
-                  <path d="M210 28 q8 -10 -8 -14 q-2 14 8 14 z" fill="#22c55e"/>
+                  <path d="M210 28 q-8 -10 8 -14 q2 14 -8 14 z" fill="#16a34a" />
+                  <path d="M210 28 q8 -10 -8 -14 q-2 14 8 14 z" fill="#22c55e" />
                 </svg>
 
                 <!-- 快捷键 -->
-                <svg
-                  v-if="step === 3"
-                  viewBox="0 0 420 220"
-                  class="ob-svg"
-                  aria-hidden="true"
-                >
+                <svg v-if="step === 3" viewBox="0 0 420 220" class="ob-svg" aria-hidden="true">
                   <g>
                     <g transform="translate(40, 40)">
-                      <rect width="80" height="32" rx="8" fill="#e0e7ff" stroke="#a5b4fc" stroke-width="1"/>
-                      <text x="40" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#3730a3">Ctrl</text>
+                      <rect
+                        width="80"
+                        height="32"
+                        rx="8"
+                        fill="#e0e7ff"
+                        stroke="#a5b4fc"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="40"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#3730a3"
+                      >
+                        Ctrl
+                      </text>
                     </g>
                     <g transform="translate(130, 40)">
-                      <rect width="60" height="32" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
-                      <text x="30" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#1d4ed8">N</text>
+                      <rect
+                        width="60"
+                        height="32"
+                        rx="8"
+                        fill="#dbeafe"
+                        stroke="#93c5fd"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="30"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#1d4ed8"
+                      >
+                        N
+                      </text>
                     </g>
                     <g transform="translate(200, 61)">
-                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">新建任务</text>
+                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">
+                        新建任务
+                      </text>
                     </g>
                   </g>
                   <g>
                     <g transform="translate(40, 86)">
-                      <rect width="80" height="32" rx="8" fill="#e0e7ff" stroke="#a5b4fc" stroke-width="1"/>
-                      <text x="40" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#3730a3">Ctrl</text>
+                      <rect
+                        width="80"
+                        height="32"
+                        rx="8"
+                        fill="#e0e7ff"
+                        stroke="#a5b4fc"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="40"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#3730a3"
+                      >
+                        Ctrl
+                      </text>
                     </g>
                     <g transform="translate(130, 86)">
-                      <rect width="60" height="32" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
-                      <text x="30" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#166534">K</text>
+                      <rect
+                        width="60"
+                        height="32"
+                        rx="8"
+                        fill="#dcfce7"
+                        stroke="#86efac"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="30"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#166534"
+                      >
+                        K
+                      </text>
                     </g>
                     <g transform="translate(200, 107)">
-                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">命令面板</text>
+                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">
+                        命令面板
+                      </text>
                     </g>
                   </g>
                   <g>
                     <g transform="translate(40, 132)">
-                      <rect width="32" height="32" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
-                      <text x="16" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#991b1b">J</text>
+                      <rect
+                        width="32"
+                        height="32"
+                        rx="8"
+                        fill="#fee2e2"
+                        stroke="#fca5a5"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="16"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#991b1b"
+                      >
+                        J
+                      </text>
                     </g>
                     <g transform="translate(80, 132)">
-                      <rect width="32" height="32" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
-                      <text x="16" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#166534">K</text>
+                      <rect
+                        width="32"
+                        height="32"
+                        rx="8"
+                        fill="#dcfce7"
+                        stroke="#86efac"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="16"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#166534"
+                      >
+                        K
+                      </text>
                     </g>
                     <g transform="translate(122, 132)">
-                      <rect width="60" height="32" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
-                      <text x="30" y="21" text-anchor="middle" font-family="ui-monospace" font-size="11" font-weight="700" fill="#92400e">Space</text>
+                      <rect
+                        width="60"
+                        height="32"
+                        rx="8"
+                        fill="#fef3c7"
+                        stroke="#fcd34d"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="30"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="11"
+                        font-weight="700"
+                        fill="#92400e"
+                      >
+                        Space
+                      </text>
                     </g>
                     <g transform="translate(192, 153)">
-                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">上下移动 / 完成</text>
+                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">
+                        上下移动 / 完成
+                      </text>
                     </g>
                   </g>
                   <g>
                     <g transform="translate(40, 178)">
-                      <rect width="80" height="32" rx="8" fill="#e0e7ff" stroke="#a5b4fc" stroke-width="1"/>
-                      <text x="40" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#3730a3">Ctrl</text>
+                      <rect
+                        width="80"
+                        height="32"
+                        rx="8"
+                        fill="#e0e7ff"
+                        stroke="#a5b4fc"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="40"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#3730a3"
+                      >
+                        Ctrl
+                      </text>
                     </g>
                     <g transform="translate(130, 178)">
-                      <rect width="40" height="32" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1"/>
-                      <text x="20" y="21" text-anchor="middle" font-family="ui-monospace" font-size="12" font-weight="700" fill="#9d174d">/</text>
+                      <rect
+                        width="40"
+                        height="32"
+                        rx="8"
+                        fill="#fce7f3"
+                        stroke="#f9a8d4"
+                        stroke-width="1"
+                      />
+                      <text
+                        x="20"
+                        y="21"
+                        text-anchor="middle"
+                        font-family="ui-monospace"
+                        font-size="12"
+                        font-weight="700"
+                        fill="#9d174d"
+                      >
+                        /
+                      </text>
                     </g>
                     <g transform="translate(180, 199)">
-                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">查看全部快捷键</text>
+                      <text font-family="ui-sans-serif" font-size="13" fill="#334155">
+                        查看全部快捷键
+                      </text>
                     </g>
                   </g>
                 </svg>
@@ -195,7 +384,7 @@
               >
                 {{ t('onboarding.skip') }}
               </button>
-              <div v-else style="flex:1" />
+              <div v-else style="flex: 1" />
 
               <button
                 v-if="step > 0"
@@ -284,10 +473,13 @@ const finish = async () => {
   await flushSafe()
   settingsStore.finishFirstRun()
   // 贴心展示一次命令面板
-  try { openPalette() } catch (_e) { /* ignore */ }
+  try {
+    openPalette()
+  } catch {
+    /* ignore */
+  }
 }
-const flushSafe = () =>
-  new Promise((resolve) => setTimeout(resolve, 0))
+const flushSafe = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 const afterEnter = () => {
   // 焦点管理：让用户可直接键盘翻页
@@ -297,13 +489,22 @@ const afterEnter = () => {
 const onKeydown = (e) => {
   if (!visible.value) return
   switch (e.key) {
-    case 'ArrowRight': case 'PageDown':
-      e.preventDefault(); next(); break
-    case 'ArrowLeft': case 'PageUp':
-      e.preventDefault(); prev(); break
+    case 'ArrowRight':
+    case 'PageDown':
+      e.preventDefault()
+      next()
+      break
+    case 'ArrowLeft':
+    case 'PageUp':
+      e.preventDefault()
+      prev()
+      break
     case 'Escape':
-      e.preventDefault(); skip(); break
-    case 'Enter': case ' ':
+      e.preventDefault()
+      skip()
+      break
+    case 'Enter':
+    case ' ':
       if (e.target?.tagName === 'BUTTON') return // 交给按钮默认行为
       e.preventDefault()
       if (step.value < totalSteps - 1) next()
@@ -328,7 +529,10 @@ onMounted(() => {
 // 不做组件卸载清理：作为全局组件保持常驻
 
 defineExpose({
-  show: () => { visible.value = true; step.value = 0 },
+  show: () => {
+    visible.value = true
+    step.value = 0
+  },
   hide,
   skip,
   finish
@@ -337,16 +541,16 @@ defineExpose({
 
 <style scoped>
 .ob-overlay {
-position: fixed;
-inset: 0;
-background: rgba(15, 23, 42, 0.55);
-backdrop-filter: blur(8px) saturate(1.1);
--webkit-backdrop-filter: blur(8px) saturate(1.1);
-z-index: 9996;
-display: flex;
-align-items: center;
-justify-content: center;
-padding: 24px;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px) saturate(1.1);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  z-index: 9996;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
 
 .ob-panel {
@@ -387,7 +591,10 @@ html[data-theme='dark'] .ob-panel {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
   z-index: 2;
 }
 .ob-close:hover {
@@ -402,63 +609,125 @@ html[data-theme='dark'] .ob-panel {
 
 /* ---- Stage / SVG ---- */
 .ob-stage {
-padding: 32px 24px 8px 24px;
-background: transparent;
+  padding: 32px 24px 8px 24px;
+  background: transparent;
 }
 .ob-stage-inner {
-border-radius: 18px;
-background: rgba(127, 127, 127, 0.04);
-height: 220px;
-display: flex;
-align-items: center;
-justify-content: center;
-overflow: hidden;
+  border-radius: 18px;
+  background: rgba(127, 127, 127, 0.04);
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 .ob-svg {
   width: 100%;
   height: 100%;
   display: block;
 }
-html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
+html[data-theme='dark'] .ob-svg text {
+  fill: #cbd5e1;
+}
 
 /* stage entrance animations per step */
-.stage-0 .ob-svg rect, .stage-0 .ob-svg circle { animation: ob-pop 520ms both; transform-origin: center; }
-.stage-0 .ob-svg rect:nth-child(1) { animation-delay: 40ms; }
-.stage-0 .ob-svg rect:nth-child(2) { animation-delay: 160ms; }
-.stage-0 .ob-svg rect:nth-child(3) { animation-delay: 280ms; }
-.stage-0 .ob-svg circle:nth-child(4) { animation-delay: 400ms; }
-.stage-0 .ob-svg circle:nth-child(5) { animation-delay: 460ms; }
-.stage-0 .ob-svg circle:nth-child(6) { animation-delay: 520ms; }
+.stage-0 .ob-svg rect,
+.stage-0 .ob-svg circle {
+  animation: ob-pop 520ms both;
+  transform-origin: center;
+}
+.stage-0 .ob-svg rect:nth-child(1) {
+  animation-delay: 40ms;
+}
+.stage-0 .ob-svg rect:nth-child(2) {
+  animation-delay: 160ms;
+}
+.stage-0 .ob-svg rect:nth-child(3) {
+  animation-delay: 280ms;
+}
+.stage-0 .ob-svg circle:nth-child(4) {
+  animation-delay: 400ms;
+}
+.stage-0 .ob-svg circle:nth-child(5) {
+  animation-delay: 460ms;
+}
+.stage-0 .ob-svg circle:nth-child(6) {
+  animation-delay: 520ms;
+}
 
 /* Step 1 (第二页智能输入): rect/text 用 rise，带 SVG transform 的 g 只用 fade-in */
-.stage-1 .ob-svg rect[fill="white"] { animation: ob-rise 520ms 30ms both; }
-.stage-1 .ob-svg text { animation: ob-rise 520ms 120ms both; }
-.stage-1 .ob-svg > g { animation: ob-fade-in 520ms both; }
-.stage-1 .ob-svg > g:nth-of-type(1) { animation-delay: 220ms; }
-.stage-1 .ob-svg > g:nth-of-type(2) { animation-delay: 300ms; }
-.stage-1 .ob-svg > g:nth-of-type(3) { animation-delay: 380ms; }
+.stage-1 .ob-svg rect[fill='white'] {
+  animation: ob-rise 520ms 30ms both;
+}
+.stage-1 .ob-svg text {
+  animation: ob-rise 520ms 120ms both;
+}
+.stage-1 .ob-svg > g {
+  animation: ob-fade-in 520ms both;
+}
+.stage-1 .ob-svg > g:nth-of-type(1) {
+  animation-delay: 220ms;
+}
+.stage-1 .ob-svg > g:nth-of-type(2) {
+  animation-delay: 300ms;
+}
+.stage-1 .ob-svg > g:nth-of-type(3) {
+  animation-delay: 380ms;
+}
 
-.stage-2 .ob-svg circle, .stage-2 .ob-svg path { animation: ob-pop 520ms both; transform-origin: center; }
-.stage-2 .ob-svg text { animation: ob-pop 480ms 200ms both; }
+.stage-2 .ob-svg circle,
+.stage-2 .ob-svg path {
+  animation: ob-pop 520ms both;
+  transform-origin: center;
+}
+.stage-2 .ob-svg text {
+  animation: ob-pop 480ms 200ms both;
+}
 
 /* Step 3 (第四页快捷键): 只选 SVG 直接子 g，避免影响内部带 SVG transform 的嵌套 g */
-.stage-3 .ob-svg > g { animation: ob-rise 520ms both; }
-.stage-3 .ob-svg > g:nth-of-type(1) { animation-delay: 20ms; }
-.stage-3 .ob-svg > g:nth-of-type(2) { animation-delay: 120ms; }
-.stage-3 .ob-svg > g:nth-of-type(3) { animation-delay: 220ms; }
-.stage-3 .ob-svg > g:nth-of-type(4) { animation-delay: 320ms; }
+.stage-3 .ob-svg > g {
+  animation: ob-rise 520ms both;
+}
+.stage-3 .ob-svg > g:nth-of-type(1) {
+  animation-delay: 20ms;
+}
+.stage-3 .ob-svg > g:nth-of-type(2) {
+  animation-delay: 120ms;
+}
+.stage-3 .ob-svg > g:nth-of-type(3) {
+  animation-delay: 220ms;
+}
+.stage-3 .ob-svg > g:nth-of-type(4) {
+  animation-delay: 320ms;
+}
 
 @keyframes ob-pop {
-  from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @keyframes ob-rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes ob-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ---- Body text ---- */
@@ -498,9 +767,13 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: width 0.28s ease, background 0.2s ease;
+  transition:
+    width 0.28s ease,
+    background 0.2s ease;
 }
-.ob-dot:hover { background: rgba(59, 130, 246, 0.4); }
+.ob-dot:hover {
+  background: rgba(59, 130, 246, 0.4);
+}
 .ob-dot.active {
   width: 26px;
   background: #3b82f6;
@@ -523,11 +796,18 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: transform 0.1s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
   font-family: inherit;
   white-space: nowrap;
 }
-.ob-btn:active { transform: translateY(1px); }
+.ob-btn:active {
+  transform: translateY(1px);
+}
 .ob-btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
@@ -565,7 +845,9 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
   transition: opacity 220ms ease;
 }
 .ob-overlay-enter-from,
-.ob-overlay-leave-to { opacity: 0; }
+.ob-overlay-leave-to {
+  opacity: 0;
+}
 
 .ob-panel-enter-active {
   transition:
@@ -588,10 +870,22 @@ html[data-theme='dark'] .ob-svg text { fill: #cbd5e1; }
 
 /* ---- mobile ---- */
 @media (max-width: 560px) {
-  .ob-stage-inner { height: 180px; }
-  .ob-body { padding: 16px 20px 4px; }
-  .ob-title { font-size: 20px; }
-  .ob-footer { padding: 12px 14px 18px; flex-wrap: wrap; }
-  .ob-btn { padding: 9px 12px; font-size: 13px; }
+  .ob-stage-inner {
+    height: 180px;
+  }
+  .ob-body {
+    padding: 16px 20px 4px;
+  }
+  .ob-title {
+    font-size: 20px;
+  }
+  .ob-footer {
+    padding: 12px 14px 18px;
+    flex-wrap: wrap;
+  }
+  .ob-btn {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
 }
 </style>

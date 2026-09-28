@@ -79,13 +79,7 @@ const props = defineProps({
   pauseOnHover: { type: Boolean, default: true }
 })
 
-const emit = defineEmits([
-  'update:modelValue',
-  'update:visible',
-  'close',
-  'action',
-  'dismiss'
-])
+const emit = defineEmits(['update:modelValue', 'update:visible', 'close', 'action', 'dismiss'])
 
 const internalVisible = ref(!!(props.modelValue ?? props.visible))
 const hovered = ref(false)
@@ -162,8 +156,7 @@ const onAction = (act) => {
   emit('action', {
     taskId: props.taskId,
     action: act.action,
-    snoozeMinutes:
-      typeof act.snoozeMinutes === 'number' ? act.snoozeMinutes : null,
+    snoozeMinutes: typeof act.snoozeMinutes === 'number' ? act.snoozeMinutes : null,
     raw: act
   })
   if (act.closeAfterAction !== false) close('action')
@@ -239,16 +232,40 @@ onBeforeUnmount(() => clearTimer())
   font-size: 14px;
   line-height: 1.4;
 }
-.toast--top-left { top: 24px; left: 24px; }
-.toast--top-right { top: 24px; right: 24px; }
-.toast--bottom-left { bottom: 24px; left: 24px; }
-.toast--bottom-right { bottom: 24px; right: 24px; }
-.toast--top-center { top: 24px; left: 50%; transform: translateX(-50%); }
+.toast--top-left {
+  top: 24px;
+  left: 24px;
+}
+.toast--top-right {
+  top: 24px;
+  right: 24px;
+}
+.toast--bottom-left {
+  bottom: 24px;
+  left: 24px;
+}
+.toast--bottom-right {
+  bottom: 24px;
+  right: 24px;
+}
+.toast--top-center {
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-.toast--success { background: var(--toast-success-bg, #1f8a55); }
-.toast--warning { background: var(--toast-warning-bg, #c77a14); }
-.toast--danger  { background: var(--toast-danger-bg,  #a83030); }
-.toast--info    { background: var(--toast-info-bg,    #2469b5); }
+.toast--success {
+  background: var(--toast-success-bg, #1f8a55);
+}
+.toast--warning {
+  background: var(--toast-warning-bg, #c77a14);
+}
+.toast--danger {
+  background: var(--toast-danger-bg, #a83030);
+}
+.toast--info {
+  background: var(--toast-info-bg, #2469b5);
+}
 
 .toast-icon {
   flex-shrink: 0;
@@ -261,11 +278,28 @@ onBeforeUnmount(() => clearTimer())
   line-height: 1;
   margin-top: 1px;
 }
-.toast-body { flex: 1; min-width: 0; }
-.toast-title { font-weight: 600; margin-bottom: 4px; font-size: 14.5px; }
-.toast-message { white-space: pre-wrap; word-break: break-word; opacity: 0.94; }
-.toast-bold { font-weight: 600; }
-.toast-br { display: block; height: 2px; content: ' '; }
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+.toast-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 14.5px;
+}
+.toast-message {
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: 0.94;
+}
+.toast-bold {
+  font-weight: 600;
+}
+.toast-br {
+  display: block;
+  height: 2px;
+  content: ' ';
+}
 .toast-actions {
   margin-top: 10px;
   display: flex;
@@ -281,13 +315,26 @@ onBeforeUnmount(() => clearTimer())
   font-weight: 500;
   background: rgba(255, 255, 255, 0.14);
   color: inherit;
-  transition: background 0.15s ease, transform 0.05s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.05s ease;
 }
-.toast-action-btn:hover { background: rgba(255, 255, 255, 0.24); }
-.toast-action-btn:active { transform: translateY(1px); }
-.toast-action-btn--primary { background: rgba(255,255,255,0.9); color: #20222b; }
-.toast-action-btn--primary:hover { background: #fff; }
-.toast-action-btn--danger  { background: rgba(255,100,100,0.28); }
+.toast-action-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+.toast-action-btn:active {
+  transform: translateY(1px);
+}
+.toast-action-btn--primary {
+  background: rgba(255, 255, 255, 0.9);
+  color: #20222b;
+}
+.toast-action-btn--primary:hover {
+  background: #fff;
+}
+.toast-action-btn--danger {
+  background: rgba(255, 100, 100, 0.28);
+}
 .toast-close {
   border: 0;
   background: transparent;
@@ -299,12 +346,24 @@ onBeforeUnmount(() => clearTimer())
   line-height: 1;
   margin-left: 6px;
 }
-.toast-close:hover { opacity: 1; }
+.toast-close:hover {
+  opacity: 1;
+}
 
 .toast-fade-enter-active,
-.toast-fade-leave-active { transition: opacity 0.22s ease, transform 0.22s ease; }
-.toast-fade-enter-from { opacity: 0; transform: translateY(8px) scale(0.98); }
-.toast-fade-leave-to { opacity: 0; transform: translateY(-4px) scale(0.98); }
+.toast-fade-leave-active {
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+.toast-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}
 
 @media (max-width: 520px) {
   .toast-wrapper {
@@ -313,7 +372,14 @@ onBeforeUnmount(() => clearTimer())
     transform: none !important;
     max-width: calc(100vw - 24px);
   }
-  .toast--top-left, .toast--top-right, .toast--top-center { top: 12px; }
-  .toast--bottom-left, .toast--bottom-right { bottom: 12px; }
+  .toast--top-left,
+  .toast--top-right,
+  .toast--top-center {
+    top: 12px;
+  }
+  .toast--bottom-left,
+  .toast--bottom-right {
+    bottom: 12px;
+  }
 }
 </style>

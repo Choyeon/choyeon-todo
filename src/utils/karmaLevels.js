@@ -36,10 +36,7 @@ export const levelFromKarma = (k) => {
   const progressPct =
     nextAt == null
       ? 100
-      : Math.max(
-          0,
-          Math.min(100, Math.round(((total - prevAt) / (nextAt - prevAt)) * 10000) / 100)
-        )
+      : Math.max(0, Math.min(100, Math.round(((total - prevAt) / (nextAt - prevAt)) * 10000) / 100))
   return { level, nextAt, progressPct, totalKarma: total }
 }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // scripts/prebuild-check.js
 // 构建前检查脚本：版本、electron-builder 配置、构建目录权限、eslint、i18n 资源
-import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync, rmSync, readdirSync, stat } from 'node:fs'
+import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
@@ -39,8 +39,7 @@ if (pkg) {
 // ===== 2. electron-builder 配置（package.build 或独立文件）=====
 log('检查 electron-builder 配置...')
 const hasBuildInPackage =
-  pkg && pkg.build && typeof pkg.build === 'object' &&
-  pkg.build.win && pkg.build.nsis
+  pkg && pkg.build && typeof pkg.build === 'object' && pkg.build.win && pkg.build.nsis
 const builderJson = join(ROOT, 'electron-builder.json')
 const builderYml = join(ROOT, 'electron-builder.yml')
 const hasStandalone = existsSync(builderJson) || existsSync(builderYml)
@@ -50,7 +49,7 @@ if (!builderCfgOk && hasStandalone) {
     let cfg
     if (existsSync(builderJson)) cfg = JSON.parse(readFileSync(builderJson, 'utf8'))
     if (cfg && cfg.win && cfg.nsis) builderCfgOk = true
-  } catch (_) {}
+  } catch {}
 }
 if (builderCfgOk) {
   log('  electron-builder 配置包含 win/nsis')
@@ -63,7 +62,11 @@ log('检查构建输出目录写权限 (C:\\choyeon-todo)...')
 const buildDir = 'C:\\choyeon-todo'
 try {
   if (!existsSync(buildDir)) {
-    try { mkdirSync(buildDir, { recursive: true }) } catch (e) { /* will retry write test */ }
+    try {
+      mkdirSync(buildDir, { recursive: true })
+    } catch {
+      /* will retry write test */
+    }
   }
   const testFile = join(buildDir, `.prebuild-write-test-${process.pid}.tmp`)
   writeFileSync(testFile, 'ok', { flag: 'w' })
@@ -79,7 +82,7 @@ let eslintAvailable = false
 try {
   execSync('npx --no-install eslint --version', { cwd: ROOT, stdio: 'ignore', timeout: 15000 })
   eslintAvailable = true
-} catch (_) {
+} catch {
   // skip
 }
 if (eslintAvailable) {

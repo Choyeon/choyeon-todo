@@ -2,9 +2,9 @@
 // scripts/a11y-check.js
 // 静态扫描 src/**/*.vue 的 a11y 规则（E1~E6），使用 @vue/compiler-sfc
 import { parse } from '@vue/compiler-sfc'
-import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
-import { resolve, dirname, join, isAbsolute } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { resolve, dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -98,8 +98,12 @@ const getStaticText = (el) => {
     } else if (n.type === 5) {
       // {{ exp }} 插值：仅当表达式是简单标识符（非函数调用/操作符）时，认为会有文本
       const exp = n.content && typeof n.content === 'object' ? n.content : null
-      const raw = exp && exp.loc && typeof exp.loc.source === 'string' ? exp.loc.source :
-        (typeof n.content === 'string' ? n.content : '')
+      const raw =
+        exp && exp.loc && typeof exp.loc.source === 'string'
+          ? exp.loc.source
+          : typeof n.content === 'string'
+            ? n.content
+            : ''
       if (raw && /^[\w$.]+$/.test(raw.trim())) text += '{i}'
     } else if (n.type === 8 && n.children) {
       for (const c of n.children) {
@@ -234,7 +238,11 @@ const scanFile = (filePath, source) => {
       getAttr(fs, 'role') && getAttr(fs, 'role').value === 'radiogroup' && hasAttr(fs, 'aria-label')
     const hasRadios = fsChildren.some((c) => {
       const t = getAttr(c, 'type')
-      return (c.tag || '').toLowerCase() === 'input' && t && (t.value === 'radio' || t.value === 'checkbox')
+      return (
+        (c.tag || '').toLowerCase() === 'input' &&
+        t &&
+        (t.value === 'radio' || t.value === 'checkbox')
+      )
     })
     if (hasRadios && !hasLegend && !hasRadiogroupAria) {
       issues.push({
@@ -270,7 +278,12 @@ const scanFile = (filePath, source) => {
     const block = mm[0]
     const cls = mm[1]
     // 若块里只有 color/background-color（没 border/content），提示 warning
-    if (/border|box-shadow|icon|font-weight|text-decoration|content|display.*flex|padding.*\d/.test(block)) continue
+    if (
+      /border|box-shadow|icon|font-weight|text-decoration|content|display.*flex|padding.*\d/.test(
+        block
+      )
+    )
+      continue
     colorClasses.push(cls)
   }
   // 判断这些类名是否只作用在不含文字/图标的块上（若模板里有此类名的元素且无 child 文本且无 svg/img 子 → warn）
@@ -326,7 +339,11 @@ const scanFile = (filePath, source) => {
       if (role === 'dialog' || role === 'alertdialog') return true
       const c = getAttr(p, 'class')
       const cv = c ? c.value || String(c.raw || '') : ''
-      if (/(^|[\s_-])(modal|dialog|popup|popover|confirm-dialog)([\s_-]|$)/i.test(cv) && !NON_DIALOG_SUFFIXES.test(cv)) return true
+      if (
+        /(^|[\s_-])(modal|dialog|popup|popover|confirm-dialog)([\s_-]|$)/i.test(cv) &&
+        !NON_DIALOG_SUFFIXES.test(cv)
+      )
+        return true
       p = parentOf(p)
     }
     return false
@@ -339,7 +356,7 @@ const scanFile = (filePath, source) => {
     if (inheritedOk) continue
     const hasModal = (() => {
       const a = getAttr(dlg, 'aria-modal')
-      return a && (a.value === 'true' || a.raw && a.raw.includes('true'))
+      return a && (a.value === 'true' || (a.raw && a.raw.includes('true')))
     })()
     const hasLb = hasAttr(dlg, 'aria-labelledby') || hasAttr(dlg, 'aria-label')
     if (!hasRole || !hasModal || !hasLb) {
@@ -347,7 +364,9 @@ const scanFile = (filePath, source) => {
         !hasRole ? 'role=dialog' : null,
         !hasModal ? 'aria-modal=true' : null,
         !hasLb ? 'aria-labelledby/aria-label' : null
-      ].filter(Boolean).join('、')
+      ]
+        .filter(Boolean)
+        .join('、')
       issues.push({
         rule: 'E5',
         level: 'error',
@@ -359,10 +378,14 @@ const scanFile = (filePath, source) => {
     // ESC 检查：template 里是否有 @keydown.*escape/@keydown.*esc 或 .esc/.esc.prevent 修饰符
     // 或 .vue 源码中有 keydown listener + Escape/Esc
     const hasEsc =
-      /@keydown(?:\.self)?(?:\.(?:prevent|stop|ctrl|meta|alt|shift|exact))*(?:\.esc|\.escape)(?:\.(?:prevent|stop|exact))*=/.test(source) ||
-      /@keydown(?:\.self)?(?:\.(?:prevent|stop))*="[^"]*(?:Escape|Esc|escape|esc)[^"]*"/.test(source) ||
-      /window\.addEventListener\(['"]keydown['"]/.test(source) && /Escape|Esc/.test(source) ||
-      /addEventListener\(\s*['"]keydown['"]/.test(source) && /Escape|Esc/.test(source) ||
+      /@keydown(?:\.self)?(?:\.(?:prevent|stop|ctrl|meta|alt|shift|exact))*(?:\.esc|\.escape)(?:\.(?:prevent|stop|exact))*=/.test(
+        source
+      ) ||
+      /@keydown(?:\.self)?(?:\.(?:prevent|stop))*="[^"]*(?:Escape|Esc|escape|esc)[^"]*"/.test(
+        source
+      ) ||
+      (/window\.addEventListener\(['"]keydown['"]/.test(source) && /Escape|Esc/.test(source)) ||
+      (/addEventListener\(\s*['"]keydown['"]/.test(source) && /Escape|Esc/.test(source)) ||
       /e\.key\s*(?:===|!==|==|!=)\s*['"`]Escape['"`]/.test(source)
     if (!hasEsc) {
       issues.push({
@@ -375,8 +398,17 @@ const scanFile = (filePath, source) => {
   }
 
   // ===== E6：<template> 根 / App.vue lang =====
-  if (/App\.vue$/.test(filePath) || (tplAST && Array.isArray(tplAST.children) && tplAST.children[0] && tplAST.children[0].type === 1)) {
-    const root = tplAST && Array.isArray(tplAST.children) ? tplAST.children.find((c) => c && c.type === 1) : null
+  if (
+    /App\.vue$/.test(filePath) ||
+    (tplAST &&
+      Array.isArray(tplAST.children) &&
+      tplAST.children[0] &&
+      tplAST.children[0].type === 1)
+  ) {
+    const root =
+      tplAST && Array.isArray(tplAST.children)
+        ? tplAST.children.find((c) => c && c.type === 1)
+        : null
     const rootEl = root
     let hasLang = false
     if (rootEl) {
@@ -385,7 +417,10 @@ const scanFile = (filePath, source) => {
     }
     // 或任意祖先元素（最外层元素）有 :lang / lang=
     for (const el of elements) {
-      if (hasAttr(el, 'lang')) { hasLang = true; break }
+      if (hasAttr(el, 'lang')) {
+        hasLang = true
+        break
+      }
     }
     if (!hasLang && filePath.replace(/\\/g, '/').endsWith('/src/App.vue')) {
       issues.push({
@@ -415,9 +450,13 @@ const main = async () => {
           const s = statSync(p)
           if (s.isDirectory()) scan(p)
           else if (p.endsWith('.vue')) vueFiles.push(p)
-        } catch (_) { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
-    } catch (_) { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   scan(SRC_DIR)
 

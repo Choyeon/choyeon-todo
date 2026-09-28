@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="empty-state"
-    :class="[kind, { mini }]"
-    role="status"
-    :aria-label="computedTitle"
-  >
+  <div class="empty-state" :class="[kind, { mini }]" role="status" :aria-label="computedTitle">
     <!-- 插画（非 mini 模式） -->
     <div class="empty-illustration" v-if="!mini">
       <!-- kind: myday / today -->
@@ -15,7 +10,14 @@
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        <circle cx="100" cy="55" r="28" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
+        <circle
+          cx="100"
+          cy="55"
+          r="28"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
         <g :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="100" y1="12" x2="100" y2="22" />
           <line x1="100" y1="88" x2="100" y2="98" />
@@ -26,10 +28,46 @@
           <line x1="70" y1="85" x2="77" y2="78" />
           <line x1="123" y1="32" x2="130" y2="25" />
         </g>
-        <rect x="55" y="100" width="90" height="50" rx="6" :stroke="secondaryColor" stroke-width="2" fill="none" />
-        <line x1="70" y1="115" x2="130" y2="115" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="70" y1="128" x2="115" y2="128" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="70" y1="141" x2="100" y2="141" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+        <rect
+          x="55"
+          y="100"
+          width="90"
+          height="50"
+          rx="6"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          fill="none"
+        />
+        <line
+          x1="70"
+          y1="115"
+          x2="130"
+          y2="115"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="70"
+          y1="128"
+          x2="115"
+          y2="128"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="70"
+          y1="141"
+          x2="100"
+          y2="141"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.3"
+        />
       </svg>
 
       <!-- kind: tomorrow / week / planned -->
@@ -40,10 +78,35 @@
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        <rect x="40" y="25" width="120" height="110" rx="8" :stroke="primaryColor" stroke-width="2.5" fill="none" />
+        <rect
+          x="40"
+          y="25"
+          width="120"
+          height="110"
+          rx="8"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          fill="none"
+        />
         <line x1="40" y1="55" x2="160" y2="55" :stroke="primaryColor" stroke-width="2.5" />
-        <line x1="70" y1="25" x2="70" y2="40" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
-        <line x1="130" y1="25" x2="130" y2="40" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
+        <line
+          x1="70"
+          y1="25"
+          x2="70"
+          y2="40"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
+        <line
+          x1="130"
+          y1="25"
+          x2="130"
+          y2="40"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
         <g :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4">
           <line x1="60" y1="75" x2="75" y2="75" />
           <line x1="85" y1="75" x2="100" y2="75" />
@@ -54,8 +117,23 @@
           <line x1="60" y1="115" x2="75" y2="115" />
           <line x1="85" y1="115" x2="100" y2="115" />
         </g>
-        <circle cx="100" cy="105" r="18" :stroke="primaryColor" stroke-width="2" fill="none" stroke-dasharray="4 3" />
-        <path d="M100 96 L100 105 L106 108" :stroke="primaryColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <circle
+          cx="100"
+          cy="105"
+          r="18"
+          :stroke="primaryColor"
+          stroke-width="2"
+          fill="none"
+          stroke-dasharray="4 3"
+        />
+        <path
+          d="M100 96 L100 105 L106 108"
+          :stroke="primaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+        />
       </svg>
 
       <!-- kind: important -->
@@ -67,7 +145,14 @@
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="starGrad2" x1="100" y1="20" x2="100" y2="140" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="starGrad2"
+            x1="100"
+            y1="20"
+            x2="100"
+            y2="140"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop stop-color="var(--state-warning)" stop-opacity="0.15" />
             <stop offset="1" stop-color="var(--state-warning)" stop-opacity="0.02" />
           </linearGradient>
@@ -92,11 +177,52 @@
         aria-hidden="true"
       >
         <circle cx="100" cy="60" r="40" :stroke="successColor" stroke-width="2.5" fill="none" />
-        <path d="M82 60L95 73L120 48" :stroke="successColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M82 60L95 73L120 48" :stroke="successColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" transform="translate(0 8)" />
-        <rect x="50" y="115" width="100" height="35" rx="6" :stroke="secondaryColor" stroke-width="2" fill="none" />
-        <line x1="65" y1="128" x2="135" y2="128" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="65" y1="142" x2="110" y2="142" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+        <path
+          d="M82 60L95 73L120 48"
+          :stroke="successColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M82 60L95 73L120 48"
+          :stroke="successColor"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="0.3"
+          transform="translate(0 8)"
+        />
+        <rect
+          x="50"
+          y="115"
+          width="100"
+          height="35"
+          rx="6"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          fill="none"
+        />
+        <line
+          x1="65"
+          y1="128"
+          x2="135"
+          y2="128"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="65"
+          y1="142"
+          x2="110"
+          y2="142"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.3"
+        />
       </svg>
 
       <!-- kind: search / all / inbox -->
@@ -108,7 +234,15 @@
         aria-hidden="true"
       >
         <circle cx="85" cy="70" r="40" :stroke="primaryColor" stroke-width="2.5" fill="none" />
-        <line x1="115" y1="100" x2="150" y2="135" :stroke="primaryColor" stroke-width="2.5" stroke-linecap="round" />
+        <line
+          x1="115"
+          y1="100"
+          x2="150"
+          y2="135"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        />
         <g :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4">
           <line x1="65" y1="55" x2="105" y2="55" />
           <line x1="65" y1="70" x2="95" y2="70" />
@@ -134,7 +268,14 @@
           fill="none"
           stroke-linejoin="round"
         />
-        <path d="M35 45H85L100 60H165" :stroke="primaryColor" stroke-width="2.5" fill="none" stroke-linejoin="round" opacity="0.5" />
+        <path
+          d="M35 45H85L100 60H165"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          fill="none"
+          stroke-linejoin="round"
+          opacity="0.5"
+        />
         <g :stroke="secondaryColor" stroke-width="2" stroke-linecap="round">
           <line x1="55" y1="85" x2="90" y2="85" opacity="0.5" />
           <line x1="55" y1="102" x2="120" y2="102" opacity="0.4" />
@@ -150,9 +291,34 @@
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        <path d="M35 45H165L120 95V125L100 115L80 125V95L35 45Z" :stroke="primaryColor" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round" />
-        <line x1="60" y1="60" x2="140" y2="60" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.5" />
-        <line x1="75" y1="80" x2="125" y2="80" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
+        <path
+          d="M35 45H165L120 95V125L100 115L80 125V95L35 45Z"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          fill="none"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+        />
+        <line
+          x1="60"
+          y1="60"
+          x2="140"
+          y2="60"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+        <line
+          x1="75"
+          y1="80"
+          x2="125"
+          y2="80"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.4"
+        />
       </svg>
 
       <!-- kind: tag -->
@@ -163,9 +329,24 @@
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        <path d="M100 28H155C165 28 172 35 172 45V100L112 160L28 76L88 28Z" :stroke="primaryColor" stroke-width="2.5" fill="none" stroke-linejoin="round" />
+        <path
+          d="M100 28H155C165 28 172 35 172 45V100L112 160L28 76L88 28Z"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          fill="none"
+          stroke-linejoin="round"
+        />
         <circle cx="132" cy="60" r="8" :stroke="accentColor" stroke-width="2.5" fill="none" />
-        <line x1="60" y1="108" x2="90" y2="78" :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.4" />
+        <line
+          x1="60"
+          y1="108"
+          x2="90"
+          y2="78"
+          :stroke="secondaryColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          opacity="0.4"
+        />
       </svg>
 
       <!-- default fallback -->
@@ -176,7 +357,16 @@
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        <rect x="50" y="40" width="100" height="80" rx="8" :stroke="primaryColor" stroke-width="2.5" fill="none" />
+        <rect
+          x="50"
+          y="40"
+          width="100"
+          height="80"
+          rx="8"
+          :stroke="primaryColor"
+          stroke-width="2.5"
+          fill="none"
+        />
         <g :stroke="secondaryColor" stroke-width="2" stroke-linecap="round" opacity="0.45">
           <line x1="65" y1="65" x2="135" y2="65" />
           <line x1="65" y1="85" x2="120" y2="85" />
@@ -196,7 +386,12 @@
     </div>
 
     <!-- 操作按钮（非 mini 模式显示主/次按钮；mini 显示单一 primary） -->
-    <div class="empty-actions" v-if="!mini" role="group" :aria-label="$t('common.actions') || '操作'">
+    <div
+      class="empty-actions"
+      v-if="!mini"
+      role="group"
+      :aria-label="$t('common.actions') || '操作'"
+    >
       <button
         v-if="primaryLabel"
         class="empty-action-btn primary"
@@ -225,12 +420,11 @@
     </div>
 
     <button
-      v-else
+      v-else-if="primaryLabel"
       class="empty-mini-btn"
       type="button"
       @click="handlePrimary"
       :aria-label="primaryLabel"
-      v-if="primaryLabel"
     >
       <Plus :size="12" aria-hidden="true" />
       <span>{{ primaryLabel }}</span>
@@ -290,7 +484,8 @@ const props = defineProps({
   primaryIcon: {
     type: String,
     default: 'plus',
-    validator: (v) => ['plus', 'sparkles', 'zap', 'filter', 'tag', 'folder-plus', 'layers'].includes(v)
+    validator: (v) =>
+      ['plus', 'sparkles', 'zap', 'filter', 'tag', 'folder-plus', 'layers'].includes(v)
   },
   secondaryLabel: { type: String, default: '' }
 })
@@ -307,7 +502,7 @@ const successColor = 'var(--state-success)'
 const _tOrFallback = (key, fallback) => {
   try {
     if (te(key)) return t(key)
-  } catch (_) {
+  } catch {
     /* ignore */
   }
   return fallback
@@ -340,7 +535,11 @@ const computedTitle = computed(() => {
 const computedDesc = computed(() => {
   if (props.description) return props.description
   const map = {
-    myday: () => _tOrFallback('empty.mydayDesc', '点击下方按钮添加第一个任务，或使用「智能我的一天」自动挑选。'),
+    myday: () =>
+      _tOrFallback(
+        'empty.mydayDesc',
+        '点击下方按钮添加第一个任务，或使用「智能我的一天」自动挑选。'
+      ),
     today: () => _tOrFallback('empty.todayDesc', '添加一个今天的待办，保持高效节奏。'),
     tomorrow: () => _tOrFallback('empty.tomorrowDesc', '提前规划明天，从容应对。'),
     week: () => _tOrFallback('empty.weekDesc', '安排下周任务，按优先级逐个击破。'),
@@ -408,8 +607,14 @@ const handleSecondary = () => emit('secondary')
 }
 
 @keyframes emptyFadeIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .empty-illustration {
@@ -422,10 +627,18 @@ const handleSecondary = () => emit('secondary')
   animation: emptyFloat 6s ease-in-out infinite;
 }
 @keyframes emptyFloat {
-  0%,100% { transform: translateY(0); }
-  50%     { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
-.empty-illustration svg { width: 100%; height: 100%; }
+.empty-illustration svg {
+  width: 100%;
+  height: 100%;
+}
 
 .empty-mini-icon {
   width: 36px;
@@ -450,7 +663,9 @@ const handleSecondary = () => emit('secondary')
   gap: 6px;
   max-width: 320px;
 }
-.empty-text.text-center { align-items: center; }
+.empty-text.text-center {
+  align-items: center;
+}
 
 .empty-title {
   font-size: var(--font-size-h3);
@@ -470,8 +685,14 @@ const handleSecondary = () => emit('secondary')
 }
 
 @keyframes emptySlideUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .empty-desc {
@@ -582,10 +803,24 @@ const handleSecondary = () => emit('secondary')
 }
 
 @media (max-width: 767px) {
-  .empty-state { padding: 36px 16px; }
-  .empty-illustration { width: 160px; height: 128px; margin-bottom: 16px; }
-  .empty-title { font-size: var(--font-size-h4); }
-  .empty-actions { flex-direction: column; width: 100%; }
-  .empty-action-btn { width: 100%; justify-content: center; }
+  .empty-state {
+    padding: 36px 16px;
+  }
+  .empty-illustration {
+    width: 160px;
+    height: 128px;
+    margin-bottom: 16px;
+  }
+  .empty-title {
+    font-size: var(--font-size-h4);
+  }
+  .empty-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .empty-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
