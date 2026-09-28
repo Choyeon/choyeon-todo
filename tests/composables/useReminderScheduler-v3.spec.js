@@ -132,16 +132,19 @@ describe('resolveSnoozePreset', () => {
     expect(r.offsetMs).toBeLessThanOrEqual(33 * 3600 * 1000 + 60 * 1000)
   })
 
-  test('next_week 返回 kind === nextWeek 且偏移落在 6.3~7.2 天（覆盖当前 00:xx～23:xx 所有时刻）', () => {
+  test('next_week 返回 kind === nextWeek 且目标时刻为「今天 +7 天 09:00」', () => {
     const r = resolveSnoozePreset({ preset: 'next_week' })
     expect(r.kind).toBe('nextWeek')
     expect(typeof r.customDateTs).toBe('number')
-    // 目标时刻恒为「今天 +7 天 的 09:00」，因此偏移量随当前时刻浮动：
-    //   - now 为今日 00:00 → 约 7 天 9 小时（上界）
-    //   - now 为今日 23:59 → 约 6 天 9 小时（下界）
-    // 取 6.3~7.2 天，既容纳夏令时 ±1h，也能拦住「少算一天 / 多算一周」的回归
-    expect(r.offsetMs).toBeGreaterThanOrEqual(6.3 * 24 * 3600 * 1000)
-    expect(r.offsetMs).toBeLessThanOrEqual(7.2 * 24 * 3600 * 1000)
+    // 实现是 addDays(getTodayStr(), 7) + '09:00'。
+    // 这里刻意用「日历断言」而不是「相对时间窗口」：目标恒为今天+7天的 09:00，
+    // 偏移量会随当前时刻在 6.4~7.4 天之间浮动，任何写死的窗口都会在
+    // 某些时段（尤其是 00:00~04:00）失效。直接比对绝对目标时刻才是稳定的。
+    const now = new Date()
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0)
+    target.setDate(target.getDate() + 7)
+    expect(Math.abs(r.customDateTs - target.getTime())).toBeLessThan(2 * 60 * 1000)
+    expect(r.offsetMs).toBeGreaterThan(0)
   })
 
   test('customDate 为 Date 实例时按相对时间计算', () => {
@@ -539,10 +542,13 @@ describe('集成：snoozeTask / scheduleSmartReminder / handleAction', () => {
     }).id
     const ret = handleAction({ taskId: id, action: 'snoozeTmr' })
     expect(ret).toBe(true)
-    const off = taskStore.getTaskById(id).nextReminderAt - Date.now()
-    // snoozeTmr 目标是明天 9am：当前 23:59 → 次日 9:00 ≈ 9h，当前 09:00 → 次日 9:00 ≈ 24h
-    expect(off).toBeGreaterThanOrEqual(9 * 3600 * 1000)
-    expect(off).toBeLessThanOrEqual(25 * 3600 * 1000)
+    // 目标恒为「明天 09:00」。同样采用日历断言：若按偏移量判断，
+    // 午夜 00:11 时距离明天 9am 约 32.8 小时，任何写死的小时窗口都会误判。
+    const now = new Date()
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0)
+    target.setDate(target.getDate() + 1)
+    const off = taskStore.getTaskById(id).nextReminderAt - target.getTime()
+    expect(Math.abs(off)).toBeLessThan(2 * 60 * 1000)
   })
 
   test('handleAction("snoozeCustom", snoozeMinutes=42) 生效', () => {
