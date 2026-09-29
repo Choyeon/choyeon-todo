@@ -130,7 +130,7 @@ cypress/screenshots/
 cypress/fixtures/
 
 # ==============================================
-# Package managers (project uses npm only)
+# Package managers (project uses pnpm only)
 # ==============================================
 .pnp.*
 .yarn/*
@@ -138,6 +138,8 @@ cypress/fixtures/
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
+# 统一使用 pnpm-lock.yaml，避免双锁文件导致依赖版本漂移与误报
+package-lock.json
 
 # ==============================================
 # Local dev config

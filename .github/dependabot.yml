@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # 依赖漏洞由仓库内的 pnpm overrides 统一修复，
+    # 这里不再让 Dependabot 自动提 PR，以保证所有提交的作者都是 Choyeon。
+    # 安全告警仍会照常出现在 Security 页。
+    open-pull-requests-limit: 0

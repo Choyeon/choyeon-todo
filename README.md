@@ -43,18 +43,18 @@ Prebuilt installers are available on the [Releases](https://github.com/Choyeon/c
 ### Prerequisites
 
 - Node.js >= 18
-- npm >= 9
+- pnpm >= 10
 
 ### Install
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Run in the browser
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Then open <http://localhost:5173>.
@@ -62,28 +62,28 @@ Then open <http://localhost:5173>.
 ### Run as desktop app
 
 ```bash
-npm run electron:dev
+pnpm run electron:dev
 ```
 
 ### Build
 
 ```bash
 # Web only
-npm run build
+pnpm run build
 
 # Desktop installer (Windows)
-npm run electron:build:win
+pnpm run electron:build:win
 ```
 
 ## Development
 
 ```bash
-npm run test           # run tests in watch mode
-npm run test:run       # run all tests once
-npm run test:coverage  # run tests with coverage report
-npm run lint           # ESLint check
-npm run lint:fix       # auto-fix lint issues
-npm run format         # Prettier formatting
+pnpm run test           # run tests in watch mode
+pnpm run test:run       # run all tests once
+pnpm run test:coverage  # run tests with coverage report
+pnpm run lint           # ESLint check
+pnpm run lint:fix       # auto-fix lint issues
+pnpm run format         # Prettier formatting
 ```
 
 ## Project Structure
