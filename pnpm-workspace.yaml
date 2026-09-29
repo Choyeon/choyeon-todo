@@ -11,3 +11,7 @@ overrides:
   '@electron/get>undici': ^7.30.0
   node-gyp>undici: ^6.29.0
   ajv>fast-uri: ^3.1.8
+  # app-builder-lib 声明 ^3.0.0，但它用到的 ElectronDownloadCacheMode 枚举
+  # 只有 3.1.0+ 才有；锁文件此前钉在 3.0.0，会导致打包时
+  # "Cannot read properties of undefined (reading 'ReadWrite')" 崩溃。
+  app-builder-lib>@electron/get: ^3.1.0
