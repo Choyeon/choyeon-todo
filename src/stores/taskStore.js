@@ -352,7 +352,9 @@ export const useTaskStore = defineStore('task', () => {
   const myDayTasks = computed(() => {
     // computed 必须保持纯函数，不在内部修改状态
     // 日期变更由 isInMyDay/addToMyDay 等方法中的 checkMyDayDate() 处理
-    return tasks.value.filter((t) => !t.completed && myDayTaskIds.value.includes(t.id))
+    // 用 Set 做 O(1) 成员判定，避免大列表下 O(n·m) 的 includes 扫描
+    const myDaySet = new Set(myDayTaskIds.value)
+    return tasks.value.filter((t) => !t.completed && myDaySet.has(t.id))
   })
 
   const myDayCount = computed(() => {
@@ -498,51 +500,63 @@ export const useTaskStore = defineStore('task', () => {
       const savedTags = localStorage.getItem(STORAGE_KEYS.tags)
 
       if (savedTasks) {
-        const parsed = JSON.parse(savedTasks)
-        if (Array.isArray(parsed)) {
-          tasks.value = parsed
-            .filter((t) => t && t.id && t.title && typeof t.title === 'string')
-            .map((t) => ({
-              ...t,
-              date: t.date && isValidDateStr(t.date) ? t.date : null,
-              completed: !!t.completed,
-              important: !!t.important,
-              reminder: !!t.reminder,
-              notes: t.notes || '',
-              time: t.time && isValidTimeStr(t.time) ? t.time : null,
-              completedAt: t.completedAt || null,
-              createdAt: t.createdAt || Date.now(),
-              tags: Array.isArray(t.tags) ? t.tags : [],
-              subTasks: Array.isArray(t.subTasks)
-                ? t.subTasks.map((st, i) => ({
-                    id: st.id || generateId('sub_'),
-                    title: st.title || '',
-                    completed: !!st.completed,
-                    order: typeof st.order === 'number' ? st.order : i
-                  }))
-                : [],
-              repeat: isValidRepeatConfig(t.repeat) ? t.repeat : null,
-              order: typeof t.order === 'number' ? t.order : 0,
-              pomodoroSessions: typeof t.pomodoroSessions === 'number' ? t.pomodoroSessions : 0,
-              totalFocusTime: typeof t.totalFocusTime === 'number' ? t.totalFocusTime : 0
-            }))
+        try {
+          const parsed = JSON.parse(savedTasks)
+          if (Array.isArray(parsed)) {
+            tasks.value = parsed
+              .filter((t) => t && t.id && t.title && typeof t.title === 'string')
+              .map((t) => ({
+                ...t,
+                date: t.date && isValidDateStr(t.date) ? t.date : null,
+                completed: !!t.completed,
+                important: !!t.important,
+                reminder: !!t.reminder,
+                notes: t.notes || '',
+                time: t.time && isValidTimeStr(t.time) ? t.time : null,
+                completedAt: t.completedAt || null,
+                createdAt: t.createdAt || Date.now(),
+                tags: Array.isArray(t.tags) ? t.tags : [],
+                subTasks: Array.isArray(t.subTasks)
+                  ? t.subTasks.map((st, i) => ({
+                      id: st.id || generateId('sub_'),
+                      title: st.title || '',
+                      completed: !!st.completed,
+                      order: typeof st.order === 'number' ? st.order : i
+                    }))
+                  : [],
+                repeat: isValidRepeatConfig(t.repeat) ? t.repeat : null,
+                order: typeof t.order === 'number' ? t.order : 0,
+                pomodoroSessions: typeof t.pomodoroSessions === 'number' ? t.pomodoroSessions : 0,
+                totalFocusTime: typeof t.totalFocusTime === 'number' ? t.totalFocusTime : 0
+              }))
+          }
+        } catch (e) {
+          console.warn('[TaskStore] Failed to parse tasks, ignoring corrupted blob:', e)
         }
       }
       if (savedCategories) {
-        const parsed = JSON.parse(savedCategories)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const filtered = parsed.filter((c) => c && c.id && c.name)
-          if (!filtered.some((c) => c.id === UNDELETABLE_CATEGORY)) {
-            const defaultOther = DEFAULT_CATEGORIES.find((c) => c.id === UNDELETABLE_CATEGORY)
-            if (defaultOther) filtered.push(defaultOther)
+        try {
+          const parsed = JSON.parse(savedCategories)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const filtered = parsed.filter((c) => c && c.id && c.name)
+            if (!filtered.some((c) => c.id === UNDELETABLE_CATEGORY)) {
+              const defaultOther = DEFAULT_CATEGORIES.find((c) => c.id === UNDELETABLE_CATEGORY)
+              if (defaultOther) filtered.push(defaultOther)
+            }
+            categories.value = filtered
           }
-          categories.value = filtered
+        } catch (e) {
+          console.warn('[TaskStore] Failed to parse categories, ignoring corrupted blob:', e)
         }
       }
       if (savedTags) {
-        const parsed = JSON.parse(savedTags)
-        if (Array.isArray(parsed)) {
-          tags.value = parsed.filter((t) => t && t.id && t.name)
+        try {
+          const parsed = JSON.parse(savedTags)
+          if (Array.isArray(parsed)) {
+            tags.value = parsed.filter((t) => t && t.id && t.name)
+          }
+        } catch (e) {
+          console.warn('[TaskStore] Failed to parse tags, ignoring corrupted blob:', e)
         }
       }
       const savedMyDay = localStorage.getItem(STORAGE_KEYS.myDay)
@@ -2004,10 +2018,15 @@ export const useTaskStore = defineStore('task', () => {
     const todayStr = getTodayStr()
     const currentHM = getCurrentHM()
     // 使用更精确的缓存键：任务数量 + 最后修改时间 + 日期 + days
-    const lastModified =
-      tasks.value.length > 0
-        ? Math.max(...tasks.value.map((t) => t.completedAt || t.createdAt || 0))
-        : 0
+    // 用有界循环求最大时间戳，避免在大任务量下用 Math.max(...spread) 触发
+    // "Maximum call stack size exceeded"，同时省去展开数组的 O(n) 开销
+    let lastModified = 0
+    if (tasks.value.length > 0) {
+      for (const t of tasks.value) {
+        const m = t.completedAt || t.createdAt || 0
+        if (m > lastModified) lastModified = m
+      }
+    }
     const cacheKey = `${tasks.value.length}-${lastModified}-${todayStr}-${days}`
 
     if (statsCache && statsCacheKey === cacheKey && statsCacheDays === days) {

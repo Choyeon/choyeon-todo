@@ -426,7 +426,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, defineExpose } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, defineExpose } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X, ChevronLeft, ChevronRight, Rocket } from '@lucide/vue'
 import { useSettingsStore } from '../stores/settingsStore'
@@ -526,7 +526,10 @@ onMounted(() => {
   window.addEventListener('keydown', onKeydown)
 })
 
-// 不做组件卸载清理：作为全局组件保持常驻
+// 即便作为全局常驻组件，卸载时也应移除全局监听，避免重挂载导致监听器堆积
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+})
 
 defineExpose({
   show: () => {

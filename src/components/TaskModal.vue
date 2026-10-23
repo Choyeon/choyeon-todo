@@ -767,7 +767,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, nextTick } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTaskStore, generateId } from '../stores/taskStore'
 import { useFocusTrap } from '../composables/useFocusTrap'
@@ -855,6 +855,9 @@ const activityTab = ref('all') // 'all' | 'comments' | 'changes'
  * 智能日期解析 - 从任务标题中提取日期
  * 支持：明天、后天、下周一、12/25、12月25日等
  */
+// 中文星期 -> JS getDay() 数值映射，供智能日期解析复用，避免重复字面量
+const WEEKDAY_MAP = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
+
 const parseSmartDate = () => {
   const title = form.title.trim()
   if (!title) {
@@ -882,7 +885,7 @@ const parseSmartDate = () => {
   // 解析"下周一"到"下周日"
   else if (/下周([一二三四五六日天])/.test(title)) {
     const match = title.match(/下周([一二三四五六日天])/)
-    const dayMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
+    const dayMap = WEEKDAY_MAP
     const targetDay = dayMap[match[1]]
     const currentDay = today.getDay()
     const daysUntilNextWeek = ((7 - currentDay + targetDay) % 7) + 7
@@ -892,7 +895,7 @@ const parseSmartDate = () => {
   // 解析"这周一"到"这周日"
   else if (/这周([一二三四五六日天])/.test(title)) {
     const match = title.match(/这周([一二三四五六日天])/)
-    const dayMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
+    const dayMap = WEEKDAY_MAP
     const targetDay = dayMap[match[1]]
     const currentDay = today.getDay()
     const daysUntilThisWeek = (targetDay - currentDay + 7) % 7
@@ -902,7 +905,7 @@ const parseSmartDate = () => {
   // 解析"周X"或"星期X"（默认为下周）
   else if (/(?:周|星期)([一二三四五六日天])/.test(title)) {
     const match = title.match(/(?:周|星期)([一二三四五六日天])/)
-    const dayMap = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 日: 0, 天: 0 }
+    const dayMap = WEEKDAY_MAP
     const targetDay = dayMap[match[1]]
     const currentDay = today.getDay()
     const daysUntil = (targetDay - currentDay + 7) % 7 || 7
@@ -1002,6 +1005,15 @@ const toggleSpeechRecognition = () => {
     }
   }
 }
+
+// 组件卸载时停掉可能仍在进行的语音识别，避免泄漏录音句柄
+onBeforeUnmount(() => {
+  try {
+    recognition?.stop()
+  } catch {
+    /* ignore */
+  }
+})
 
 const PRESET_COLORS = [
   '#EF4444',
@@ -1259,12 +1271,17 @@ const readFileAsDataUrl = (file) =>
     r.onerror = () => resolve('')
     r.readAsDataURL(file)
   })
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
+const MAX_ATTACHMENT_LABEL = '10MB'
+
 const addAttachments = async (files) => {
   if (!files || !files.length) return
   for (const f of files) {
-    // Cap 10 MB per file
-    if (f.size > 10 * 1024 * 1024) {
-      showSnackbar(t('task.attachmentTooLarge', { name: f.name, max: '10MB' }), { type: 'warning' })
+    // 单个附件上限 10 MB
+    if (f.size > MAX_ATTACHMENT_BYTES) {
+      showSnackbar(t('task.attachmentTooLarge', { name: f.name, max: MAX_ATTACHMENT_LABEL }), {
+        type: 'warning'
+      })
       continue
     }
     const preview = isImage(f.name) ? await readFileAsDataUrl(f) : ''

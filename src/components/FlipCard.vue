@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   value: {
@@ -57,6 +57,10 @@ watch(
 onMounted(() => {
   displayValue.value = props.value
   nextValue.value = props.value
+})
+
+onUnmounted(() => {
+  if (flipTimer) clearTimeout(flipTimer)
 })
 </script>
 

@@ -208,7 +208,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, defineExpose } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted, defineExpose } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Search,
@@ -538,6 +538,11 @@ onOpen(() => {
 })
 
 onClose(() => {
+  if (_searchRaf) cancelAnimationFrame(_searchRaf)
+})
+
+onUnmounted(() => {
+  if (_firstOpenRaf) cancelAnimationFrame(_firstOpenRaf)
   if (_searchRaf) cancelAnimationFrame(_searchRaf)
 })
 

@@ -222,7 +222,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
@@ -321,6 +321,8 @@ const exitFullscreen = () => {
   }
 }
 
+let handleKeydown = null
+
 onMounted(async () => {
   pomodoroStore.setupWatchers(watch)
   pomodoroStore.initElectronMode()
@@ -332,11 +334,15 @@ onMounted(async () => {
       el.requestFullscreen().catch(() => {})
     }
     // ESC 键退出
-    const handleKeydown = (e) => {
+    handleKeydown = (e) => {
       if (e.key === 'Escape') exitFullscreen()
     }
     document.addEventListener('keydown', handleKeydown)
   }
+})
+
+onUnmounted(() => {
+  if (handleKeydown) document.removeEventListener('keydown', handleKeydown)
 })
 
 // 子窗口不清理主窗口的定时器

@@ -272,9 +272,66 @@ export class LocalStorageProvider extends SyncProvider {
   }
 }
 
+/**
+ * FallbackProvider：数据源故障转移（换源）。
+ * 持有一组有序 provider，pull / push 时依次尝试，直到某个成功为止；
+ * 全部失败时抛出聚合错误。resolveConflicts 委托给第一个可用 provider。
+ * 适用于「主数据源不可用 → 自动切换到备用数据源」的场景。
+ */
+export class FallbackProvider extends SyncProvider {
+  constructor(providers = [], config = {}) {
+    super({ ...config, type: 'fallback' })
+    this.type = 'fallback'
+    if (!Array.isArray(providers) || providers.length === 0) {
+      throw new Error('[FallbackProvider] requires at least one provider')
+    }
+    this.providers = providers
+  }
+
+  async _tryEach(method, ...args) {
+    let lastError = null
+    for (const p of this.providers) {
+      try {
+        return await p[method](...args)
+      } catch (e) {
+        lastError = e
+        // 尝试下一个数据源
+      }
+    }
+    throw new Error(
+      `[FallbackProvider#${method}] 全部 ${this.providers.length} 个数据源均失败` +
+        (lastError ? `: ${lastError.message}` : '')
+    )
+  }
+
+  async pull(tokens) {
+    return this._tryEach('pull', tokens)
+  }
+
+  async push(localSnapshot) {
+    return this._tryEach('push', localSnapshot)
+  }
+
+  async resolveConflicts(manualPatches) {
+    let lastError = null
+    for (const p of this.providers) {
+      try {
+        if (typeof p.resolveConflicts === 'function') {
+          return await p.resolveConflicts(manualPatches)
+        }
+      } catch (e) {
+        lastError = e
+      }
+    }
+    if (lastError) throw lastError
+    return { ok: true, applied: 0, hash: '' }
+  }
+}
+
 export default {
   SyncProvider,
   MemoryProvider,
   LocalStorageProvider,
+  FallbackProvider,
   STORAGE_KEY_LOCAL
 }
