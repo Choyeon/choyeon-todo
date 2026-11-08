@@ -321,9 +321,12 @@ const getCategoryName = (categoryId) => {
 
 .quadrant-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* minmax(0, 1fr) 而非 1fr：CSS Grid 轨道默认 min-width:auto，
+     长任务标题会把整列撑出容器，导致桌面双列/移动单列都横向溢出 */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin-bottom: 24px;
+  min-width: 0;
 }
 
 .quadrant-card {
@@ -332,6 +335,8 @@ const getCategoryName = (categoryId) => {
   border-radius: 12px;
   padding: 20px;
   transition: all 0.2s;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .quadrant-card:hover {
@@ -405,6 +410,7 @@ const getCategoryName = (categoryId) => {
   gap: 8px;
   max-height: 300px;
   overflow-y: auto;
+  min-width: 0;
 }
 
 .empty-quadrant {
@@ -422,6 +428,7 @@ const getCategoryName = (categoryId) => {
   background: var(--color-bg-secondary);
   border-radius: 8px;
   transition: all 0.2s;
+  min-width: 0;
 }
 
 .task-item:hover {
@@ -465,9 +472,11 @@ const getCategoryName = (categoryId) => {
 
 .task-meta {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 4px 12px;
   font-size: 12px;
   color: var(--color-text-secondary);
+  min-width: 0;
 }
 
 .task-date,
@@ -519,7 +528,7 @@ const getCategoryName = (categoryId) => {
 
 @media (max-width: 1024px) {
   .quadrant-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .quadrant-legend {

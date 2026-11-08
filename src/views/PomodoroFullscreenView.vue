@@ -227,6 +227,7 @@ import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
+import { isRealElectron } from '../utils/platform'
 import { Timer, Play, Pause, RotateCcw, Edit3, Plus, X } from '@lucide/vue'
 
 const taskStore = useTaskStore()
@@ -327,8 +328,8 @@ onMounted(async () => {
   pomodoroStore.setupWatchers(watch)
   pomodoroStore.initElectronMode()
 
-  // Web 端请求浏览器原生全屏
-  if (!window.electronAPI) {
+  // Web 端（非真实 Electron）请求浏览器原生全屏
+  if (!isRealElectron()) {
     const el = document.documentElement
     if (el.requestFullscreen) {
       el.requestFullscreen().catch(() => {})
@@ -354,9 +355,12 @@ onUnmounted(() => {
   width: 100vw;
   height: 100vh;
   display: flex;
-  align-items: center;
+  /* flex-start + 子元素 margin:auto：内容放得下时仍居中，
+     放不下时从顶部开始并允许滚动，避免上下两端被裁掉 */
+  align-items: flex-start;
   justify-content: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   user-select: none;
   position: relative;
 }
@@ -493,6 +497,10 @@ onUnmounted(() => {
   gap: 32px;
   position: relative;
   z-index: 1;
+  margin: auto;
+  padding: 20px 16px;
+  flex-shrink: 0;
+  max-width: 100%;
 }
 
 .mode-tabs {
@@ -1146,5 +1154,45 @@ onUnmounted(() => {
   border-color: rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* 小屏 / 矮窗口：等比缩小计时环与数字，让模式切换与退出按钮留在视口内 */
+@media (max-width: 480px), (max-height: 760px) {
+  .fullscreen-content {
+    gap: 16px;
+    padding: 12px;
+  }
+
+  .timer-container {
+    width: min(66vw, 260px);
+    height: min(66vw, 260px);
+  }
+
+  .time-text {
+    font-size: clamp(48px, 15vw, 80px);
+    letter-spacing: 2px;
+  }
+
+  .timer-display {
+    gap: 8px;
+  }
+
+  .time-container,
+  .time-separator {
+    gap: 6px;
+  }
+
+  .time-separator .dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .ring-glow {
+    inset: -18px;
+  }
+
+  .controls {
+    gap: 12px;
+  }
 }
 </style>

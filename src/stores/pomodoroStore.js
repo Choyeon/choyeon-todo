@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useSettingsStore } from './settingsStore'
 import { useTaskStore } from './taskStore'
 import { getTodayStr, formatDateStr, addDays } from '../utils/date'
+import { isRealElectron } from '../utils/platform'
 
 const STORAGE_KEY = 'choyeon_pomodoro_v1'
 const SUMMARY_STORAGE_KEY = 'choyeon_pomodoro_summary_v1'
@@ -32,7 +33,8 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   let timerEndedUnsubscribe = null
   let watchersSetup = false
 
-  const isElectron = typeof window !== 'undefined' && !!window.electronAPI
+  // 必须排除 Web polyfill：否则 toggleTimer 只调用空 IPC，Web/PWA 下计时器永远不动
+  const isElectron = isRealElectron()
 
   const getSlaveParam = () => {
     if (typeof window === 'undefined') return false

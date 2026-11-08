@@ -343,6 +343,7 @@ import { useRouter } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { usePomodoroStore } from '../stores/pomodoroStore'
+import { isRealElectron } from '../utils/platform'
 import {
   Timer,
   Play,
@@ -372,7 +373,7 @@ const settingsStore = useSettingsStore()
 const pomodoroStore = usePomodoroStore()
 const router = useRouter()
 
-const isElectron = typeof window !== 'undefined' && !!window.electronAPI
+const isElectron = isRealElectron()
 const showNoisePanel = ref(false)
 const showTaskPicker = ref(false)
 // 粒子爆发显示控制

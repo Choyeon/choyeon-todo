@@ -157,6 +157,7 @@ import { useSettingsStore } from './stores/settingsStore'
 import { usePomodoroStore } from './stores/pomodoroStore'
 import { useReminderScheduler } from './composables/useReminderScheduler'
 import { getTodayStr } from './utils/date'
+import { isRealElectron } from './utils/platform'
 import { X } from '@lucide/vue'
 import TitleBar from './components/TitleBar.vue'
 import Sidebar from './components/Sidebar.vue'
@@ -332,7 +333,8 @@ const isStandaloneRoute = computed(
     route.name === 'QuickAdd'
 )
 
-const isWebMode = computed(() => !window.electronAPI)
+// Web 版不渲染 Electron 自绘标题栏（polyfill 不代表真实 Electron 环境）
+const isWebMode = computed(() => !isRealElectron())
 
 // slave 参数可能来自两处：
 // 1) 开发环境 VITE_DEV_SERVER_URL: http://host:port#/pomodoro-fab?slave=1 → 查 hash.query

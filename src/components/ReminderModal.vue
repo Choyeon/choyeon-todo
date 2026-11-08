@@ -224,16 +224,20 @@ const playReminderSound = () => {
 
 .reminder-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .reminder-btn {
   flex: 1;
-  padding: 12px 20px;
+  min-width: 0;
+  /* 窄弹窗内三语文案都要保持单行，原 padding 12px 20px 会把
+     「稍后提醒（5分钟）」挤成三行 */
+  padding: 12px 8px;
   border-radius: var(--radius-full);
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   font-family: var(--font-body);
+  white-space: nowrap;
   cursor: pointer;
   border: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -285,5 +289,26 @@ const playReminderSound = () => {
 .reminder-pop-leave-to {
   transform: scale(0.8) translateY(20px);
   opacity: 0;
+}
+
+/* 窄屏下两个按钮竖排，保证三语文案都完整显示且触控区域更大 */
+@media (max-width: 400px) {
+  .reminder-actions {
+    flex-direction: column;
+  }
+}
+
+/* 尊重系统「减少动态效果」偏好，避免无限脉冲/摇铃动画 */
+@media (prefers-reduced-motion: reduce) {
+  .reminder-modal,
+  .reminder-icon {
+    animation: none;
+  }
+  .reminder-fade-enter-active,
+  .reminder-fade-leave-active,
+  .reminder-pop-enter-active,
+  .reminder-pop-leave-active {
+    transition: none;
+  }
 }
 </style>

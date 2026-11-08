@@ -3,6 +3,7 @@ import { useTaskStore } from '../stores/taskStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useReminderModal } from './useReminderModal'
 import { getTodayStr, addDays, isValidDateStr } from '../utils/date'
+import { isRealElectron } from '../utils/platform'
 
 // ========== 全局模块级状态（共享在多个 useReminderScheduler 调用之间）==========
 let checkInterval = null
@@ -397,10 +398,10 @@ const triggerReminderForTask = (task, kind, tag, dueTsOrNull) => {
     if (typeof console !== 'undefined') console.warn('[Reminder] modal error:', e)
   }
 
-  // 若非 Electron（通知通道无），使用 Toast 呈现（允许 actions）
+  // 若非真实 Electron（通知通道无），使用 Toast 呈现（允许 actions）
   if (
     typeof window !== 'undefined' &&
-    !window.electronAPI &&
+    !isRealElectron() &&
     !window.ct &&
     typeof window.useToast === 'function'
   ) {

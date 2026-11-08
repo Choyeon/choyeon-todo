@@ -99,9 +99,11 @@ import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSnackbar } from '../../composables/useSnackbar'
 import { Power, X, Download, LayoutGrid } from '@lucide/vue'
+import { isRealElectron } from '../../utils/platform'
 
 const { t } = useI18n()
-const isElectron = typeof window !== 'undefined' && !!window.electronAPI
+// 开机自启 / 关闭行为 / 小窗 / 检查更新仅在真实 Electron 下有效
+const isElectron = isRealElectron()
 
 const settingsStore = useSettingsStore()
 const { show: showSnackbar } = useSnackbar()

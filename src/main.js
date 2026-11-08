@@ -12,8 +12,11 @@ import { useFilterStore } from './stores/filterStore'
 import { registerSW } from 'virtual:pwa-register'
 import { i18n } from './i18n'
 import { setupErrorMonitoring } from './utils/errorMonitor'
+import { isRealElectron } from './utils/platform'
 
-const isElectron = typeof window !== 'undefined' && !!window.electronAPI
+// 判定放在 polyfill 注入之前（模块顶层），或直接依赖 __isWebPolyfill 标记，
+// 两者都能保证 Web 版不会被误判为 Electron。
+const isElectron = isRealElectron()
 
 // ========== Web 环境下的 Electron API polyfill（Task 9 兜底 + 向后兼容） ==========
 // 防止 `await window.electronAPI?.getAutoLaunch()` 等在非 Electron 环境抛错或返回 undefined。
@@ -29,6 +32,8 @@ if (typeof window !== 'undefined' && !window.electronAPI) {
     enumerable: true,
     writable: false,
     value: {
+      // 显式标记：供 isRealElectron() 区分 polyfill 与真实 preload
+      __isWebPolyfill: true,
       platform: (typeof navigator !== 'undefined' && navigator.platform) || 'web',
       versions: {
         electron: null,

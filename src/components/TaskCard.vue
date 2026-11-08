@@ -286,6 +286,9 @@ import {
   Bell
 } from '@lucide/vue'
 import { buildDropIndex, validateDrop, applyDrop } from '../utils/dragDropTasks'
+import { useTaskStore as useTaskStoreImpl } from '../stores/taskStore'
+import { useListStore as useListStoreImpl } from '../stores/listStore'
+import { useSettingsStore as useSettingsStoreImpl } from '../stores/settingsStore'
 
 const props = defineProps({
   task: {
@@ -332,22 +335,25 @@ const emit = defineEmits([
 
 const { t } = useI18n()
 
-const useTaskStore = inject('useTaskStore', null) || (() => null)
-const useListStore = inject('useListStore', null) || (() => null)
-const useSettingsStore = inject('useSettingsStore', null) || (() => null)
+// 注入优先（便于单测替换），未注入时回退到应用真实 store。
+// 全仓没有任何 provide('use*Store')，若只依赖 inject，标签/分类/拖拽全部会走降级分支。
+const resolveStore = (injected, realFactory) => {
+  try {
+    const value = typeof injected === 'function' ? injected() : injected
+    if (value) return value
+  } catch {
+    /* 注入的工厂不可用，继续回退 */
+  }
+  try {
+    return realFactory() || null
+  } catch {
+    return null
+  }
+}
 
-let taskStore = null
-let listStore = null
-let settingsStore = null
-try {
-  taskStore = typeof useTaskStore === 'function' ? useTaskStore() : useTaskStore
-} catch {}
-try {
-  listStore = typeof useListStore === 'function' ? useListStore() : useListStore
-} catch {}
-try {
-  settingsStore = typeof useSettingsStore === 'function' ? useSettingsStore() : useSettingsStore
-} catch {}
+const taskStore = resolveStore(inject('useTaskStore', null), useTaskStoreImpl)
+const listStore = resolveStore(inject('useListStore', null), useListStoreImpl)
+const settingsStore = resolveStore(inject('useSettingsStore', null), useSettingsStoreImpl)
 
 const compact = computed(() => props.view === 'compact')
 const boardLike = computed(() => props.view === 'board')
@@ -455,17 +461,26 @@ const listName = computed(() => {
   const id = props.task.listId || props.task.category
   if (!id) return ''
   if (listStore) {
-    if (typeof listStore.getById === 'function') {
-      const byId = listStore.getById(id)?.name
+    // listStore 对外方法名是 getListById（原 getById 恒为 undefined）
+    if (typeof listStore.getListById === 'function') {
+      const byId = listStore.getListById(id)?.name
       if (byId) return byId
     }
     const list = (listStore.lists || []).find((l) => l.id === id)
     if (list?.name) return list.name
   }
-  // 当没有 store 或查找失败时，回退到显示 category 名称（兼容老数据 / 单测场景）
+  // 回退顺序：用户自定义分类名 → 三语文案 → 原始 id（避免中文界面出现硬编码英文）
   if (props.task.category) {
-    const map = { work: 'Work', personal: 'Personal', study: 'Study', health: 'Health' }
-    return map[props.task.category] || props.task.category
+    const cat =
+      typeof taskStore?.getCategoryById === 'function'
+        ? taskStore.getCategoryById(props.task.category)
+        : null
+    if (cat?.name) return cat.name
+    const builtin = ['work', 'personal', 'study', 'shopping', 'health', 'other']
+    if (builtin.includes(props.task.category)) {
+      return t(`categories.${props.task.category}`)
+    }
+    return props.task.category
   }
   return ''
 })
@@ -481,12 +496,21 @@ const listColor = computed(() => {
 })
 
 const displayTags = computed(() => {
-  const tagIndex = taskStore?.tagIndexMap?.value || taskStore?.tags || null
   const tags = props.task.tags || []
   const res = []
+  // Pinia setup store 会自动解包 computed/ref，这里拿到的已是数组，不能再加 .value；
+  // 且 tagIndexMap 并未从 store 导出，需通过 getTagById 或 tags 数组解析名称。
+  const tagList = Array.isArray(taskStore?.tags) ? taskStore.tags : []
+  const resolveTag = (tid) => {
+    if (typeof taskStore?.getTagById === 'function') {
+      const found = taskStore.getTagById(tid)
+      if (found) return found
+    }
+    return tagList.find((tg) => tg && tg.id === tid) || null
+  }
   for (const tid of tags) {
     if (!tid) continue
-    const obj = tagIndex && typeof tagIndex.get === 'function' ? tagIndex.get(tid) : null
+    const obj = resolveTag(tid)
     if (obj) {
       res.push({ id: obj.id, label: obj.name, color: obj.color })
     } else if (typeof tid === 'string') {
@@ -499,6 +523,7 @@ const displayTags = computed(() => {
 const tagStyle = (tg) => {
   const bg = tg.color || '#e0e7ff'
   const isDark =
+    settingsStore?.isDark === true ||
     settingsStore?.theme === 'dark' ||
     (typeof document !== 'undefined' &&
       document.documentElement?.getAttribute('data-theme') === 'dark')
@@ -557,10 +582,13 @@ defineExpose({
     return buildDropIndex({ y: mouseY }, list, viewOpts)
   },
   buildDrop: ({ draggedIds, target = {} }) => {
+    // Pinia setup store 自动解包 ref；兼容单测里注入的原始 ref
+    const storeTasks = taskStore?.tasks
+    const allTasks = Array.isArray(storeTasks) ? storeTasks : storeTasks?.value
     const payload = {
       draggedTaskIds: draggedIds || [props.task.id],
       target,
-      tasks: taskStore?.tasks?.value || props.currentList || [props.task]
+      tasks: allTasks || props.currentList || [props.task]
     }
     const validation = validateDrop(payload)
     if (!validation.ok) return { ok: false, reason: validation.reason }

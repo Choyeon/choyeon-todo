@@ -1083,6 +1083,8 @@ onUnmounted(() => {
   gap: 4px;
   min-height: 0;
   min-width: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border, #e5e7eb) transparent;
 }
 
 .sidebar.collapsed .sidebar-nav {
@@ -1096,13 +1098,15 @@ onUnmounted(() => {
   background: transparent;
   border-radius: 3px;
 }
+/* 滚动条常显：导航项超出可视高度时，用户能察觉下面还有内容，
+   否则最后一项看起来像被裁断的布局 bug */
 .sidebar-nav::-webkit-scrollbar-thumb {
-  background: transparent;
+  background: var(--color-border, #e5e7eb);
   border-radius: 3px;
   transition: background-color var(--transition-smooth);
 }
 .sidebar-nav:hover::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-text-tertiary);
 }
 .sidebar-nav:hover::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-tertiary);
