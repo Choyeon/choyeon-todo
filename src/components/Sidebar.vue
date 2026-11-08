@@ -67,25 +67,26 @@
         role="listitem"
         :aria-label="$t('nav.filters')"
       >
-        <button
-          type="button"
-          class="section-header"
-          v-show="!settingsStore.sidebarCollapsed"
-          @click="settingsStore.toggleSidebarShowFilters()"
-          :aria-expanded="settingsStore.sidebarShowFilters"
-          :aria-label="
-            settingsStore.sidebarShowFilters
-              ? $t('sidebar.collapseSection')
-              : $t('sidebar.expandSection')
-          "
-        >
-          <ChevronDown
-            class="section-chevron"
-            :class="{ collapsed: !settingsStore.sidebarShowFilters }"
-            :size="14"
-            aria-hidden="true"
-          />
-          <span class="nav-section-label">{{ $t('nav.filters') }}</span>
+        <div class="section-row" v-show="!settingsStore.sidebarCollapsed">
+          <button
+            type="button"
+            class="section-header"
+            @click="settingsStore.toggleSidebarShowFilters()"
+            :aria-expanded="settingsStore.sidebarShowFilters"
+            :aria-label="
+              settingsStore.sidebarShowFilters
+                ? $t('sidebar.collapseSection')
+                : $t('sidebar.expandSection')
+            "
+          >
+            <ChevronDown
+              class="section-chevron"
+              :class="{ collapsed: !settingsStore.sidebarShowFilters }"
+              :size="14"
+              aria-hidden="true"
+            />
+            <span class="nav-section-label">{{ $t('nav.filters') }}</span>
+          </button>
           <button
             class="section-action"
             type="button"
@@ -95,7 +96,7 @@
           >
             <Plus :size="14" aria-hidden="true" />
           </button>
-        </button>
+        </div>
 
         <Transition name="collapse">
           <div v-show="settingsStore.sidebarShowFilters" class="nav-section-body">
@@ -152,25 +153,26 @@
 
       <!-- 分类（单层扁平；受 sidebarShowAreas 折叠控制） -->
       <div class="nav-section" role="listitem" :aria-label="$t('nav.categories')">
-        <button
-          type="button"
-          class="section-header"
-          v-show="!settingsStore.sidebarCollapsed"
-          @click="settingsStore.toggleSidebarShowAreas()"
-          :aria-expanded="settingsStore.sidebarShowAreas"
-          :aria-label="
-            settingsStore.sidebarShowAreas
-              ? $t('sidebar.collapseSection')
-              : $t('sidebar.expandSection')
-          "
-        >
-          <ChevronDown
-            class="section-chevron"
-            :class="{ collapsed: !settingsStore.sidebarShowAreas }"
-            :size="14"
-            aria-hidden="true"
-          />
-          <span class="nav-section-label">{{ $t('nav.categories') }}</span>
+        <div class="section-row" v-show="!settingsStore.sidebarCollapsed">
+          <button
+            type="button"
+            class="section-header"
+            @click="settingsStore.toggleSidebarShowAreas()"
+            :aria-expanded="settingsStore.sidebarShowAreas"
+            :aria-label="
+              settingsStore.sidebarShowAreas
+                ? $t('sidebar.collapseSection')
+                : $t('sidebar.expandSection')
+            "
+          >
+            <ChevronDown
+              class="section-chevron"
+              :class="{ collapsed: !settingsStore.sidebarShowAreas }"
+              :size="14"
+              aria-hidden="true"
+            />
+            <span class="nav-section-label">{{ $t('nav.categories') }}</span>
+          </button>
           <button
             class="section-action"
             type="button"
@@ -180,7 +182,7 @@
           >
             <Plus :size="14" aria-hidden="true" />
           </button>
-        </button>
+        </div>
 
         <Transition name="collapse">
           <div v-show="settingsStore.sidebarShowAreas" class="nav-section-body">
@@ -218,21 +220,24 @@
 
       <!-- 标签（保留旧版可折叠分组；受 sidebarShowAreas 折叠不影响，但保持独立） -->
       <div class="nav-section tags-section" role="listitem">
-        <button
-          type="button"
-          class="section-header"
-          v-show="!settingsStore.sidebarCollapsed"
-          @click="toggleTagsCollapsed()"
-          :aria-expanded="!tagsCollapsed"
-          :aria-label="tagsCollapsed ? $t('sidebar.expandSection') : $t('sidebar.collapseSection')"
-        >
-          <ChevronDown
-            class="section-chevron"
-            :class="{ collapsed: tagsCollapsed }"
-            :size="14"
-            aria-hidden="true"
-          />
-          <span class="nav-section-label">{{ $t('nav.tags') }}</span>
+        <div class="section-row" v-show="!settingsStore.sidebarCollapsed">
+          <button
+            type="button"
+            class="section-header"
+            @click="toggleTagsCollapsed()"
+            :aria-expanded="!tagsCollapsed"
+            :aria-label="
+              tagsCollapsed ? $t('sidebar.expandSection') : $t('sidebar.collapseSection')
+            "
+          >
+            <ChevronDown
+              class="section-chevron"
+              :class="{ collapsed: tagsCollapsed }"
+              :size="14"
+              aria-hidden="true"
+            />
+            <span class="nav-section-label">{{ $t('nav.tags') }}</span>
+          </button>
           <button
             class="section-action"
             type="button"
@@ -242,7 +247,7 @@
           >
             <Plus :size="14" aria-hidden="true" />
           </button>
-        </button>
+        </div>
         <Transition name="collapse">
           <div v-show="!tagsCollapsed" class="nav-section-body">
             <template v-if="visibleTags.length">
@@ -1141,6 +1146,25 @@ onUnmounted(() => {
 .section-header:hover {
   background: var(--color-bg-secondary);
 }
+/* 折叠/增建按钮与标题同行排列：外层用 div 包裹两个独立 button，
+   避免 <button> 嵌套 <button> 的非法 DOM（会触发 hydration 与点击异常） */
+.section-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.section-row .section-header {
+  flex: 1;
+  width: auto;
+  padding-right: 6px;
+}
+.section-row .section-action {
+  flex-shrink: 0;
+}
+.section-header:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
 .section-chevron {
   transition: transform var(--transition-smooth) var(--ease-out-expo);
   flex-shrink: 0;
@@ -1466,7 +1490,7 @@ onUnmounted(() => {
     width: 72px;
   }
   .sidebar-search,
-  .section-header,
+  .section-row,
   .nav-section-label,
   .nav-btn .nav-label,
   .nav-btn .nav-count {
