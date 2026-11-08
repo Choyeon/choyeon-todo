@@ -203,8 +203,9 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useTaskStore } from '../stores/taskStore'
-import { getTodayStr, formatDateStr, parseDateStr } from '../utils/date'
+import { getTodayStr, formatDateStr, parseDateStr, isValidDateStr } from '../utils/date'
 import TaskList from '../components/TaskList.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { ChevronLeft, ChevronRight, Calendar, Clock, Star, Bell } from '@lucide/vue'
@@ -220,7 +221,12 @@ const viewMode = ref('month')
 const todayStr = computed(() => getTodayStr())
 const todayDate = computed(() => parseDateStr(todayStr.value))
 
-const initDate = new Date()
+const route = useRoute()
+const initialDate =
+  typeof route.query.date === 'string' && isValidDateStr(route.query.date)
+    ? parseDateStr(route.query.date)
+    : new Date()
+const initDate = initialDate
 const currentYear = ref(initDate.getFullYear())
 const currentMonth = ref(initDate.getMonth())
 const selectedDate = ref(formatDateStr(initDate))

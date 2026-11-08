@@ -525,7 +525,9 @@ import {
   ListTodo
 } from '@lucide/vue'
 import { formatDateStr } from '../utils/date'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const { t, tm } = useI18n()
 const taskStore = useTaskStore()
 const pomodoroStore = usePomodoroStore()
@@ -544,21 +546,8 @@ const heatmapRangeOptions = computed(() => [
 ])
 
 const onHeatmapDateClick = (dateStr) => {
-  // 简单：切换到 CompletedView 并按日期过滤；此处留作钩子，
-  // 也可以在 filterStore 中设置。这里仅在控制台打印供外部扩展。
-  try {
-    const { useFilterStore } = require('../stores/filterStore')
-    const fs = useFilterStore && useFilterStore()
-    if (fs && typeof fs.setDateFilter === 'function') {
-      fs.setDateFilter(dateStr)
-    }
-  } catch {
-    /* noop */
-  }
-  if (typeof window !== 'undefined') {
-    // eslint-disable-next-line no-console
-    console.debug('[StatsView] heatmap-date-click', dateStr)
-  }
+  if (!dateStr) return
+  router.push({ path: '/calendar', query: { date: dateStr } })
 }
 
 // ===== Task 7: 专注摘要（基于 last7） =====

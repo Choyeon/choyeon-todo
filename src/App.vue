@@ -326,7 +326,6 @@ const fetchBingWallpaper = async () => {
 
 const isStandaloneRoute = computed(
   () =>
-    route.name === 'Debug' ||
     route.name === 'PomodoroFullscreen' ||
     route.name === 'PomodoroFab' ||
     route.name === 'MiniWindow' ||

@@ -225,28 +225,6 @@ async function streamCompress(bytes) {
   return out
 }
 
-async function streamDecompress(bytes) {
-  const ds = new DecompressionStream('gzip')
-  const writer = ds.writable.getWriter()
-  const reader = ds.readable.getReader()
-  writer.write(bytes)
-  writer.close()
-  const chunks = []
-  while (true) {
-    const { value, done } = await reader.read()
-    if (done) break
-    chunks.push(value)
-  }
-  const total = chunks.reduce((s, c) => s + c.length, 0)
-  const out = new Uint8Array(total)
-  let off = 0
-  chunks.forEach((c) => {
-    out.set(c, off)
-    off += c.length
-  })
-  return out
-}
-
 // ========== compress / decompress 核心 ==========
 /**
  * JSON -> Base64（gzip 优先）。

@@ -15,7 +15,7 @@ const _closeHandlers = new Set()
 let _globalToggle = null
 let _globalClose = null
 
-export const getCommandRegistry = (bridges = {}) => {
+const getCommandRegistry = (bridges = {}) => {
   if (!_registry) {
     const snackbar = useSnackbar()
     _registry = getDefaultCommandRegistry({

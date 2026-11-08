@@ -51,7 +51,7 @@ const normalizeError = (error) => {
   }
 }
 
-export const captureError = (error, context = {}) => {
+const captureError = (error, context = {}) => {
   const errInfo = normalizeError(error)
   const log = {
     id: generateId(),
@@ -73,78 +73,6 @@ export const captureError = (error, context = {}) => {
   }
 
   return log
-}
-
-export const getErrorLogs = (filters = {}) => {
-  let logs = [...errorLogs]
-
-  if (filters.type) {
-    logs = logs.filter((l) => l.type === filters.type)
-  }
-  if (filters.level) {
-    logs = logs.filter((l) => (l.level || 'error') === filters.level)
-  }
-  if (filters.startTime) {
-    logs = logs.filter((l) => l.timestamp >= filters.startTime)
-  }
-  if (filters.endTime) {
-    logs = logs.filter((l) => l.timestamp <= filters.endTime)
-  }
-  if (filters.search) {
-    const q = filters.search.toLowerCase()
-    logs = logs.filter(
-      (l) => l.message.toLowerCase().includes(q) || l.name.toLowerCase().includes(q)
-    )
-  }
-
-  return logs
-}
-
-export const getErrorStats = () => {
-  const now = Date.now()
-  const oneDay = 24 * 60 * 60 * 1000
-  const oneHour = 60 * 60 * 1000
-
-  const last24h = errorLogs.filter((l) => now - l.timestamp < oneDay)
-  const last1h = errorLogs.filter((l) => now - l.timestamp < oneHour)
-
-  const typeCount = {}
-  errorLogs.forEach((l) => {
-    typeCount[l.type] = (typeCount[l.type] || 0) + 1
-  })
-
-  const uniqueErrors = new Map()
-  errorLogs.forEach((l) => {
-    const key = `${l.name}:${l.message}`
-    if (!uniqueErrors.has(key)) {
-      uniqueErrors.set(key, { name: l.name, message: l.message, count: 0, lastSeen: 0 })
-    }
-    const entry = uniqueErrors.get(key)
-    entry.count++
-    if (l.timestamp > entry.lastSeen) entry.lastSeen = l.timestamp
-  })
-
-  const topErrors = Array.from(uniqueErrors.values())
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10)
-
-  return {
-    total: errorLogs.length,
-    last24h: last24h.length,
-    last1h: last1h.length,
-    typeCount,
-    topErrors
-  }
-}
-
-export const clearErrorLogs = () => {
-  errorLogs = []
-  saveLogs()
-}
-
-export const deleteErrorLog = (id) => {
-  errorLogs = errorLogs.filter((l) => l.id !== id)
-  saveLogs()
 }
 
 export const setupErrorMonitoring = (app) => {

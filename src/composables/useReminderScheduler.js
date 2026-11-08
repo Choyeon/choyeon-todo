@@ -845,4 +845,3 @@ export const getScheduledSmartTriggersForTest = (task, nowMs, profileKey) => {
 }
 export const _internalResolveSnoozePreset = resolveSnoozePreset
 export const _internalBuildToastBody = buildToastBody
-export const _internalSMART_PROFILES = SMART_PROFILES
