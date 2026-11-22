@@ -1,3 +1,6 @@
+// Tauri 桌面端兼容桥：必须在其余模块体执行前注入 window.electronAPI / window.ct。
+// Web/PWA 下 isTauri() 为 false，模块为空操作，行为与迁移前完全一致。
+import './bridge/tauri'
 import { createApp, watch } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'

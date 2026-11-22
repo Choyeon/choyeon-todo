@@ -22,6 +22,10 @@ dist
 dist-web
 dist-ssr
 dist-electron
+src-tauri/target/
+src-tauri/gen/
+release-assets/
+.workbuddy/
 .vercel/
 *.local
 

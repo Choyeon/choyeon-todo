@@ -87,7 +87,7 @@
 | 前端框架 | Vue 3（ `<script setup>` ） + Vite |
 | 状态管理 | Pinia |
 | 路由 | Vue Router（ hash 模式 ） |
-| 桌面端 | Electron（多窗口、托盘、通知、悬浮小窗） |
+| 桌面端 | **Tauri v2**（Rust 后端；多窗口、托盘、通知、悬浮小窗） |
 | 国际化 | vue-i18n（ zh-CN / en-US / ja-JP ） |
 | 测试 | Vitest |
 | 代码质量 | ESLint + Prettier |
@@ -99,8 +99,12 @@
 
 ### 环境要求
 
-- Node.js >= 18
+- Node.js >= 20
 - pnpm >= 10
+- 桌面端构建：Rust（rustup）+ 平台原生工具链
+  - Windows：Visual Studio Build Tools 2022（勾选 “Desktop development with C++”）+ WebView2 Runtime
+  - macOS：Xcode Command Line Tools
+  - Linux：`webkit2gtk-4.1-dev` 等（见 Tauri 官方文档）
 
 ### 安装依赖
 
@@ -116,10 +120,10 @@ pnpm run dev
 
 然后打开 <http://localhost:5173> 。
 
-### 以桌面应用运行（ Windows ）
+### 以桌面应用运行（Tauri）
 
 ```bash
-pnpm run electron:dev
+pnpm run tauri:dev
 ```
 
 ### 构建
@@ -128,9 +132,19 @@ pnpm run electron:dev
 # 仅 Web
 pnpm run build
 
-# Windows 桌面安装包
-pnpm run electron:build:win
+# 桌面安装包（Tauri）
+pnpm run tauri:build          # 当前平台
+pnpm run tauri:build:win      # Windows x64
+pnpm run tauri:build:mac      # macOS universal
+pnpm run tauri:build:linux    # Linux x64
 ```
+
+> 桌面构建请始终使用 `pnpm tauri:*` 脚本（CLI 会正确注入内嵌前端资源）；
+> 不要直接运行 `cargo build --release`，否则会误带 devUrl 导致启动后页面加载失败。
+
+> 桌面端通过 `src/bridge/tauri.js` 提供与 Electron preload 完全一致的
+> `window.electronAPI` / `window.ct` 接口，因此所有 Vue 组件无需感知底层是
+> Electron 还是 Tauri。Web / PWA 版本不受影响。
 
 预编译安装包可在 [Releases](https://github.com/Choyeon/choyeon-todo/releases) 页面下载。
 
@@ -155,10 +169,15 @@ pnpm run format        # Prettier 格式化
 ```
 choyeon-todo/
 ├── build/             # 应用图标（ PNG + ICO ）
-├── electron/          # Electron 主进程 + 预加载脚本
+├── electron/          # 旧 Electron 主进程（保留作历史参考；默认桌面端已切换为 Tauri）
+├── src-tauri/         # Tauri v2 Rust 后端（命令 / 托盘 / 快捷键 / 番茄钟引擎）
+│   ├── capabilities/  # Tauri 权限集
+│   ├── icons/         # 桌面应用图标
+│   └── src/           # Rust 模块
 ├── public/            # 静态资源
 ├── scripts/          # 工具脚本（ a11y / i18n / latest.yml 生成 ）
 ├── src/
+│   ├── bridge/        # Tauri <-> electronAPI 兼容桥
 │   ├── components/    # 可复用 Vue 组件
 │   ├── composables/   # Vue 3 组合式工具
 │   ├── i18n/          # 国际化配置
