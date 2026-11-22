@@ -5,7 +5,16 @@ import globals from 'globals'
 
 export default [
   {
-    ignores: ['dist/', 'app-build/', 'node_modules/', 'dist-web/', 'tests/setup.js']
+    ignores: [
+      'dist/',
+      'app-build/',
+      'node_modules/',
+      'dist-web/',
+      'src-tauri/target/',
+      'src-tauri/gen/',
+      '.workbuddy/',
+      'tests/setup.js'
+    ]
   },
   js.configs.recommended,
   ...vue.configs['flat/recommended'],

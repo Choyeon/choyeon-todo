@@ -14,13 +14,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/**',
-        'dist/**',
-        'electron/**',
-        '*.config.js',
-        'src/main.js',
-        'src/App.vue'
+      exclude: ['node_modules/**', 'dist/**', '*.config.js', 'src/main.js', 'src/App.vue'
       ]
     },
     resolveSnapshotPath: (testPath, snapExtension) => {

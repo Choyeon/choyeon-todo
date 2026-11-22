@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="build/icon.png" width="96" height="96" alt="Choyeon To Do" />
+<img src="src-tauri/icons/icon.png" width="96" height="96" alt="Choyeon To Do" />
 
 # Choyeon To Do
 
@@ -168,14 +168,12 @@ pnpm run format        # Prettier 格式化
 
 ```
 choyeon-todo/
-├── build/             # 应用图标（ PNG + ICO ）
-├── electron/          # 旧 Electron 主进程（保留作历史参考；默认桌面端已切换为 Tauri）
 ├── src-tauri/         # Tauri v2 Rust 后端（命令 / 托盘 / 快捷键 / 番茄钟引擎）
 │   ├── capabilities/  # Tauri 权限集
 │   ├── icons/         # 桌面应用图标
 │   └── src/           # Rust 模块
 ├── public/            # 静态资源
-├── scripts/          # 工具脚本（ a11y / i18n / latest.yml 生成 ）
+├── scripts/          # 工具脚本（ a11y / i18n 检查 ）
 ├── src/
 │   ├── bridge/        # Tauri <-> electronAPI 兼容桥
 │   ├── components/    # 可复用 Vue 组件

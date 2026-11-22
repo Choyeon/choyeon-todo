@@ -21,7 +21,6 @@ node_modules
 dist
 dist-web
 dist-ssr
-dist-electron
 src-tauri/target/
 src-tauri/gen/
 release-assets/
@@ -30,7 +29,7 @@ release-assets/
 *.local
 
 # ==============================================
-# Electron / electron-builder
+# Build / release output
 # ==============================================
 out/
 release/
@@ -41,8 +40,6 @@ build-output/
 build-output-new/
 pack-out/
 output/
-.electron/
-electron-builder/
 builder-effective-config.yaml
 
 # ==============================================
