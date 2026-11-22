@@ -10,8 +10,67 @@
  * 会把它识别为“桌面端”，与 Electron 行为完全一致（标题栏、番茄钟 Electron 模式、
  * 桌面专属设置项全部保留）。
  */
-import { invoke } from '@tauri-apps/api/core'
+import { invoke as tauriInvoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+
+/**
+ * Electron IPC channel -> Tauri command 名映射。
+ * preload 用 'window:minimize' 这类带冒号的 channel；Rust #[tauri::command]
+ * 注册的是 snake_case 名（window_minimize）。Tauri 按字符串精确查找命令，
+ * 若直接把 Electron channel 传给 invoke，所有调用都会静默失败。
+ */
+const COMMAND_MAP = {
+  'app:getVersion': 'app_get_version',
+  'app:setAutoLaunch': 'app_set_auto_launch',
+  'app:getAutoLaunch': 'app_get_auto_launch',
+  'window:minimize': 'window_minimize',
+  'window:toggleMaximize': 'window_toggle_maximize',
+  'window:close': 'window_close',
+  'window:isMaximized': 'window_is_maximized',
+  'window:isVisible': 'window_is_visible',
+  'window:show': 'window_show',
+  'window:hide': 'window_hide',
+  'window:snapLayout': 'window_snap_layout',
+  'debug:openDevTools': 'open_dev_tools',
+  'notification:send': 'notification_send',
+  'notification:show': 'notification_show',
+  'tasks:sync': 'tasks_sync',
+  'settings:setAutoStart': 'settings_set_auto_start',
+  'settings:getAutoStart': 'settings_get_auto_start',
+  'settings:setCloseToQuit': 'settings_set_close_to_quit',
+  'settings:getCloseToQuit': 'settings_get_close_to_quit',
+  'settings:setDoNotDisturb': 'settings_set_do_not_disturb',
+  'settings:getDoNotDisturb': 'settings_get_do_not_disturb',
+  'settings:setGlobalShortcutEnabled': 'settings_set_global_shortcut_enabled',
+  'settings:getGlobalShortcutEnabled': 'settings_get_global_shortcut_enabled',
+  'bing:getWallpaper': 'bing_get_wallpaper',
+  'pomodoro:openFullscreen': 'pomodoro_open_fullscreen',
+  'pomodoro:closeFullscreen': 'pomodoro_close_fullscreen',
+  'pomodoro:openFab': 'pomodoro_open_fab',
+  'pomodoro:closeFab': 'pomodoro_close_fab',
+  'pomodoro:toggleFab': 'pomodoro_toggle_fab',
+  'pomodoro:stateSync': 'pomodoro_state_sync',
+  'pomodoro:action': 'pomodoro_action',
+  'pomodoro:getState': 'pomodoro_get_state',
+  'pomodoro:ready': 'pomodoro_ready',
+  'pomodoro:setDuration': 'pomodoro_set_duration',
+  'mini:open': 'mini_open',
+  'mini:close': 'mini_close',
+  'mini:toggle': 'mini_toggle',
+  'mini:showMain': 'mini_show_main',
+  'mini:toggleAlwaysOnTop': 'mini_toggle_always_on_top',
+  'quickAdd:close': 'quick_add_close',
+  'hotkey:register': 'hotkey_register',
+  'hotkey:unregisterAll': 'hotkey_unregister_all',
+  'task:startDrag': 'task_start_drag',
+  'dialog:saveJson': 'dialog_save_json',
+  'updater:checkForUpdates': 'updater_check_for_updates',
+  'updater:downloadUpdate': 'updater_download_update',
+  'updater:quitAndInstall': 'updater_quit_and_install'
+}
+
+const invoke = (channel, args) =>
+  tauriInvoke(COMMAND_MAP[channel] || channel.replace(/:/g, '_'), args)
 
 const isTauri = () => typeof window !== 'undefined' && !!window.__TAURI_INTERNALS__
 
