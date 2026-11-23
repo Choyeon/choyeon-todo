@@ -3,8 +3,7 @@
     <Transition name="toast-fade">
       <div
         v-if="visible"
-        role="alert"
-        aria-live="polite"
+        role="status"
         class="toast-wrapper"
         :class="[`toast--${variant}`, `toast--${position}`]"
         @mouseenter="onHoverEnter"
@@ -35,7 +34,7 @@
           type="button"
           v-if="dismissible"
           class="toast-close"
-          aria-label="Close"
+          :aria-label="$t('common.close')"
           @click="close('dismiss')"
         >
           ×

@@ -78,10 +78,14 @@ const isTauri = () => typeof window !== 'undefined' && !!window.__TAURI_INTERNAL
 const sub = (event, callback) => {
   let off = null
   let disposed = false
-  listen(event, (e) => callback(e.payload)).then((fn) => {
-    if (disposed) fn()
-    else off = fn
-  })
+  listen(event, (e) => callback(e.payload))
+    .then((fn) => {
+      if (disposed) fn()
+      else off = fn
+    })
+    .catch(() => {
+      // 权限不足或事件系统未就绪时静默降级，避免 unhandled rejection
+    })
   return () => {
     disposed = true
     if (off) off()
@@ -120,7 +124,7 @@ export function installTauriBridge() {
     openDevTools: () => invoke('debug:openDevTools'),
 
     sendNotification: (title, body, taskId) =>
-      invoke('notification:send', { title, body, taskId }),
+      invoke('notification:send', { title, body, task_id: taskId }),
     syncTasks: (tasks, categories) => invoke('tasks:sync', { tasks, categories }),
 
     onNotificationResponse: (cb) => sub('notification:response', cb),

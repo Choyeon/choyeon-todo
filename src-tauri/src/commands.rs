@@ -359,10 +359,11 @@ pub fn notification_send(
     let title = title.unwrap_or_else(|| "Choyeon To Do".into());
     let body = body.unwrap_or_default();
     send_native_notification(&app, &title, &body);
-    let _ = app.emit(
-        "notification:response",
-        json!({"action": "clicked", "taskId": task_id}),
-    );
+    // 兼容渲染端订阅：通知点击/提醒动作走 notification:taskClick，
+    // 不要伪造成 notification:response（那是点击后的回执事件）。
+    if let Some(id) = task_id {
+        let _ = app.emit("notification:taskClick", json!({"taskId": id}));
+    }
 }
 
 #[tauri::command]
@@ -391,10 +392,9 @@ pub fn notification_show(app: AppHandle, payload: Option<Value>) -> Value {
         return json!({"success": true, "suppressed": true});
     }
     send_native_notification(&app, &title, &body);
-    let _ = app.emit(
-        "notification:response",
-        json!({"action": "clicked", "taskId": task_id}),
-    );
+    if let Some(id) = task_id {
+        let _ = app.emit("notification:taskClick", json!({"taskId": id}));
+    }
     json!({"success": true})
 }
 
@@ -724,11 +724,9 @@ pub fn task_start_drag(app: AppHandle, payload: Option<Value>) -> Value {
                 })
                 .take(60)
                 .collect();
-            let file = dir.join(format!(
-                "{}_{}.html",
-                safe,
-                &task_id[..task_id.len().min(8)]
-            ));
+            // chars() 切片避免中文/emoji 截断在多字节边界导致 panic
+            let short_id: String = task_id.chars().take(8).collect();
+            let file = dir.join(format!("{}_{}.html", safe, short_id));
             let content = if html.is_empty() {
                 format!("<!doctype html><meta charset=\"utf-8\"><title>{}</title><body><h1>{}</h1><pre>{}</pre></body>", title, title, plain)
             } else {

@@ -89,6 +89,7 @@
 import { ref, watch, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RefreshCw } from '@lucide/vue'
+import { sanitizeHtml } from '../utils/sanitizeHtml'
 
 const { t } = useI18n()
 
@@ -104,13 +105,8 @@ const dialogRef = ref(null)
 const title = computed(() => t('update.title'))
 const message = computed(() => t('update.message'))
 
-const sanitizedReleaseNotes = computed(() => {
-  let notes = releaseNotes.value || ''
-  notes = notes.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-  notes = notes.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-  notes = notes.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-  return notes
-})
+// 更新日志来自 GitHub Release body，白名单清理逻辑见 src/utils/sanitizeHtml.js
+const sanitizedReleaseNotes = computed(() => sanitizeHtml(releaseNotes.value))
 
 const show = (info) => {
   if (info) {

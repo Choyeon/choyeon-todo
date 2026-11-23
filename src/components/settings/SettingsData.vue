@@ -7,7 +7,15 @@
       <h3 class="settings-section-title">{{ $t('settings.data') }}</h3>
     </div>
 
-    <div class="setting-row" @click="exportData">
+    <div
+      class="setting-row"
+      role="button"
+      tabindex="0"
+      :aria-label="$t('settings.exportData')"
+      @click="exportData"
+      @keydown.enter="exportData"
+      @keydown.space.prevent="exportData"
+    >
       <div class="setting-icon-wrap icon-green">
         <Download :size="20" />
       </div>
@@ -18,7 +26,15 @@
       <ChevronRight :size="20" class="chevron" />
     </div>
 
-    <div class="setting-row" @click="exportCSV">
+    <div
+      class="setting-row"
+      role="button"
+      tabindex="0"
+      :aria-label="$t('settings.exportCSV')"
+      @click="exportCSV"
+      @keydown.enter="exportCSV"
+      @keydown.space.prevent="exportCSV"
+    >
       <div class="setting-icon-wrap icon-blue">
         <FileText :size="20" />
       </div>
@@ -29,7 +45,15 @@
       <ChevronRight :size="20" class="chevron" />
     </div>
 
-    <div class="setting-row" @click="triggerImport">
+    <div
+      class="setting-row"
+      role="button"
+      tabindex="0"
+      :aria-label="$t('settings.importData')"
+      @click="triggerImport"
+      @keydown.enter="triggerImport"
+      @keydown.space.prevent="triggerImport"
+    >
       <div class="setting-icon-wrap icon-blue">
         <Upload :size="20" />
       </div>
@@ -49,7 +73,15 @@
       @change="handleFileImport"
     />
 
-    <div class="setting-row" @click="$emit('show-reset')">
+    <div
+      class="setting-row"
+      role="button"
+      tabindex="0"
+      :aria-label="$t('settings.resetData')"
+      @click="$emit('show-reset')"
+      @keydown.enter="$emit('show-reset')"
+      @keydown.space.prevent="$emit('show-reset')"
+    >
       <div class="setting-icon-wrap icon-amber">
         <RefreshCw :size="20" />
       </div>
@@ -60,7 +92,15 @@
       <ChevronRight :size="20" class="chevron" />
     </div>
 
-    <div class="setting-row danger" @click="$emit('show-clear')">
+    <div
+      class="setting-row danger"
+      role="button"
+      tabindex="0"
+      :aria-label="$t('settings.clearData')"
+      @click="$emit('show-clear')"
+      @keydown.enter="$emit('show-clear')"
+      @keydown.space.prevent="$emit('show-clear')"
+    >
       <div class="setting-icon-wrap icon-red">
         <AlertTriangle :size="20" />
       </div>
@@ -71,7 +111,15 @@
       <ChevronRight :size="20" class="chevron" />
     </div>
 
-    <div class="setting-row" @click="testNotification">
+    <div
+      class="setting-row"
+      role="button"
+      tabindex="0"
+      :aria-label="$t('settings.testNotification')"
+      @click="testNotification"
+      @keydown.enter="testNotification"
+      @keydown.space.prevent="testNotification"
+    >
       <div class="setting-icon-wrap icon-blue">
         <Bell :size="20" />
       </div>

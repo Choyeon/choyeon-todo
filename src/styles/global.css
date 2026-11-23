@@ -41,7 +41,7 @@
 
   --color-text-primary: #202124;
   --color-text-secondary: #5f6368;
-  --color-text-tertiary: #80868b;
+  --color-text-tertiary: #6b7280;
   --color-text-inverse: #ffffff;
   --color-text-on-primary: #ffffff;
 
@@ -586,7 +586,7 @@ html.bing-wallpaper[data-glass='false'][data-theme='dark'] {
 
     --color-text-primary: #e8eaed;
     --color-text-secondary: #9aa0a6;
-    --color-text-tertiary: #6b7280;
+    --color-text-tertiary: #9aa0a6;
     --color-text-inverse: #202124;
     --color-text-on-primary: #202124;
 
