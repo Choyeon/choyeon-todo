@@ -216,23 +216,6 @@
         </div>
         <div class="chart-body">
           <svg :viewBox="`0 0 ${chartWidth} ${chartHeight}`" class="trend-chart">
-            <defs>
-              <linearGradient id="createdGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop
-                  offset="0%"
-                  :style="{ stopColor: 'var(--color-primary)', stopOpacity: 0.3 }"
-                />
-                <stop
-                  offset="100%"
-                  :style="{ stopColor: 'var(--color-primary)', stopOpacity: 0 }"
-                />
-              </linearGradient>
-              <linearGradient id="completedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" :style="{ stopColor: '#22c55e', stopOpacity: 0.3 }" />
-                <stop offset="100%" :style="{ stopColor: '#22c55e', stopOpacity: 0 }" />
-              </linearGradient>
-            </defs>
-
             <g class="grid-lines">
               <line
                 v-for="i in 5"
@@ -257,8 +240,6 @@
               </text>
             </g>
 
-            <path v-if="createdAreaPath" :d="createdAreaPath" class="area created-area" />
-            <path v-if="completedAreaPath" :d="completedAreaPath" class="area completed-area" />
 
             <polyline
               v-if="createdLinePath"
@@ -435,7 +416,7 @@
       <!-- ===== Task 7 新增：KarmaCard + 摘要 ===== -->
       <div class="task7-row-2">
         <KarmaCard :streak-day="focusSummary.streakDay" :longest-streak="stats.maxStreak" />
-        <div class="focus-summary-card chart-card">
+        <div class="focus-summary-card">
           <div class="chart-header no-border">
             <h3 class="chart-title">{{ $t('stats.focusSummary') || 'Focus summary' }}</h3>
           </div>
@@ -961,55 +942,32 @@ const weekdayStats = computed(() => {
 }
 
 .stat-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(var(--sidebar-search-blur)) saturate(var(--sidebar-search-saturate));
-  -webkit-backdrop-filter: blur(var(--sidebar-search-blur)) saturate(var(--sidebar-search-saturate));
+  background: var(--color-surface);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--color-border-light);
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: var(--card-shadow);
-  transition:
-    transform var(--transition-smooth),
-    box-shadow var(--duration-moderate) var(--ease-out-expo),
-    border-color var(--transition-smooth);
+  transition: border-color var(--transition-smooth);
   min-width: 0;
   box-sizing: border-box;
-  will-change: transform;
 }
 
 .stat-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-3px);
-  border-color: var(--color-border-focus);
+  border-color: var(--color-border);
 }
 
-.stat-card:active {
-  transform: translateY(-1px);
-  transition-duration: var(--duration-fast);
-}
-
+/* 强调色是稀缺资源：主卡不再用蓝底，只靠大数字建立层级 */
 .stat-card.primary-card {
-  background: var(--color-primary);
-  border: none;
-  color: var(--color-text-on-primary);
+  background: var(--color-surface);
+  border-color: var(--color-border);
 }
 
 .stat-card.primary-card .stat-label,
-.stat-card.primary-card .stat-sub {
-  color: rgba(255, 255, 255, 0.8);
-}
-
+.stat-card.primary-card .stat-sub,
 .stat-card.primary-card .stat-value {
-  color: var(--color-text-on-primary);
-}
-
-/* 暗色模式下 primary 背景为浅色，文字需改为深色保证对比度 */
-[data-theme='dark'] .stat-card.primary-card .stat-label,
-[data-theme='dark'] .stat-card.primary-card .stat-sub {
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--color-text-primary);
 }
 
 .stat-card.mini-card {
@@ -1029,10 +987,6 @@ const weekdayStats = computed(() => {
   transition: transform var(--transition-smooth);
 }
 
-.stat-card:hover .stat-icon-wrap {
-  transform: scale(1.06);
-}
-
 .stat-card.mini-card .stat-icon-wrap {
   width: 42px;
   height: 42px;
@@ -1040,59 +994,169 @@ const weekdayStats = computed(() => {
   border-radius: var(--radius-md);
 }
 
-.icon-blue {
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
-}
-
-.icon-green {
-  background: rgba(34, 197, 94, 0.12);
-  color: #22c55e;
-}
-
-.icon-orange {
-  background: rgba(249, 115, 22, 0.12);
-  color: #f97316;
-}
-
-.icon-purple {
-  background: rgba(168, 85, 247, 0.12);
-  color: #a855f7;
-}
-
-.icon-teal {
-  background: rgba(6, 182, 212, 0.12);
-  color: #06b6d4;
-}
-
-.icon-pink {
-  background: rgba(236, 72, 153, 0.12);
-  color: #ec4899;
-}
-
-.icon-yellow {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
-}
-
-.icon-red {
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
-}
-
-.icon-indigo {
-  background: rgba(99, 102, 241, 0.12);
-  color: #6366f1;
-}
-
-.icon-cyan {
-  background: rgba(6, 182, 212, 0.12);
-  color: #06b6d4;
-}
-
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
 .icon-lime {
-  background: rgba(132, 204, 22, 0.12);
-  color: #84cc16;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.icon-blue,
+.icon-green,
+.icon-orange,
+.icon-purple,
+.icon-teal,
+.icon-pink,
+.icon-yellow,
+.icon-red,
+.icon-indigo,
+.icon-cyan,
+.icon-lime {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
 }
 
 .stat-info {
@@ -1105,7 +1169,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   font-weight: 500;
   letter-spacing: 0.1px;
@@ -1128,7 +1192,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-value.mini {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h4);
 }
 
 .stat-sub {
@@ -1150,7 +1214,7 @@ const weekdayStats = computed(() => {
 }
 
 .focus-value {
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-4xl);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-title);
@@ -1159,7 +1223,7 @@ const weekdayStats = computed(() => {
 }
 
 .focus-unit {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-text-secondary);
   margin-right: 4px;
@@ -1167,7 +1231,7 @@ const weekdayStats = computed(() => {
 }
 
 .stat-value-unit {
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-xs);
   font-weight: 400;
   color: var(--color-text-secondary);
   margin-left: 2px;
@@ -1231,23 +1295,12 @@ const weekdayStats = computed(() => {
 }
 
 .chart-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(var(--sidebar-search-blur)) saturate(var(--sidebar-search-saturate));
-  -webkit-backdrop-filter: blur(var(--sidebar-search-blur)) saturate(var(--sidebar-search-saturate));
+  background: var(--color-surface);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--card-shadow);
+  border: 1px solid var(--color-border-light);
   margin-bottom: 20px;
-  transition:
-    box-shadow var(--duration-moderate) var(--ease-out-expo),
-    border-color var(--transition-smooth);
   min-width: 0;
   overflow: hidden;
-}
-
-.chart-card:hover {
-  box-shadow: var(--shadow-sm);
-  border-color: var(--color-border-focus);
 }
 
 .chart-header {
@@ -1289,16 +1342,14 @@ const weekdayStats = computed(() => {
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-body);
   font-weight: 500;
   font-family: var(--font-body);
   border-radius: var(--radius-full);
   cursor: pointer;
   transition:
     color var(--transition-smooth),
-    background-color var(--transition-smooth),
-    box-shadow var(--duration-moderate) var(--ease-out-expo),
-    transform var(--transition-micro);
+    background-color var(--transition-smooth);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1309,14 +1360,9 @@ const weekdayStats = computed(() => {
   color: var(--color-text-primary);
 }
 
-.range-tab:active {
-  transform: scale(0.96);
-}
-
 .range-tab.active {
   background: var(--color-surface);
   color: var(--color-primary);
-  box-shadow: var(--shadow-xs);
 }
 
 .chart-tabs {
@@ -1342,9 +1388,7 @@ const weekdayStats = computed(() => {
   cursor: pointer;
   transition:
     color var(--transition-smooth),
-    background-color var(--transition-smooth),
-    box-shadow var(--duration-moderate) var(--ease-out-expo),
-    transform var(--transition-micro);
+    background-color var(--transition-smooth);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1355,14 +1399,9 @@ const weekdayStats = computed(() => {
   color: var(--color-text-primary);
 }
 
-.chart-tab:active {
-  transform: scale(0.96);
-}
-
 .chart-tab.active {
   background: var(--color-surface);
   color: var(--color-primary);
-  box-shadow: var(--shadow-xs);
 }
 
 .chart-body {
@@ -1384,14 +1423,14 @@ const weekdayStats = computed(() => {
 }
 
 .y-label {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   fill: var(--color-text-tertiary);
   text-anchor: end;
   font-family: var(--font-body);
 }
 
 .x-label {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   fill: var(--color-text-tertiary);
   text-anchor: middle;
   font-family: var(--font-body);
@@ -1408,19 +1447,11 @@ const weekdayStats = computed(() => {
 }
 
 .completed-line {
-  stroke: #22c55e;
+  stroke: var(--color-text-tertiary);
 }
 
 .area {
   transition: opacity var(--transition-fluid);
-}
-
-.created-area {
-  fill: url(#createdGradient);
-}
-
-.completed-area {
-  fill: url(#completedGradient);
 }
 
 .point {
@@ -1443,7 +1474,7 @@ const weekdayStats = computed(() => {
 
 .completed-point {
   fill: var(--color-surface);
-  stroke: #22c55e;
+  stroke: var(--color-text-tertiary);
   stroke-width: 2;
 }
 
@@ -1474,11 +1505,11 @@ const weekdayStats = computed(() => {
 }
 
 .completed-dot {
-  background: #22c55e;
+  background: var(--color-text-tertiary);
 }
 
 .legend-text {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -1512,7 +1543,6 @@ const weekdayStats = computed(() => {
 
 .pie-slice:hover {
   opacity: 0.88;
-  transform: scale(1.04);
 }
 
 .pie-inner {
@@ -1531,7 +1561,7 @@ const weekdayStats = computed(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-body);
   min-width: 0;
 }
 
@@ -1583,9 +1613,6 @@ const weekdayStats = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  transition:
-    transform var(--transition-smooth),
-    box-shadow var(--transition-smooth);
   cursor: default;
   min-width: 0;
   min-height: 44px;
@@ -1593,20 +1620,18 @@ const weekdayStats = computed(() => {
 }
 
 .heatmap-cell:hover {
-  transform: scale(1.1);
-  box-shadow: var(--shadow-sm);
-  z-index: 1;
+  outline: 1px solid var(--color-text-secondary);
 }
 
 .heatmap-count {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h4);
   font-weight: 600;
   font-family: var(--font-title);
   white-space: nowrap;
 }
 
 .heatmap-day {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   opacity: 0.7;
   white-space: nowrap;
 }
@@ -1617,22 +1642,22 @@ const weekdayStats = computed(() => {
 }
 
 .heatmap-cell.level-1 {
-  background: rgba(34, 197, 94, 0.15);
+  background: var(--color-bg-secondary);
   color: var(--color-text-primary);
 }
 
 .heatmap-cell.level-2 {
-  background: rgba(34, 197, 94, 0.3);
+  background: var(--color-border);
   color: var(--color-text-primary);
 }
 
 .heatmap-cell.level-3 {
-  background: rgba(34, 197, 94, 0.5);
+  background: var(--color-text-tertiary);
   color: white;
 }
 
 .heatmap-cell.level-4 {
-  background: #22c55e;
+  background: var(--color-text-tertiary);
   color: white;
 }
 
@@ -1666,16 +1691,16 @@ const weekdayStats = computed(() => {
   background: var(--color-bg-secondary);
 }
 .heatmap-legend-cell.level-1 {
-  background: rgba(34, 197, 94, 0.15);
+  background: var(--color-bg-secondary);
 }
 .heatmap-legend-cell.level-2 {
-  background: rgba(34, 197, 94, 0.3);
+  background: var(--color-border);
 }
 .heatmap-legend-cell.level-3 {
-  background: rgba(34, 197, 94, 0.5);
+  background: var(--color-text-tertiary);
 }
 .heatmap-legend-cell.level-4 {
-  background: #22c55e;
+  background: var(--color-text-tertiary);
 }
 
 .weekday-chart {
@@ -1717,18 +1742,6 @@ const weekdayStats = computed(() => {
   min-height: 4px;
 }
 
-.weekday-bar-wrapper {
-  transition: transform var(--transition-micro);
-}
-
-.weekday-bar-wrapper:hover {
-  transform: translateY(-2px);
-}
-
-.weekday-bar-wrapper:hover .weekday-bar {
-  filter: brightness(1.08);
-}
-
 .weekday-label {
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
@@ -1736,7 +1749,7 @@ const weekdayStats = computed(() => {
 }
 
 .weekday-count {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--color-text-primary);
   font-family: var(--font-title);
@@ -1753,7 +1766,7 @@ const weekdayStats = computed(() => {
   }
 
   .content-header h1 {
-    font-size: var(--font-size-h2);
+    font-size: var(--font-size-4xl);
   }
 
   .overview-cards {
@@ -1780,11 +1793,11 @@ const weekdayStats = computed(() => {
   }
 
   .content-header h1 {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-4xl);
   }
 
   .header-subtitle {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-body);
   }
 
   .overview-cards {
@@ -1826,19 +1839,19 @@ const weekdayStats = computed(() => {
   }
 
   .stat-value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-4xl);
   }
 
   .stat-value.mini {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-h4);
   }
 
   .stat-sub {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .focus-value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-4xl);
   }
 
   .focus-unit {
@@ -1850,7 +1863,7 @@ const weekdayStats = computed(() => {
   }
 
   .stat-value.mini .stat-value-unit {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .ring-chart {
@@ -1875,13 +1888,13 @@ const weekdayStats = computed(() => {
   }
 
   .chart-title {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-body);
   }
 
   .range-tab {
     padding: 6px 12px;
     min-height: 36px;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-body);
   }
 
   .chart-tab {
@@ -1939,7 +1952,7 @@ const weekdayStats = computed(() => {
   }
 
   .heatmap-day {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-xs);
   }
 
   .weekday-chart {
@@ -1953,7 +1966,7 @@ const weekdayStats = computed(() => {
   }
 
   .weekday-label {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .weekday-count {
@@ -1975,7 +1988,7 @@ const weekdayStats = computed(() => {
   }
 
   .content-header h1 {
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-h4);
   }
 
   .header-subtitle {
@@ -2017,36 +2030,36 @@ const weekdayStats = computed(() => {
   }
 
   .stat-label {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .stat-value {
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-h4);
   }
 
   .stat-value.mini {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-h4);
   }
 
   .stat-sub {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-xs);
   }
 
   .focus-value {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-h4);
   }
 
   .focus-unit {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
     margin-right: 2px;
   }
 
   .stat-value-unit {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .stat-value.mini .stat-value-unit {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-xs);
   }
 
   .ring-chart {
@@ -2056,7 +2069,7 @@ const weekdayStats = computed(() => {
   }
 
   .ring-text {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .chart-card {
@@ -2086,7 +2099,7 @@ const weekdayStats = computed(() => {
   .chart-tab {
     padding: 5px 8px;
     min-height: 36px;
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .chart-body {
@@ -2103,7 +2116,7 @@ const weekdayStats = computed(() => {
 
   .y-label,
   .x-label {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-xs);
   }
 
   .chart-legend {
@@ -2126,7 +2139,7 @@ const weekdayStats = computed(() => {
   }
 
   .pie-legend-item {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
     gap: 6px;
   }
 
@@ -2148,11 +2161,11 @@ const weekdayStats = computed(() => {
   }
 
   .heatmap-count {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-body);
   }
 
   .heatmap-day {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-xs);
   }
 
   .heatmap-body {
@@ -2170,11 +2183,11 @@ const weekdayStats = computed(() => {
   }
 
   .weekday-label {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-xs);
   }
 
   .weekday-count {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
   }
 
   .weekday-bar-wrapper {
