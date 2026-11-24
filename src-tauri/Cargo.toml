@@ -1,6 +1,6 @@
 [package]
 name = "choyeon-todo"
-version = "2.0.4"
+version = "2.0.5"
 description = "Choyeon To Do - A task management application"
 authors = ["Choyeon"]
 edition = "2021"
