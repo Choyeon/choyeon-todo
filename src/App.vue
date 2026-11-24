@@ -136,16 +136,6 @@
       @complete="onThemeTransitionComplete"
     />
     <UpdateModal v-if="!isSlaveWindow" ref="updateModalRef" />
-
-    <div
-      v-if="bingWallpaperUrl"
-      class="bing-wallpaper"
-      :class="{ 'bing-wallpaper-loaded': bingWallpaperLoaded }"
-      :style="{ backgroundImage: `url(${bingWallpaperUrl})` }"
-      @load="bingWallpaperLoaded = true"
-    ></div>
-    <div v-if="bingWallpaperUrl" class="bing-wallpaper-overlay"></div>
-    <div v-if="bingWallpaperUrl" class="bing-wallpaper-gradient"></div>
   </div>
 </template>
 
@@ -225,103 +215,6 @@ const setupTask6Composables = () => {
     destroyDetector = destroyFocusDistractionDetector
   } catch (e) {
     console.warn('[App] useFocusDistractionDetector failed:', e)
-  }
-}
-
-const bingWallpaperUrl = ref('')
-const bingWallpaperLoaded = ref(false)
-const BING_WALLPAPER_STORAGE_KEY = 'choyeon_bing_wallpaper'
-
-const setBingWallpaperClass = (enabled) => {
-  if (typeof document === 'undefined') return
-  const html = document.documentElement
-  if (enabled) {
-    html.classList.add('bing-wallpaper')
-  } else {
-    html.classList.remove('bing-wallpaper')
-  }
-}
-
-const fetchBingWallpaper = async () => {
-  try {
-    const today = new Date().toDateString()
-    const cached = localStorage.getItem(BING_WALLPAPER_STORAGE_KEY)
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached)
-        if (parsed.date === today && parsed.url) {
-          const cachedUrl = parsed.url
-          bingWallpaperLoaded.value = false
-          const img = new Image()
-          img.onload = () => {
-            bingWallpaperUrl.value = cachedUrl
-            bingWallpaperLoaded.value = true
-          }
-          img.onerror = () => {
-            localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
-            fetchBingWallpaper()
-          }
-          img.src = cachedUrl
-          return
-        }
-      } catch {
-        localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
-      }
-    }
-
-    let imageUrl = null
-    let imageCopyright = ''
-
-    if (window.electronAPI?.getBingWallpaper) {
-      try {
-        const result = await window.electronAPI.getBingWallpaper()
-        if (result?.url) {
-          imageUrl = result.url
-          imageCopyright = result.copyright || ''
-        }
-      } catch (e) {
-        console.warn('[App] Electron IPC getBingWallpaper failed:', e)
-      }
-    }
-
-    if (!imageUrl && !window.electronAPI) {
-      try {
-        const response = await fetch(
-          'https://bing.biturl.top/?resolution=1920&format=json&index=0&mkt=zh-CN'
-        )
-        if (response.ok) {
-          const data = await response.json()
-          if (data?.url) {
-            imageUrl = data.url
-          }
-        }
-      } catch (e) {
-        console.warn('[App] CORS proxy fetch failed:', e)
-      }
-    }
-
-    if (imageUrl) {
-      bingWallpaperLoaded.value = false
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.onload = () => {
-        bingWallpaperUrl.value = imageUrl
-        bingWallpaperLoaded.value = true
-        try {
-          localStorage.setItem(
-            BING_WALLPAPER_STORAGE_KEY,
-            JSON.stringify({ date: today, url: imageUrl, copyright: imageCopyright })
-          )
-        } catch {}
-      }
-      img.onerror = () => {
-        console.warn('[App] Failed to load Bing wallpaper image:', imageUrl)
-        localStorage.removeItem(BING_WALLPAPER_STORAGE_KEY)
-      }
-      img.src = imageUrl
-    }
-  } catch (e) {
-    console.warn('[App] Failed to fetch Bing wallpaper:', e)
   }
 }
 
@@ -722,10 +615,6 @@ onMounted(() => {
     setupTask6Composables()
   }
 
-  if (!isSlaveWindow.value && settingsStore.bingWallpaperEnabled) {
-    fetchBingWallpaper()
-  }
-
   if (!isSlaveWindow.value) {
     watch(() => [taskStore.tasks, taskStore.categories], syncTasksToTray, { deep: true })
 
@@ -736,25 +625,6 @@ onMounted(() => {
       }
     )
   }
-
-  watch(
-    () => settingsStore.bingWallpaperEnabled,
-    (newVal) => {
-      if (isSlaveWindow.value) {
-        bingWallpaperUrl.value = ''
-        setBingWallpaperClass(false)
-        return
-      }
-      if (newVal) {
-        setBingWallpaperClass(true)
-        fetchBingWallpaper()
-      } else {
-        bingWallpaperUrl.value = ''
-        setBingWallpaperClass(false)
-      }
-    },
-    { immediate: false }
-  )
 })
 
 onUnmounted(() => {
@@ -997,90 +867,6 @@ onUnmounted(() => {
 .route-leave-to {
   opacity: 0;
   transform: translateY(-4px);
-}
-
-.bing-wallpaper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: -3;
-  opacity: 0;
-  transform: scale(1.02);
-  transition:
-    opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bing-wallpaper-loaded {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.bing-wallpaper-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: -2;
-  background: var(--bing-wallpaper-overlay, rgba(255, 255, 255, 0.32));
-  backdrop-filter: blur(2px) saturate(1.05);
-  -webkit-backdrop-filter: blur(2px) saturate(1.05);
-  transition: background 0.5s ease;
-}
-
-.bing-wallpaper-gradient {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: -1;
-  pointer-events: none;
-  /* 微软 To Do 风格：顶部和左侧有较强的暗色渐变，保证文字可读性 */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.35) 0%,
-      rgba(0, 0, 0, 0.15) 35%,
-      rgba(0, 0, 0, 0.05) 60%,
-      rgba(0, 0, 0, 0.2) 100%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.45) 0%,
-      rgba(0, 0, 0, 0.18) 280px,
-      rgba(0, 0, 0, 0.08) 380px,
-      transparent 480px
-    );
-  transition: opacity 0.5s ease;
-}
-
-html[data-theme='dark'] .bing-wallpaper-overlay {
-  --bing-wallpaper-overlay: rgba(18, 18, 26, 0.42);
-}
-
-html[data-theme='dark'] .bing-wallpaper-gradient {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.55) 0%,
-      rgba(0, 0, 0, 0.3) 40%,
-      rgba(0, 0, 0, 0.15) 65%,
-      rgba(0, 0, 0, 0.35) 100%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.65) 0%,
-      rgba(0, 0, 0, 0.35) 280px,
-      rgba(0, 0, 0, 0.18) 380px,
-      transparent 480px
-    );
 }
 
 @media (max-width: 767px) {

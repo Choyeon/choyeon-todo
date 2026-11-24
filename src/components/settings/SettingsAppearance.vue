@@ -103,7 +103,7 @@
       </button>
     </div>
 
-    <div class="setting-row">
+    <div class="setting-row no-hover">
       <div class="setting-icon-wrap icon-cyan">
         <Layers :size="20" />
       </div>
@@ -111,33 +111,35 @@
         <span class="setting-label">{{ $t('settings.glassEffect') }}</span>
         <p class="setting-desc">{{ $t('settings.glassEffectDesc') }}</p>
       </div>
-      <button
-        class="toggle-switch"
-        role="switch"
-        :aria-checked="settingsStore.glassEffectEnabled"
-        :aria-label="$t('settings.glassEffect')"
-        @click.stop="toggleGlassEffect"
-      >
-        <span class="toggle-knob"></span>
-      </button>
     </div>
 
-    <div class="setting-row">
-      <div class="setting-icon-wrap icon-purple">
-        <Image :size="20" />
-      </div>
-      <div class="setting-label-wrap">
-        <span class="setting-label">{{ $t('settings.bingWallpaper') }}</span>
-        <p class="setting-desc">{{ $t('settings.bingWallpaperDesc') }}</p>
-      </div>
+    <div class="segmented-control" role="group" :aria-label="$t('settings.glassEffect')">
       <button
-        class="toggle-switch"
-        role="switch"
-        :aria-checked="settingsStore.bingWallpaperEnabled"
-        :aria-label="$t('settings.bingWallpaper')"
-        @click.stop="toggleBingWallpaper"
+        class="segment-btn"
+        :class="{ active: settingsStore.glassIntensity === 'off' }"
+        :aria-pressed="settingsStore.glassIntensity === 'off'"
+        :aria-label="$t('settings.glassOff')"
+        @click="setGlass('off')"
       >
-        <span class="toggle-knob"></span>
+        <span>{{ $t('settings.glassOff') }}</span>
+      </button>
+      <button
+        class="segment-btn"
+        :class="{ active: settingsStore.glassIntensity === 'standard' }"
+        :aria-pressed="settingsStore.glassIntensity === 'standard'"
+        :aria-label="$t('settings.glassStandard')"
+        @click="setGlass('standard')"
+      >
+        <span>{{ $t('settings.glassStandard') }}</span>
+      </button>
+      <button
+        class="segment-btn"
+        :class="{ active: settingsStore.glassIntensity === 'high-contrast' }"
+        :aria-pressed="settingsStore.glassIntensity === 'high-contrast'"
+        :aria-label="$t('settings.glassHighContrast')"
+        @click="setGlass('high-contrast')"
+      >
+        <span>{{ $t('settings.glassHighContrast') }}</span>
       </button>
     </div>
 
@@ -197,18 +199,7 @@
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSnackbar } from '../../composables/useSnackbar'
-import {
-  Sun,
-  Moon,
-  Palette,
-  Check,
-  Monitor,
-  Type,
-  PanelLeft,
-  Layers,
-  Globe,
-  Image
-} from '@lucide/vue'
+import { Sun, Moon, Palette, Check, Monitor, Type, PanelLeft, Layers, Globe } from '@lucide/vue'
 import { setLocale, SUPPORTED_LOCALES } from '../../i18n'
 
 const { locale, t } = useI18n()
@@ -242,17 +233,13 @@ const toggleSidebar = () => {
   )
 }
 
-const toggleGlassEffect = () => {
-  settingsStore.toggleGlassEffect()
+const setGlass = (level) => {
+  settingsStore.setGlassIntensity(level)
   showSnackbar(
-    settingsStore.glassEffectEnabled
-      ? t('settings.glassEffectEnabled')
-      : t('settings.glassEffectDisabled')
+    t(
+      `settings.glass${level === 'off' ? 'Off' : level === 'standard' ? 'Standard' : 'HighContrast'}`
+    )
   )
-}
-
-const toggleBingWallpaper = () => {
-  settingsStore.toggleBingWallpaper()
 }
 
 const setThemeColor = (color) => {

@@ -99,19 +99,19 @@
   --acrylic-border-dark: rgba(255, 255, 255, 0.08);
 
   /* 标题栏 - 亮色毛玻璃 */
-  --titlebar-bg: rgba(255, 255, 255, 0.55);
+  --titlebar-bg: rgba(255, 255, 255, 0.97);
   --titlebar-blur: 30px;
   --titlebar-saturate: 180%;
   --titlebar-border: rgba(0, 0, 0, 0.06);
 
   /* 侧边栏 - 亮色毛玻璃 */
-  --sidebar-bg: rgba(248, 249, 250, 0.65);
+  --sidebar-bg: rgba(248, 249, 250, 0.98);
   --sidebar-border: rgba(0, 0, 0, 0.06);
   --sidebar-blur: 28px;
   --sidebar-saturate: 180%;
 
-  --sidebar-search-bg: rgba(255, 255, 255, 0.55);
-  --sidebar-search-bg-hover: rgba(255, 255, 255, 0.75);
+  --sidebar-search-bg: rgba(255, 255, 255, 0.94);
+  --sidebar-search-bg-hover: rgba(255, 255, 255, 0.98);
   --sidebar-search-bg-focus: rgba(255, 255, 255, 0.92);
   --sidebar-search-border: rgba(0, 0, 0, 0.06);
   --sidebar-search-blur: 12px;
@@ -121,12 +121,12 @@
   --sidebar-count-color: var(--color-text-secondary);
 
   /* 内容区 - 亮色毛玻璃 */
-  --content-bg: rgba(255, 255, 255, 0.5);
+  --content-bg: rgba(255, 255, 255, 0.97);
   --content-blur: 24px;
   --content-saturate: 160%;
 
   /* 卡片层 - 亮色 */
-  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(255, 255, 255, 0.99);
   --card-border: rgba(0, 0, 0, 0.06);
   --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03);
 
@@ -278,19 +278,19 @@
   --glass-border: rgba(95, 99, 104, 0.5);
 
   /* 标题栏 - 暗色毛玻璃 */
-  --titlebar-bg: rgba(32, 33, 36, 0.65);
+  --titlebar-bg: rgba(32, 33, 36, 0.97);
   --titlebar-blur: 30px;
   --titlebar-saturate: 160%;
   --titlebar-border: rgba(255, 255, 255, 0.06);
 
   /* 侧边栏 - 暗色毛玻璃 */
-  --sidebar-bg: rgba(28, 29, 32, 0.7);
+  --sidebar-bg: rgba(28, 29, 32, 0.98);
   --sidebar-border: rgba(255, 255, 255, 0.06);
   --sidebar-blur: 28px;
   --sidebar-saturate: 150%;
 
-  --sidebar-search-bg: rgba(255, 255, 255, 0.08);
-  --sidebar-search-bg-hover: rgba(255, 255, 255, 0.14);
+  --sidebar-search-bg: rgba(255, 255, 255, 0.13);
+  --sidebar-search-bg-hover: rgba(255, 255, 255, 0.2);
   --sidebar-search-bg-focus: rgba(32, 33, 36, 0.92);
   --sidebar-search-border: rgba(255, 255, 255, 0.08);
   --sidebar-search-blur: 12px;
@@ -300,12 +300,12 @@
   --sidebar-count-color: var(--color-text-secondary);
 
   /* 内容区 - 暗色毛玻璃 */
-  --content-bg: rgba(32, 33, 36, 0.55);
+  --content-bg: rgba(32, 33, 36, 0.97);
   --content-blur: 24px;
   --content-saturate: 140%;
 
   /* 卡片层 - 暗色 */
-  --card-bg: rgba(41, 42, 45, 0.75);
+  --card-bg: rgba(41, 42, 45, 0.99);
   --card-border: rgba(255, 255, 255, 0.06);
   --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
 }
@@ -338,6 +338,35 @@
   --card-bg: var(--color-surface);
   --card-border: transparent;
   --card-shadow: none;
+}
+
+/* 高对比档：几乎不透明，仅保留极轻的模糊，保证内容绝对清晰 */
+[data-glass-intensity='high-contrast'] {
+  --titlebar-bg: var(--color-surface);
+  --titlebar-blur: 8px;
+  --titlebar-saturate: 120%;
+  --titlebar-border: var(--color-border-light);
+
+  --sidebar-bg: var(--color-surface);
+  --sidebar-blur: 8px;
+  --sidebar-saturate: 120%;
+  --sidebar-search-bg: var(--color-bg-secondary);
+  --sidebar-search-bg-hover: var(--color-surface-hover);
+  --sidebar-search-bg-focus: var(--color-surface);
+
+  --content-bg: var(--color-bg);
+  --content-blur: 0px;
+  --content-saturate: 100%;
+
+  --card-bg: var(--color-surface);
+  --card-border: var(--color-border-light);
+}
+
+html[data-theme='dark'][data-glass-intensity='high-contrast'] {
+  --titlebar-bg: var(--color-surface);
+  --sidebar-bg: var(--color-surface);
+  --content-bg: var(--color-bg);
+  --card-bg: var(--color-surface);
 }
 
 [data-glass='false'] .title-bar,
@@ -443,71 +472,6 @@ body {
 html.platform-win32 body,
 html.platform-win32 #app {
   background: transparent;
-}
-
-/* Bing 每日壁纸模式 */
-html.bing-wallpaper body {
-  background: #f5f5f4;
-}
-
-html.bing-wallpaper[data-theme='dark'] body {
-  background: #1c1c1e;
-}
-
-html.bing-wallpaper #app {
-  background: transparent;
-}
-
-html.bing-wallpaper {
-  --content-bg: rgba(255, 255, 255, 0.28);
-  --content-blur: 28px;
-  --content-saturate: 180%;
-  --sidebar-bg: rgba(248, 249, 250, 0.32);
-  --sidebar-blur: 32px;
-  --sidebar-saturate: 200%;
-  --titlebar-bg: rgba(255, 255, 255, 0.32);
-  --titlebar-blur: 32px;
-  --titlebar-saturate: 200%;
-  --card-bg: rgba(255, 255, 255, 0.42);
-  --card-border: rgba(255, 255, 255, 0.18);
-  --color-text-primary: #1a1a2e;
-  --color-text-secondary: #4a4a5a;
-}
-
-html.bing-wallpaper[data-theme='dark'] {
-  --content-bg: rgba(18, 18, 26, 0.32);
-  --content-blur: 32px;
-  --content-saturate: 180%;
-  --sidebar-bg: rgba(26, 27, 37, 0.36);
-  --sidebar-blur: 36px;
-  --sidebar-saturate: 200%;
-  --titlebar-bg: rgba(18, 18, 26, 0.36);
-  --titlebar-blur: 36px;
-  --titlebar-saturate: 200%;
-  --card-bg: rgba(34, 35, 46, 0.42);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --color-text-primary: #f8f9fa;
-  --color-text-secondary: #c5c8cc;
-}
-
-html.bing-wallpaper[data-glass='false'] {
-  --content-bg: rgba(255, 255, 255, 0.78);
-  --content-blur: 0px;
-  --sidebar-bg: rgba(248, 249, 250, 0.85);
-  --sidebar-blur: 0px;
-  --titlebar-bg: rgba(255, 255, 255, 0.85);
-  --titlebar-blur: 0px;
-  --card-bg: rgba(255, 255, 255, 0.88);
-}
-
-html.bing-wallpaper[data-glass='false'][data-theme='dark'] {
-  --content-bg: rgba(18, 18, 26, 0.82);
-  --content-blur: 0px;
-  --sidebar-bg: rgba(26, 27, 37, 0.85);
-  --sidebar-blur: 0px;
-  --titlebar-bg: rgba(18, 18, 26, 0.85);
-  --titlebar-blur: 0px;
-  --card-bg: rgba(34, 35, 46, 0.88);
 }
 
 ::selection {

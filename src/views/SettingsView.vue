@@ -6,17 +6,61 @@
         <p class="header-subtitle">{{ $t('settings.subtitle') }}</p>
       </div>
 
-      <SettingsAppearance />
-      <SettingsCategories ref="categoriesRef" />
-      <SettingsPomodoro />
-      <SettingsNotifications />
-      <SettingsSystem />
-      <SettingsShortcuts />
-      <SettingsData
-        @show-clear="showClearDataModal = true"
-        @show-reset="showResetDataModal = true"
-      />
-      <SettingsAbout />
+      <div class="settings-search-wrap">
+        <Search :size="16" aria-hidden="true" />
+        <input
+          v-model="searchQuery"
+          type="search"
+          class="settings-search-input"
+          :placeholder="$t('settings.searchPlaceholder')"
+          :aria-label="$t('settings.searchPlaceholder')"
+        />
+        <button
+          v-if="searchQuery"
+          class="settings-search-clear"
+          :aria-label="$t('common.close')"
+          @click="searchQuery = ''"
+        >
+          <X :size="14" />
+        </button>
+      </div>
+
+      <nav v-if="!searchQuery" class="settings-nav" :aria-label="$t('settings.sections')">
+        <button
+          v-for="section in sections"
+          :key="section.id"
+          class="settings-nav-item"
+          :class="{ active: activeSection === section.id }"
+          @click="scrollToSection(section.id)"
+        >
+          {{ t(section.labelKey) }}
+        </button>
+      </nav>
+
+      <p v-if="searchQuery && visibleSections.length === 0" class="settings-no-result">
+        {{ $t('settings.noResult') }}
+      </p>
+
+      <section
+        v-for="section in sections"
+        :key="section.id"
+        :id="`settings-${section.id}`"
+        class="settings-section"
+        v-show="visibleSections.includes(section.id)"
+      >
+        <SettingsAppearance v-if="section.id === 'appearance'" />
+        <SettingsCategories v-else-if="section.id === 'categories'" ref="categoriesRef" />
+        <SettingsPomodoro v-else-if="section.id === 'pomodoro'" />
+        <SettingsNotifications v-else-if="section.id === 'notifications'" />
+        <SettingsSystem v-else-if="section.id === 'system'" />
+        <SettingsShortcuts v-else-if="section.id === 'shortcuts'" />
+        <SettingsData
+          v-else-if="section.id === 'data'"
+          @show-clear="showClearDataModal = true"
+          @show-reset="showResetDataModal = true"
+        />
+        <SettingsAbout v-else-if="section.id === 'about'" />
+      </section>
     </div>
 
     <Teleport to="body">
@@ -121,12 +165,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useTaskStore } from '../stores/taskStore'
 import { useSnackbar } from '../composables/useSnackbar'
-import { AlertTriangle, Trash2, RefreshCw } from '@lucide/vue'
+import { AlertTriangle, Trash2, RefreshCw, Search, X } from '@lucide/vue'
 
 const { t } = useI18n()
 import SettingsAppearance from '../components/settings/SettingsAppearance.vue'
@@ -145,6 +189,89 @@ const { show: showSnackbar } = useSnackbar()
 const showClearDataModal = ref(false)
 const showResetDataModal = ref(false)
 const categoriesRef = ref(null)
+
+const searchQuery = ref('')
+const activeSection = ref('appearance')
+
+const sections = [
+  {
+    id: 'appearance',
+    labelKey: 'settings.appearance',
+    keywords: 'theme fontSize glass transparency 主题 字体 毛玻璃 透明度 颜色 语言'
+  },
+  {
+    id: 'categories',
+    labelKey: 'settings.categories',
+    keywords: 'category area tag 分类 清单 区域 标签'
+  },
+  {
+    id: 'pomodoro',
+    labelKey: 'settings.pomodoro',
+    keywords: 'pomodoro focus timer break 番茄 专注 计时 休息'
+  },
+  {
+    id: 'notifications',
+    labelKey: 'settings.notifications',
+    keywords: 'notification remind sound dnd 通知 提醒 声音 免打扰'
+  },
+  {
+    id: 'system',
+    labelKey: 'settings.system',
+    keywords: 'autostart update quit shortcut 开机 自启 更新 退出 系统'
+  },
+  {
+    id: 'shortcuts',
+    labelKey: 'settings.shortcuts',
+    keywords: 'hotkey shortcut key 快捷键 键盘 按键'
+  },
+  {
+    id: 'data',
+    labelKey: 'settings.data',
+    keywords: 'export import backup csv reset clear 导出 导入 备份 重置 清除 数据'
+  },
+  { id: 'about', labelKey: 'settings.about', keywords: 'version feedback about 版本 反馈 关于' }
+]
+
+const visibleSections = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return sections.map((s) => s.id)
+  return sections
+    .filter((s) => {
+      const label = t(s.labelKey).toLowerCase()
+      return label.includes(q) || s.keywords.toLowerCase().includes(q)
+    })
+    .map((s) => s.id)
+})
+
+const scrollToSection = (id) => {
+  activeSection.value = id
+  const el = document.getElementById(`settings-${id}`)
+  const container = el?.closest('.content-area')
+  if (!el || !container) return
+  // 用容器 scrollTop 定位，避免 scrollIntoView 影响外层框架滚动
+  const top = el.offsetTop - container.offsetTop - 16
+  container.scrollTo({ top, behavior: 'smooth' })
+}
+
+let sectionObserver = null
+const setupSectionObserver = () => {
+  if (typeof IntersectionObserver === 'undefined') return
+  const container = document.querySelector('.content-area')
+  if (!container) return
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+      if (visible?.target?.id) activeSection.value = visible.target.id.replace('settings-', '')
+    },
+    { root: container, rootMargin: '-16px 0px -60% 0px', threshold: [0, 0.1, 0.5] }
+  )
+  sections.forEach(({ id }) => {
+    const el = document.getElementById(`settings-${id}`)
+    if (el) sectionObserver.observe(el)
+  })
+}
 
 const confirmClearAllData = () => {
   showClearDataModal.value = false
@@ -197,9 +324,11 @@ onMounted(() => {
   window.addEventListener('edit-category', onEditCategory)
   window.addEventListener('add-category', onAddCategory)
   window.addEventListener('delete-category', onDeleteCategory)
+  setupSectionObserver()
 })
 
 onUnmounted(() => {
+  sectionObserver?.disconnect()
   window.removeEventListener('edit-category', onEditCategory)
   window.removeEventListener('add-category', onAddCategory)
   window.removeEventListener('delete-category', onDeleteCategory)
@@ -209,6 +338,111 @@ onUnmounted(() => {
 .settings-view {
   min-height: 100%;
   background: transparent;
+}
+
+/* 设置搜索 + 分组导航 */
+.settings-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+  transition: border-color var(--transition-smooth);
+}
+
+.settings-search-wrap:focus-within {
+  border-color: var(--color-primary);
+}
+
+.settings-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  font-family: inherit;
+}
+
+.settings-search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.settings-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.settings-search-clear {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+
+.settings-search-clear:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.settings-nav {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.settings-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.settings-nav-item {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small, 13px);
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--transition-smooth),
+    color var(--transition-smooth);
+}
+
+.settings-nav-item:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.settings-nav-item.active {
+  background: var(--color-primary-lighter);
+  color: var(--color-primary-dark);
+}
+
+.settings-section {
+  scroll-margin-top: 16px;
+}
+
+.settings-no-result {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-body);
 }
 
 .content-inner {

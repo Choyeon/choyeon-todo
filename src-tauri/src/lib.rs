@@ -203,7 +203,6 @@ pub fn run() {
             commands::settings_get_global_shortcut_enabled,
             commands::app_set_auto_launch,
             commands::app_get_auto_launch,
-            commands::bing_get_wallpaper,
             commands::pomodoro_open_fullscreen,
             commands::pomodoro_close_fullscreen,
             commands::pomodoro_open_fab,

@@ -32,7 +32,9 @@ describe('sanitizeHtml — 更新日志白名单清理', () => {
   })
 
   it('移除 iframe / svg 等危险容器', () => {
-    const out = sanitizeHtml('<iframe src="https://evil.example"></iframe><svg onload="alert(1)"></svg>')
+    const out = sanitizeHtml(
+      '<iframe src="https://evil.example"></iframe><svg onload="alert(1)"></svg>'
+    )
     expect(out).not.toContain('iframe')
     expect(out).not.toContain('svg')
   })

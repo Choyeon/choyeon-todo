@@ -43,7 +43,6 @@ const COMMAND_MAP = {
   'settings:getDoNotDisturb': 'settings_get_do_not_disturb',
   'settings:setGlobalShortcutEnabled': 'settings_set_global_shortcut_enabled',
   'settings:getGlobalShortcutEnabled': 'settings_get_global_shortcut_enabled',
-  'bing:getWallpaper': 'bing_get_wallpaper',
   'pomodoro:openFullscreen': 'pomodoro_open_fullscreen',
   'pomodoro:closeFullscreen': 'pomodoro_close_fullscreen',
   'pomodoro:openFab': 'pomodoro_open_fab',
@@ -109,8 +108,7 @@ export function installTauriBridge() {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
   const chromeVersion = ua.match(/Chrome\/(\d+)/)?.[1] || null
   const platform =
-    toPlatform(typeof navigator !== 'undefined' ? navigator.platform : '') ||
-    toPlatform(ua)
+    toPlatform(typeof navigator !== 'undefined' ? navigator.platform : '') || toPlatform(ua)
 
   const api = {
     platform,
@@ -142,9 +140,7 @@ export function installTauriBridge() {
     getCloseToQuit: () => invoke('settings:getCloseToQuit'),
     setDoNotDisturb: (enabled) => invoke('settings:setDoNotDisturb', { enabled }),
     getDoNotDisturb: () => invoke('settings:getDoNotDisturb'),
-    getBingWallpaper: () => invoke('bing:getWallpaper'),
-    setGlobalShortcutEnabled: (enabled) =>
-      invoke('settings:setGlobalShortcutEnabled', { enabled }),
+    setGlobalShortcutEnabled: (enabled) => invoke('settings:setGlobalShortcutEnabled', { enabled }),
     getGlobalShortcutEnabled: () => invoke('settings:getGlobalShortcutEnabled'),
 
     isWindowVisible: () => invoke('window:isVisible'),
@@ -178,8 +174,7 @@ export function installTauriBridge() {
     onPomodoroAction: (cb) => sub('pomodoro:action', cb),
     onPomodoroSessionComplete: (cb) => sub('pomodoro:sessionComplete', cb),
     onPomodoroTimerEnded: (cb) => sub('pomodoro:timerEnded', cb),
-    setPomodoroDuration: (mode, minutes) =>
-      invoke('pomodoro:setDuration', { mode, minutes }),
+    setPomodoroDuration: (mode, minutes) => invoke('pomodoro:setDuration', { mode, minutes }),
 
     checkForUpdates: () => invoke('updater:checkForUpdates'),
     downloadUpdate: () => invoke('updater:downloadUpdate'),

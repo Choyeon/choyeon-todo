@@ -406,55 +406,7 @@ fn send_native_notification(app: &AppHandle, title: &str, body: &str) {
     }
 }
 
-// ============ Bing 壁纸 ============
 
-#[tauri::command]
-pub async fn bing_get_wallpaper() -> Option<Value> {
-    let endpoints = [
-        "https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN",
-        "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US",
-    ];
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
-        .build()
-        .ok()?;
-    for endpoint in endpoints {
-        let Ok(res) = client
-            .get(endpoint)
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
-            .send()
-            .await
-        else { continue };
-        let Ok(json) = res.json::<Value>().await else {
-            continue;
-        };
-        let Some(images) = json.get("images").and_then(Value::as_array) else {
-            continue;
-        };
-        let Some(img) = images.first() else { continue };
-        let mut url = img
-            .get("url")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .to_string();
-        if url.starts_with('/') {
-            url = format!("https://cn.bing.com{}", url);
-        }
-        if url.contains("UHD") && !url.contains("_1920x1080") {
-            url = url.replace("UHD", "1920x1080");
-        }
-        if url.is_empty() {
-            continue;
-        }
-        return Some(json!({
-            "url": url,
-            "copyright": img.get("copyright").and_then(Value::as_str).unwrap_or(""),
-            "title": img.get("title").and_then(Value::as_str).unwrap_or("")
-        }));
-    }
-    None
-}
 
 // ============ 番茄钟 ============
 

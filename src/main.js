@@ -77,7 +77,6 @@ if (typeof window !== 'undefined' && !window.electronAPI) {
       getCloseToQuit: () => Promise.resolve(true),
       setDoNotDisturb: () => Promise.resolve(false),
       getDoNotDisturb: pFalse,
-      getBingWallpaper: () => Promise.resolve(null),
       setGlobalShortcutEnabled: () => Promise.resolve(false),
       getGlobalShortcutEnabled: pFalse,
       isWindowVisible: pFalse,

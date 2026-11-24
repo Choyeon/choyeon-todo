@@ -19,13 +19,13 @@ const DEFAULT_SETTINGS = {
   language: 'zh-CN',
   notificationsEnabled: true,
   soundsEnabled: true,
-  glassEffectEnabled: true,
+  // 毛玻璃强度：off / standard / high-contrast
+  glassIntensity: 'standard',
   defaultReminderTime: 15,
   doNotDisturb: false,
   autoStart: false,
   closeToQuit: true,
   miniWindowEnabled: false,
-  bingWallpaperEnabled: false,
   pomodoroWorkMinutes: 25,
   pomodoroBreakMinutes: 5,
   pomodoroLongBreakMinutes: 15,
@@ -149,13 +149,12 @@ export const useSettingsStore = defineStore('settings', () => {
   const language = ref(DEFAULT_SETTINGS.language)
   const notificationsEnabled = ref(DEFAULT_SETTINGS.notificationsEnabled)
   const soundsEnabled = ref(DEFAULT_SETTINGS.soundsEnabled)
-  const glassEffectEnabled = ref(DEFAULT_SETTINGS.glassEffectEnabled)
+  const glassIntensity = ref(DEFAULT_SETTINGS.glassIntensity)
   const defaultReminderTime = ref(DEFAULT_SETTINGS.defaultReminderTime)
   const doNotDisturb = ref(DEFAULT_SETTINGS.doNotDisturb)
   const autoStart = ref(DEFAULT_SETTINGS.autoStart)
   const closeToQuit = ref(DEFAULT_SETTINGS.closeToQuit)
   const miniWindowEnabled = ref(DEFAULT_SETTINGS.miniWindowEnabled)
-  const bingWallpaperEnabled = ref(DEFAULT_SETTINGS.bingWallpaperEnabled)
   const pomodoroWorkMinutes = ref(DEFAULT_SETTINGS.pomodoroWorkMinutes)
   const pomodoroBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroBreakMinutes)
   const pomodoroLongBreakMinutes = ref(DEFAULT_SETTINGS.pomodoroLongBreakMinutes)
@@ -211,7 +210,8 @@ export const useSettingsStore = defineStore('settings', () => {
       }
 
       root.setAttribute('data-font-size', fontSize.value)
-      root.setAttribute('data-glass', glassEffectEnabled.value ? 'true' : 'false')
+      root.setAttribute('data-glass', glassIntensity.value === 'off' ? 'false' : 'true')
+      root.setAttribute('data-glass-intensity', glassIntensity.value)
     } catch (e) {
       console.error('[SettingsStore] Failed to apply theme:', e)
     }
@@ -243,8 +243,11 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof data.soundsEnabled === 'boolean') {
           soundsEnabled.value = data.soundsEnabled
         }
-        if (typeof data.glassEffectEnabled === 'boolean') {
-          glassEffectEnabled.value = data.glassEffectEnabled
+        if (['off', 'standard', 'high-contrast'].includes(data.glassIntensity)) {
+          glassIntensity.value = data.glassIntensity
+        } else if (typeof data.glassEffectEnabled === 'boolean') {
+          // 迁移旧版布尔开关
+          glassIntensity.value = data.glassEffectEnabled ? 'standard' : 'off'
         }
         if (
           typeof data.defaultReminderTime === 'number' &&
@@ -258,8 +261,6 @@ export const useSettingsStore = defineStore('settings', () => {
         if (typeof data.closeToQuit === 'boolean') closeToQuit.value = data.closeToQuit
         if (typeof data.miniWindowEnabled === 'boolean')
           miniWindowEnabled.value = data.miniWindowEnabled
-        if (typeof data.bingWallpaperEnabled === 'boolean')
-          bingWallpaperEnabled.value = data.bingWallpaperEnabled
         if (
           typeof data.pomodoroWorkMinutes === 'number' &&
           data.pomodoroWorkMinutes > 0 &&
@@ -360,13 +361,12 @@ export const useSettingsStore = defineStore('settings', () => {
           language: language.value,
           notificationsEnabled: notificationsEnabled.value,
           soundsEnabled: soundsEnabled.value,
-          glassEffectEnabled: glassEffectEnabled.value,
+          glassIntensity: glassIntensity.value,
           defaultReminderTime: defaultReminderTime.value,
           doNotDisturb: doNotDisturb.value,
           autoStart: autoStart.value,
           closeToQuit: closeToQuit.value,
           miniWindowEnabled: miniWindowEnabled.value,
-          bingWallpaperEnabled: bingWallpaperEnabled.value,
           pomodoroWorkMinutes: pomodoroWorkMinutes.value,
           pomodoroBreakMinutes: pomodoroBreakMinutes.value,
           pomodoroLongBreakMinutes: pomodoroLongBreakMinutes.value,
@@ -403,13 +403,12 @@ export const useSettingsStore = defineStore('settings', () => {
       language,
       notificationsEnabled,
       soundsEnabled,
-      glassEffectEnabled,
+      glassIntensity,
       defaultReminderTime,
       doNotDisturb,
       autoStart,
       closeToQuit,
       miniWindowEnabled,
-      bingWallpaperEnabled,
       pomodoroWorkMinutes,
       pomodoroBreakMinutes,
       pomodoroLongBreakMinutes,
@@ -430,8 +429,9 @@ export const useSettingsStore = defineStore('settings', () => {
     soundsEnabled.value = !soundsEnabled.value
   }
 
-  const toggleGlassEffect = () => {
-    glassEffectEnabled.value = !glassEffectEnabled.value
+  const setGlassIntensity = (level) => {
+    if (!['off', 'standard', 'high-contrast'].includes(level)) return
+    glassIntensity.value = level
     applyTheme()
   }
 
@@ -521,10 +521,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setMiniWindowEnabled(!miniWindowEnabled.value)
   }
 
-  const toggleBingWallpaper = () => {
-    bingWallpaperEnabled.value = !bingWallpaperEnabled.value
-  }
-
   const setDensity = (value) => {
     if (!['comfortable', 'standard', 'compact'].includes(value)) return
     density.value = value
@@ -584,13 +580,12 @@ export const useSettingsStore = defineStore('settings', () => {
     language.value = DEFAULT_SETTINGS.language
     notificationsEnabled.value = DEFAULT_SETTINGS.notificationsEnabled
     soundsEnabled.value = DEFAULT_SETTINGS.soundsEnabled
-    glassEffectEnabled.value = DEFAULT_SETTINGS.glassEffectEnabled
+    glassIntensity.value = DEFAULT_SETTINGS.glassIntensity
     defaultReminderTime.value = DEFAULT_SETTINGS.defaultReminderTime
     doNotDisturb.value = DEFAULT_SETTINGS.doNotDisturb
     autoStart.value = DEFAULT_SETTINGS.autoStart
     closeToQuit.value = DEFAULT_SETTINGS.closeToQuit
     miniWindowEnabled.value = DEFAULT_SETTINGS.miniWindowEnabled
-    bingWallpaperEnabled.value = DEFAULT_SETTINGS.bingWallpaperEnabled
     pomodoroWorkMinutes.value = DEFAULT_SETTINGS.pomodoroWorkMinutes
     pomodoroBreakMinutes.value = DEFAULT_SETTINGS.pomodoroBreakMinutes
     pomodoroLongBreakMinutes.value = DEFAULT_SETTINGS.pomodoroLongBreakMinutes
@@ -651,13 +646,12 @@ export const useSettingsStore = defineStore('settings', () => {
     language,
     notificationsEnabled,
     soundsEnabled,
-    glassEffectEnabled,
+    glassIntensity,
     defaultReminderTime,
     doNotDisturb,
     autoStart,
     closeToQuit,
     miniWindowEnabled,
-    bingWallpaperEnabled,
     pomodoroWorkMinutes,
     pomodoroBreakMinutes,
     pomodoroLongBreakMinutes,
@@ -683,7 +677,7 @@ export const useSettingsStore = defineStore('settings', () => {
     toggleSidebar,
     toggleTheme,
     toggleSounds,
-    toggleGlassEffect,
+    setGlassIntensity,
     toggleDoNotDisturb,
     setAutoStart,
     toggleAutoStart,
@@ -691,7 +685,6 @@ export const useSettingsStore = defineStore('settings', () => {
     toggleCloseToQuit,
     setMiniWindowEnabled,
     toggleMiniWindow,
-    toggleBingWallpaper,
     setDensity,
     toggleSidebarShowFilters,
     toggleSidebarShowAreas,
